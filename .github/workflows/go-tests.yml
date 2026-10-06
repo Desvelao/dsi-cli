@@ -1,0 +1,30 @@
+name: Go tests
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev/go-migration]
+    paths:
+      - "cmd/**"
+      - "internal/**"
+      - "testdata/**"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/go-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Format and vet
+        run: |
+          test -z "$(gofmt -l .)"
+          go vet ./...
+      - name: Test
+        run: go test ./... -count=1
+      - name: Build static binary
+        run: CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o bin/dsi ./cmd/dsi && ls -l bin/dsi

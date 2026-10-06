@@ -4,9 +4,11 @@ go 1.26.8
 
 require (
 	github.com/makiuchi-d/gozxing v0.1.1
+	github.com/pmezard/go-difflib v1.0.0
 	github.com/spf13/cobra v1.10.2
 	github.com/yuin/goldmark v1.8.6
 	golang.org/x/image v0.46.0
+	golang.org/x/term v0.46.0
 	golang.org/x/text v0.42.0
 	rsc.io/qr v0.2.0
 )

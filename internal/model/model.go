@@ -239,3 +239,42 @@ func (p *Profile) Field(name string) **string {
 	}
 	return nil
 }
+
+// MainAttribute describes a main vCard attribute offered by `vcard create`.
+type MainAttribute struct {
+	Name        string // lower-case option name
+	Default     string
+	HasDefault  bool // false: no default (Python None)
+	Description string
+}
+
+// MainAttributes are the main vCard attributes in option order.
+var MainAttributes = []MainAttribute{
+	{"fn", "", true, "Full Name (FN)"},
+	{"n", "", true, "Name (N) in the format LastName;FirstName"},
+	{"nickname", "", true, "Nickname (NICKNAME)"},
+	{"lang", "en-US", true, "Language (LANG) in the format 'language-region' (e.g., 'en-US', 'es-ES')"},
+	{"gender", "", true, "Gender (GENDER), e.g., 'M' for Male, 'F' for Female, or 'O' for Other"},
+	{"email", "", true, "Email (EMAIL), e.g., 'example@mail.com'"},
+	{"categories", "", true, "Categories (comma-separated, CATEGORIES), e.g., 'gamer,programmer'"},
+	{"bday", "", true, "Birthday (BDAY) in the format YYYY-MM-DD"},
+	{"anniversary", "", true, "Anniversary date (ANNIVERSARY) in the format YYYY-MM-DD"},
+	{"kind", "individual", true, "Type of entity (KIND), e.g., 'individual' or 'org'"},
+	{"adr", "", true, "Address (ADR) in the format ';;Street;City;State;PostalCode;Country'"},
+	{"tel", "", true, "Telephone number (TEL), e.g., '+1234567890'"},
+	{"impp", "", true, "Instant messaging protocol (IMPP), e.g., 'aim:exampleuser'"},
+	{"photo", "", true, "URL to a photo (PHOTO), e.g., 'http://example.com/photo.jpg'"},
+	{"note", "", true, "A short description about you (NOTE)"},
+	{"url", "", true, "URL to public profile or personal web (URL), e.g., 'https://my.web.example.com/profile'"},
+	{"source", "", false, "URL where the vCard will be hosted or can found (SOURCE)"},
+}
+
+// MainAttributeByName returns the attribute with the given name.
+func MainAttributeByName(name string) MainAttribute {
+	for _, a := range MainAttributes {
+		if a.Name == name {
+			return a
+		}
+	}
+	return MainAttribute{Name: name}
+}

@@ -67,7 +67,7 @@ func ActionGenerateKeypair(priv, pub string, force bool) (privPEM, pubPEM []byte
 	if !force {
 		for _, p := range []string{priv, pub} {
 			if _, statErr := os.Stat(p); statErr == nil {
-				return nil, nil, "", fmt.Errorf("'%s' already exists: %w", p, os.ErrExist)
+				return nil, nil, "", &ExistsError{Path: p}
 			}
 		}
 	}
@@ -256,6 +256,14 @@ func LoadPublicKeyB64DER(b64 string) (ed25519.PublicKey, error) {
 	}
 	return parsePublicDER(der)
 }
+
+// ExistsError means a key file already exists (Python's FileExistsError).
+type ExistsError struct{ Path string }
+
+func (e *ExistsError) Error() string { return fmt.Sprintf("'%s' already exists", e.Path) }
+
+// Is makes errors.Is(err, os.ErrExist) true.
+func (e *ExistsError) Is(target error) bool { return target == os.ErrExist }
 
 // IsExist reports whether err means a key file already exists.
 func IsExist(err error) bool { return errors.Is(err, os.ErrExist) }
