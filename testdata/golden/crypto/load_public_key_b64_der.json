@@ -1,0 +1,21 @@
+{
+  "alice": {
+    "in": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+    "ok": true
+  },
+  "empty": {
+    "error": "Could not deserialize key data. The data may be in an incorrect format, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters). Details: ASN.1 parsing error: short data (needed at least 1 additional bytes)",
+    "in": "",
+    "ok": false
+  },
+  "garbage_der": {
+    "error": "Could not deserialize key data. The data may be in an incorrect format, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters). Details: ASN.1 parsing error: short data (needed at least 98 additional bytes)",
+    "in": "aGVsbG8=",
+    "ok": false
+  },
+  "rsa": {
+    "error": "Public key is not an Ed25519 key",
+    "in": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwlgmVZGs2NDBolkHJDH8XKOQV6/cU8cMz4CGOD4PQAuzIgOHguf2Kht5pGHjY2xJ7fajOP6KPT19SekPq8Fm+t8/WIHwr4Ixuw9Mfjc7tWJjy/i0qJ5z4hG4r/KE5EHMb5vUldhxgAP2TfkHLjqs/WHAtRo+pEBWaVndOsUPEdJ7ydpYK4fxRWRKCsxKoFSyEmBqRsXpvWoaeOxtzSENe41QuR5v6wKlz/+gmna2CHQUVK98/fID/7QqEJg2gpvHsk+BQhrNGfxq+1R+GneM5+jzNyEHzgK5quQsC97r4umXXBCFdcRaxV0rRjCjKqmMpRtKwlqNe43jjRzDCau6jwIDAQAB",
+    "ok": false
+  }
+}

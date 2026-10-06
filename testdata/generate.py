@@ -97,6 +97,67 @@ def gen_keys():
     write_json("keys/index.json", index)
 
 
+# ------------------------------------------------------------------ crypto helpers
+def gen_crypto():
+    import base64
+    from cryptography.hazmat.primitives.asymmetric import ec, rsa
+    from src.dsipy.crypto.keys import (
+        b64der_to_public_key,
+        decode_b64_strict,
+        load_private_key_pem,
+        load_public_key_b64_der,
+        load_public_key_pem,
+    )
+
+    inputs = [
+        "", "AAAA", "AAA=", "AA==", "AAAA=", "AAAA==", "AAAA===", "A", "AAAAA", "AAAAAA",
+        "AA=A", "=AAA", "=", "AAAA\n", "AA AA", "AA\nAA", "@@@@", "AAA", "AAAAAAAA=", "AB==", "AAAB=",
+        "AA==AA", "AAA=AAAA", "é", "A=", "A==", "A===", "AAAAA=", "AAAAA==", "AAAAAA=", "AAAAAA==", "AAAAAA===", "AAAAAAA=", "AAA==", "AA===", "AA=", "AAA=A", "AA==A", "AAAA=A", "A=AA", "AAAAA=A", "AAAA\r", "\x00AAA", "AAA\x7f", "AAAAAA=A", "AA=\n", "AAAAAAAA", "AAAAAAAAA", "AAAAAAAAAA=", "AAAAAAAAAAA", "AAAAAAAAAA==", "AA\u00e9A", B64["alice"], B64["alice"][:-1], B64["alice"] + "A",
+        base64.b64encode(b"hello").decode(),
+    ]
+    out = []
+    for text in inputs:
+        try:
+            out.append({"in": text, "ok": True, "hex": decode_b64_strict(text).hex()})
+        except ValueError as e:
+            out.append({"in": text, "ok": False, "error": str(e)})
+    write_json("crypto/decode_b64_strict.json", out)
+
+    rsa_pub = rsa.generate_private_key(public_exponent=65537, key_size=2048).public_key()
+    rsa_b64 = base64.b64encode(
+        rsa_pub.public_bytes(serialization.Encoding.DER, serialization.PublicFormat.SubjectPublicKeyInfo)
+    ).decode()
+    loads = {"alice": B64["alice"], "garbage_der": base64.b64encode(b"hello").decode(), "rsa": rsa_b64, "empty": ""}
+    res = {}
+    for name, b in loads.items():
+        try:
+            load_public_key_b64_der(b)
+            res[name] = {"in": b, "ok": True}
+        except ValueError as e:
+            res[name] = {"in": b, "ok": False, "error": str(e)}
+    write_json("crypto/load_public_key_b64_der.json", res)
+    write("crypto/rsa.pub.b64", rsa_b64)
+    ec_priv = ec.generate_private_key(ec.SECP256R1()).private_bytes(
+        serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()
+    )
+    write("crypto/ec.priv.pem", ec_priv)
+    write("crypto/rsa.pub.pem", rsa_pub.public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo))
+    errs = {}
+    for name, fn, data in [
+        ("private_ec", load_private_key_pem, ec_priv),
+        ("private_garbage", load_private_key_pem, b"not a pem"),
+        ("public_rsa", load_public_key_pem, rsa_pub.public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo)),
+        ("public_garbage", load_public_key_pem, b"not a pem"),
+    ]:
+        try:
+            fn(data)
+            errs[name] = None
+        except ValueError as e:
+            errs[name] = str(e)
+    write_json("crypto/pem_errors.json", errs)
+    write_json("crypto/b64der_to_pem.json", {"in": B64["bob"], "out": b64der_to_public_key(B64["bob"])})
+
+
 # ------------------------------------------------------------------ escaping
 def gen_escaping():
     texts = [
@@ -624,6 +685,7 @@ def main():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
     gen_keys()
+    gen_crypto()
     gen_escaping()
     gen_vcards()
     gen_lifecycle()
