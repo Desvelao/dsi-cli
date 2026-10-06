@@ -1,7 +1,7 @@
 FROM golang:1.26-bookworm
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends make git python3 python3-venv \
+    && apt-get install -y --no-install-recommends make git \
     && rm -rf /var/lib/apt/lists/*
 
 # World-writable caches so the container can run as the host user (see Makefile).

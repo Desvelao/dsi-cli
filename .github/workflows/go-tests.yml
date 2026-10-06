@@ -3,7 +3,7 @@ name: Go tests
 on:
   pull_request:
   push:
-    branches: [main, dev/go-migration]
+    branches: [main]
     paths:
       - "cmd/**"
       - "internal/**"

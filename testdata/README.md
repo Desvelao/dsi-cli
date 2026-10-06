@@ -1,13 +1,16 @@
 # Golden fixtures
 
-`golden/` is generated from the **Python reference implementation** and is the
-byte-level spec for the Go port. Do not edit it by hand.
+`golden/` holds **frozen fixtures** that were generated from the original **Python implementation**
+(`dsipy`, commit `f82f00e`, the last Python commit before the Go migration; library versions in
+`golden/VERSIONS.txt`). They are the byte-level spec the Go port is tested against: every Go package
+reads them through `internal/testutil`. Do not edit them by hand.
 
-    make golden      # regenerate (runs testdata/generate.py in the `py` container)
+The generator (`testdata/generate.py`) and the Python/Go differential check (`testdata/parity/parity.py`,
+209 steps, 0 unexpected differences when the port was finished) were removed together with the Python
+code; they remain in the git history (any commit before "chore: remove the Python implementation").
+To regenerate the fixtures, check out `f82f00e` (or that history) in a separate worktree and run the
+generator there with the Python dependencies installed.
 
-Generation is deterministic (fixed key seeds and dates, no dependence on the
-clock or cwd); re-running must produce no diff unless the Python code changed.
-`golden/VERSIONS.txt` records the library versions used (rfeed, opyml, markdown…).
 
 | Directory | Content | Used by |
 |---|---|---|
@@ -45,20 +48,13 @@ Known, deliberate differences from the Python implementation (all covered by tes
 - cryptography's version-specific `Details: ...` suffix of DER errors is not reproduced.
 - `lastBuildDate`/`pubDate` use UTC wall-clock time (Python used the local time labelled GMT).
 
-## Parity check (`make parity`)
+## Parity check (historical)
 
-`testdata/parity/parity.py` runs the same command lines through the Python CLI and the Go binary
-(`bin/dsi`) inside the `py` container, each in its own scratch directory, and compares exit codes,
-stdout, stderr and the files left behind (contents, modes, PNG sizes). Random key material, dates and
-absolute paths are masked. `make parity ARGS="<scenario substring>"` runs a subset.
+Before the Python code was removed, `testdata/parity/parity.py` ran the same command lines through the
+Python CLI and the Go binary and compared exit codes, stdout, stderr and the files left behind (about 200
+steps, plus cross-verification of feeds, endorsements and keys between the two). The only differences
+were the intentional ones below; the rest were identical.
 
-- **Scenarios** cover every command and its error paths (about 200 steps).
-- **Cross scenarios** run steps alternately on one implementation and the other in a single directory:
-  feeds signed by Python are verified by Go and vice versa, endorsements, generated keys, rotation,
-  revocation and card creation.
-- **Expected differences** (`EXPECTED` in the script, each neutralising only the text it names):
-  the key-parsing library's error text, Python's unordered confidence-level list, DNS error text and
-  the rich progress bar. Help screens are compared by exit code only (typer/rich vs cobra layout).
-- Not covered: HTTP fetching (Python cannot be pointed at a local test server because of its SSRF
-  guard); it is covered by Go tests against `httptest` servers.
-- `dsi --version` is new (Python had none).
+- Expected differences: the key-parsing library's error text, Python's unordered confidence-level list,
+  DNS error text and the rich progress bar. Help screens differ by design (typer/rich vs cobra).
+- `dsi --version` and the `dsi plugin` commands are new in Go.
