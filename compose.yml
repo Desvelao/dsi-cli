@@ -1,0 +1,21 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - go-cache:/cache
+    command: tail -f /dev/null
+
+  # Python reference implementation, used to generate golden files / parity checks
+  py:
+    image: python:3.12-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: tail -f /dev/null
+
+volumes:
+  go-cache:

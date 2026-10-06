@@ -1,0 +1,15 @@
+FROM golang:1.26-bookworm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends make git python3 python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# World-writable caches so the container can run as the host user (see Makefile).
+ENV GOCACHE=/cache/go-build \
+    GOMODCACHE=/cache/mod \
+    GOFLAGS=-buildvcs=false \
+    CGO_ENABLED=0
+RUN mkdir -p /cache && chmod -R 777 /cache
+
+WORKDIR /app
+CMD ["bash"]
