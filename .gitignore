@@ -1,2 +1,10 @@
 /build
 /dist
+# Key material and generated output (never commit)
+*.pem
+out/
+*.vcf
+vcard_create.tmp
+vcard_create.tmp.part
+__pycache__/
+.pytest_cache/

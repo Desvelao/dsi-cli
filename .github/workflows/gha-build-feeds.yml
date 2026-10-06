@@ -153,68 +153,81 @@ jobs:
           python -m pip install "$wheel_file"
 
       - name: Build feeds file
+        env:
+          FEEDS_AUTHOR: ${{ secrets.feeds_author || inputs.feeds_author }}
+          FEEDS_EMAIL: ${{ secrets.feeds_email || inputs.feeds_email }}
+          FEEDS_DESCRIPTION: ${{ secrets.feeds_description || inputs.feeds_description }}
+          FEEDS_TITLE: ${{ secrets.feeds_title || inputs.feeds_title }}
+          FEEDS_LINK: ${{ secrets.feed_link || inputs.feed_link }}
+          FEEDS_VARS_SECRET: ${{ secrets.feeds_vars }}
+          FEEDS_VARS_INPUT: ${{ inputs.feeds_vars }}
+          SOURCE_DIR: ${{ inputs.source_dir }}
+          FEEDS_LIMIT: ${{ inputs.feeds_limit }}
+          EXTRA_COMMAND_ARGS: ${{ inputs.command_args }}
+          SIGN_PRIVATE_KEY: ${{ secrets.sign_private_key }}
+          SIGN_PUBLIC_KEY: ${{ secrets.sign_public_key }}
+          GH_OWNER: ${{ github.repository_owner }}
+          GH_REPO: ${{ github.event.repository.name }}
         run: |
           set -euo pipefail
 
-          author="${{ secrets.feeds_author || inputs.feeds_author }}"
-          email="${{ secrets.feeds_email || inputs.feeds_email }}"
-          description="${{ secrets.feeds_description || inputs.feeds_description }}"
-          title="${{ secrets.feeds_title || inputs.feeds_title }}"
-          link="${{ secrets.feeds_link || inputs.feeds_link }}"
+          # Values come from secrets and inputs: they are only read from the
+          # environment (never expanded into the script text) and must be single line.
+          for name in FEEDS_AUTHOR FEEDS_EMAIL FEEDS_TITLE FEEDS_DESCRIPTION FEEDS_LINK; do
+            case "${!name}" in
+              *$'\n'*) echo "::error::$name must be a single line"; exit 1 ;;
+            esac
+          done
 
-          gh_owner="${{ github.repository_owner }}"
-          gh_owner_lower="${gh_owner,,}"
-          gh_repo="${{ github.event.repository.name }}"
-          gh_repo_lower="${gh_repo,,}"
+          gh_owner_lower="${GH_OWNER,,}"
+          gh_repo_lower="${GH_REPO,,}"
           gh_pages_base_url="https://${gh_owner_lower}.github.io/${gh_repo_lower}"
-          gh_repo_source_base_url="https://github.com/${gh_owner}/${gh_repo}/tree/${GITHUB_REF_NAME}"
+          gh_repo_source_base_url="https://github.com/${GH_OWNER}/${GH_REPO}/tree/${GITHUB_REF_NAME}"
+
+          link="$FEEDS_LINK"
           if [ -z "$link" ]; then
             link="${gh_pages_base_url}/${FEEDS_FILE}"
           fi
 
-          sign_priv_flag=""
-          sign_pub_flag=""
-          if [ -n "${{ secrets.sign_private }}" ]; then
-            sign_priv_flag="--sign-priv \"${{ secrets.sign_private_key }}\""
-          fi
-          if [ -n "${{ secrets.sign_public }}" ]; then
-            sign_pub_flag="--sign-pub \"${{ secrets.sign_public_key }}\""
-          fi
-
-          cat <<EOF > feeds.vars
-          gh_owner=${gh_owner}
-          gh_repo=${gh_repo}
-          gh_pages_base_url=${gh_pages_base_url}
-          gh_repo_source_base_url=${gh_repo_source_base_url}
-          author=${author}
-          email=${email}
-          EOF
-
-          extra_vars_from_secrets='${{ secrets.feeds_vars || '' }}'
-          if [ -n "$extra_vars_from_secrets" ]; then
-            printf '%s\n' "$extra_vars_from_secrets" >> feeds.vars
+          sign_args=()
+          if [ -n "$SIGN_PRIVATE_KEY" ] || [ -n "$SIGN_PUBLIC_KEY" ]; then
+            if [ -z "$SIGN_PRIVATE_KEY" ] || [ -z "$SIGN_PUBLIC_KEY" ]; then
+              echo "::error::sign_private_key and sign_public_key must be set together"
+              exit 1
+            fi
+            umask 077
+            printf '%s\n' "$SIGN_PRIVATE_KEY" > "$RUNNER_TEMP/sign_private.pem"
+            printf '%s\n' "$SIGN_PUBLIC_KEY" > "$RUNNER_TEMP/sign_public.pem"
+            sign_args=(--sign-priv "$RUNNER_TEMP/sign_private.pem" --sign-pub "$RUNNER_TEMP/sign_public.pem")
           fi
 
-          extra_vars_from_inputs='${{ inputs.feeds_vars || '' }}'
-          if [ -n "$extra_vars_from_inputs" ]; then
-            printf '%s\n' "$extra_vars_from_inputs" >> feeds.vars
-          fi
-
-          extra_command_args="${{ inputs.command_args }}"
+          {
+            printf 'gh_owner=%s\n' "$GH_OWNER"
+            printf 'gh_repo=%s\n' "$GH_REPO"
+            printf 'gh_pages_base_url=%s\n' "$gh_pages_base_url"
+            printf 'gh_repo_source_base_url=%s\n' "$gh_repo_source_base_url"
+            printf 'author=%s\n' "$FEEDS_AUTHOR"
+            printf 'email=%s\n' "$FEEDS_EMAIL"
+            if [ -n "$FEEDS_VARS_SECRET" ]; then printf '%s\n' "$FEEDS_VARS_SECRET"; fi
+            if [ -n "$FEEDS_VARS_INPUT" ]; then printf '%s\n' "$FEEDS_VARS_INPUT"; fi
+          } > feeds.vars
 
           echo "Building ${FEEDS_FILE}"
-          dsipy feeds build "${{ inputs.source_dir }}" \
-            --title "$title" \
+          # EXTRA_COMMAND_ARGS is intentionally split into words
+          # shellcheck disable=SC2086
+          dsipy feeds build "$SOURCE_DIR" \
+            --title "$FEEDS_TITLE" \
             --link "$link" \
-            --description "$description" \
-            --author "$author" \
-            --email "$email" \
+            --description "$FEEDS_DESCRIPTION" \
+            --author "$FEEDS_AUTHOR" \
+            --email "$FEEDS_EMAIL" \
             --output "$FEEDS_FILE" \
-            --limit ${{ inputs.feeds_limit }} \
+            --limit "$FEEDS_LIMIT" \
             --var-file feeds.vars \
-            $sign_priv_flag \
-            $sign_pub_flag \
-            $extra_command_args
+            "${sign_args[@]}" \
+            $EXTRA_COMMAND_ARGS
+
+          rm -f "$RUNNER_TEMP/sign_private.pem" "$RUNNER_TEMP/sign_public.pem"
 
       - name: Collect artifact
         run: |

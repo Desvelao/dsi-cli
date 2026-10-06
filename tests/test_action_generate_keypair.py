@@ -1,9 +1,10 @@
+import os
+import stat
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
-from src.dsipy.shared.security import (
+from src.dsipy.crypto.keys import (
     action_generate_keypair,
     load_private_key_pem,
     load_public_key_b64_der,
@@ -17,10 +18,7 @@ class TestActionGenerateKeypair(unittest.TestCase):
             priv_path = Path(tmp_dir) / "private.pem"
             pub_path = Path(tmp_dir) / "public.pem"
 
-            with patch("src.dsipy.shared.security.typer.secho") as mock_secho:
-                priv_pem, pub_pem, pub_b64 = action_generate_keypair(
-                    priv_path, pub_path
-                )
+            priv_pem, pub_pem, pub_b64 = action_generate_keypair(priv_path, pub_path)
 
             self.assertTrue(priv_path.exists())
             self.assertTrue(pub_path.exists())
@@ -39,7 +37,37 @@ class TestActionGenerateKeypair(unittest.TestCase):
             self.assertIsNotNone(public_key_pem)
             self.assertIsNotNone(public_key_b64)
 
-            self.assertEqual(mock_secho.call_count, 2)
+    def test_private_key_is_created_with_mode_0600(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            priv_path = Path(tmp_dir) / "private.pem"
+            old_umask = os.umask(0o022)
+            try:
+                action_generate_keypair(priv_path, Path(tmp_dir) / "public.pem")
+            finally:
+                os.umask(old_umask)
+            self.assertEqual(stat.S_IMODE(priv_path.stat().st_mode), 0o600)
+
+    def test_refuses_to_overwrite_existing_files(self):
+        for existing in ("private.pem", "public.pem"):
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                priv_path = Path(tmp_dir) / "private.pem"
+                pub_path = Path(tmp_dir) / "public.pem"
+                (Path(tmp_dir) / existing).write_bytes(b"keep")
+                with self.assertRaises(FileExistsError):
+                    action_generate_keypair(priv_path, pub_path)
+                self.assertEqual((Path(tmp_dir) / existing).read_bytes(), b"keep")
+                other = pub_path if existing == "private.pem" else priv_path
+                self.assertFalse(other.exists())
+
+    def test_force_overwrites_and_tightens_mode(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            priv_path = Path(tmp_dir) / "private.pem"
+            pub_path = Path(tmp_dir) / "public.pem"
+            priv_path.write_bytes(b"old")
+            priv_path.chmod(0o644)
+            priv_pem, _, _ = action_generate_keypair(priv_path, pub_path, force=True)
+            self.assertEqual(priv_path.read_bytes(), priv_pem)
+            self.assertEqual(stat.S_IMODE(priv_path.stat().st_mode), 0o600)
 
 
 if __name__ == "__main__":
