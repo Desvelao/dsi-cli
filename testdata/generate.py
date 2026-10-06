@@ -733,6 +733,30 @@ def state_to_json(state, root):
     return s
 
 
+def gen_qr():
+    import qrcode
+    from PIL import Image
+    texts = [
+        "A", "12345", "HELLO WORLD", "hello", "https://example.com/vcard", "https://alice.example/dsi.vcf",
+        "BEGIN:VCARD\nVERSION:4.0\nFN:Alice\nEND:VCARD", "caf\u00e9 \u2603 \u65e5\u672c\u8a9e", "x" * 120, "1234567890" * 20,
+        "ABC123abc 456 DEF", "https://example.com/" + "a" * 300, "A" * 400, "\u2603" * 60,
+    ]
+    out = []
+    for text in texts:
+        q = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
+        q.add_data(text)
+        q.make()
+        matrix = q.get_matrix()  # includes the 4-module border
+        out.append({
+            "data": text, "version": q.version, "mask": q.mask_pattern, "border": q.border, "box_size": q.box_size,
+            "rows": ["".join("1" if c else "0" for c in row) for row in matrix],
+        })
+    write_json("qr/matrices.json", out)
+    # image size of generate_qr's default rendering
+    img = q.make_image(fill_color="Black", back_color="white").convert("RGB")
+    write_json("qr/image.json", {"size": list(img.size), "mode": img.mode})
+
+
 def gen_feed_primitives():
     import markdown as md
     from src.dsipy.feeds.markdown import _parse_date, _unquote
@@ -932,6 +956,7 @@ def main():
     gen_lifecycle()
     gen_canonical()
     gen_resolver()
+    gen_qr()
     gen_feed_primitives()
     gen_feeds()
     write_versions()
