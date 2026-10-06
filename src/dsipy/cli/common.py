@@ -7,10 +7,10 @@ import traceback
 import typer
 from rich.syntax import Syntax
 
-try:  # typer<=0.2x depends on click
-    from click import ClickException, UsageError
-except ImportError:  # newer typer vendors click
+try:  # newer typer vendors click; its errors are not the installed click's
     from typer._click.exceptions import ClickException, UsageError
+except ImportError:  # typer<=0.2x depends on click
+    from click import ClickException, UsageError
 
 DEBUG_ENV = "DSIPY_DEBUG"
 
@@ -67,7 +67,9 @@ def echo_keypair_generated(priv, pub, pub_b64: str) -> None:
     )
 
 
-def show_diff(console, old_text: str, new_text: str, fromfile: str, tofile: str) -> None:
+def show_diff(
+    console, old_text: str, new_text: str, fromfile: str, tofile: str
+) -> None:
     """Print a colored unified diff (or a "No differences." note) to `console`."""
     diff = "\n".join(
         difflib.unified_diff(
