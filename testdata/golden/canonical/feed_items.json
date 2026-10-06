@@ -1,0 +1,26 @@
+[
+  {
+    "canonical": "Wed, 01 Jan 2025 10:00:00 GMT\nHello\nPlain body",
+    "description": "Plain body",
+    "pub_date": "Wed, 01 Jan 2025 10:00:00 GMT",
+    "signature_hex": "87739a1224cf881cb917c84201b8f8b7b66bb11bc7c91e46a817207a14040b74e8c22b45d286969eb0e36c0604cd4200e22ef5044951f6528e8081997600c709",
+    "signer": "alice",
+    "title": "Hello"
+  },
+  {
+    "canonical": "Wed, 01 Jan 2025 10:00:00 GMT\n\nNo title",
+    "description": "No title",
+    "pub_date": "Wed, 01 Jan 2025 10:00:00 GMT",
+    "signature_hex": "a8abb069e57ce0951c254d94b08c8b56bd68c10c81cf82dd936c43378fb25fad2e3ce91fc71b4b5904117610c7fe76c0bbad7644623b5b77bfa8aed48543a00d",
+    "signer": "alice",
+    "title": ""
+  },
+  {
+    "canonical": "Thu, 02 Jan 2025 11:30:00 GMT\nÜnïcode ☃\n<p>html</p>\n",
+    "description": "<p>html</p>\n",
+    "pub_date": "Thu, 02 Jan 2025 11:30:00 GMT",
+    "signature_hex": "d12a9730696df8803eadc3cf143e349ea31c9f0dc0465b7fcfe01a95573ba6072548b8aaf6f2440d395b16bead9436cf6d37f81eca9e3d65710d2501f0b00e09",
+    "signer": "bob",
+    "title": "Ünïcode ☃"
+  }
+]

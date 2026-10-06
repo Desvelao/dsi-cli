@@ -11,7 +11,7 @@ services:
 
   # Python reference implementation, used to generate golden files / parity checks
   py:
-    image: python:3.12-alpine
+    image: python:3.12-slim
     working_dir: /app
     volumes:
       - .:/app

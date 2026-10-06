@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>Alice's Feed</title><link>https://alice.example</link><description>A &lt;test&gt; feed &amp; more</description><language>en-US</language><lastBuildDate>Mon, 03 Feb 2025 04:05:06 GMT</lastBuildDate><generator>rfeed v1.1.1</generator><docs>https://github.com/svpino/rfeed/blob/master/README.md</docs><atom:link href="https://alice.example" rel="self"></atom:link><item><title>HTML Post</title><link>https://a.example/html</link><description><![CDATA[<h1>Heading</h1>
+<p>Some <em>emphasis</em>, <strong>strong</strong>, <code>code</code> and a <a href="https://x.example">link</a>.</p>
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>item 1</li>
+<li>item 2</li>
+</ul>
+<dl>
+<dt>Term</dt>
+<dd>Definition</dd>
+</dl>
+<pre><code>fenced
+</code></pre>]]></description><author>Alice (alice@alice.example)</author><pubDate>Fri, 03 Jan 2025 10:00:00 GMT</pubDate><guid isPermaLink="false">html</guid><media:content url="https://a.example/pic.png" type="image/png" medium="image"></media:content></item><item><title>Quoted: Title</title><link>https://alice.example/feed/nested-deep-post</link><description>Body with overridden and https://a.example and {{ missing }}.</description><author>Alice (alice@alice.example)</author><pubDate>Thu, 02 Jan 2025 10:30:00 GMT</pubDate><guid isPermaLink="false">nested-deep-post</guid></item><item><title>nofront</title><link>https://alice.example/feed/nofront</link><description>Just text, no front matter.</description><author>Alice (alice@alice.example)</author><pubDate>Wed, 01 Jan 2025 00:00:00 GMT</pubDate><guid isPermaLink="false">nofront</guid></item><item><title>Hello World</title><link>https://alice.example/feed/hello</link><description>First post body.</description><author>Alice (alice@alice.example)</author><pubDate>Wed, 01 Jan 2025 00:00:00 GMT</pubDate><guid isPermaLink="false">hello</guid></item><item><title>Explicit</title><link>https://alice.example/feed/my-id</link><description><![CDATA[<p>A &amp; B &lt; C</p>]]></description><author>Alice (alice@alice.example)</author><pubDate>Tue, 31 Dec 2024 23:59:59 GMT</pubDate><guid isPermaLink="false">my-id</guid></item></channel></rss>

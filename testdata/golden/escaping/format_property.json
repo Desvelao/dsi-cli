@@ -1,0 +1,49 @@
+[
+  {
+    "group": null,
+    "name": "FN",
+    "out": "FN:Alice",
+    "params": [],
+    "value": "Alice"
+  },
+  {
+    "group": null,
+    "name": "KEY",
+    "out": "KEY;TYPE=public;PREF=1:abc",
+    "params": [
+      [
+        "TYPE",
+        "public"
+      ],
+      [
+        "PREF",
+        "1"
+      ]
+    ],
+    "value": "abc"
+  },
+  {
+    "group": null,
+    "name": "TEL",
+    "out": "TEL;TYPE=\"work;home\":123",
+    "params": [
+      [
+        "TYPE",
+        "work;home"
+      ]
+    ],
+    "value": "123"
+  },
+  {
+    "group": "item1",
+    "name": "ADR",
+    "out": "item1.ADR;LABEL=\"a:b\":x",
+    "params": [
+      [
+        "LABEL",
+        "a:b"
+      ]
+    ],
+    "value": "x"
+  }
+]

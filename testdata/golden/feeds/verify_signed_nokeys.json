@@ -1,0 +1,32 @@
+[
+  {
+    "guid": "html",
+    "reason": "no matching key for key-id 'MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s='",
+    "status": "invalid",
+    "title": "HTML Post"
+  },
+  {
+    "guid": "nested-deep-post",
+    "reason": "no matching key for key-id 'MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s='",
+    "status": "invalid",
+    "title": "Quoted: Title"
+  },
+  {
+    "guid": "nofront",
+    "reason": "no matching key for key-id 'MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s='",
+    "status": "invalid",
+    "title": "nofront"
+  },
+  {
+    "guid": "hello",
+    "reason": "no matching key for key-id 'MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s='",
+    "status": "invalid",
+    "title": "Hello World"
+  },
+  {
+    "guid": "my-id",
+    "reason": "no matching key for key-id 'MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s='",
+    "status": "invalid",
+    "title": "Explicit"
+  }
+]

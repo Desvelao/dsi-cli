@@ -1,0 +1,26 @@
+[
+  {
+    "in": "a\\,b\\;c\\\\d",
+    "out": "a,b;c\\d"
+  },
+  {
+    "in": "x\\ny",
+    "out": "x\ny"
+  },
+  {
+    "in": "x\\Ny",
+    "out": "x\ny"
+  },
+  {
+    "in": "\\q",
+    "out": "q"
+  },
+  {
+    "in": "no escapes",
+    "out": "no escapes"
+  },
+  {
+    "in": "end\\",
+    "out": "end\\"
+  }
+]

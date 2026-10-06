@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "key-revoked",
+      "message": "The preferred KEY is also listed as revoked"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

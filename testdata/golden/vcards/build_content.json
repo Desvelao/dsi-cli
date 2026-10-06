@@ -1,0 +1,54 @@
+{
+  "basic": {
+    "args": {
+      "fn": "Alice",
+      "source": "https://alice.example/dsi.vcf"
+    },
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice\r\nSOURCE:https://alice.example/dsi.vcf\r\nEND:VCARD\r\n"
+  },
+  "everything": {
+    "args": {
+      "adr": ";;1 Main St;Town;;12345;ES",
+      "anniversary": "20100101",
+      "bday": "19900101",
+      "categories": "x,y",
+      "custom_attributes": {
+        "FEED=": "x",
+        "X-SOCIAL;PLATFORM=mastodon": "@a@b"
+      },
+      "email": "a@alice.example",
+      "fn": "Alice, \"A\" Example",
+      "gender": "F",
+      "impp": "xmpp:a@x",
+      "keys": [
+        {
+          "alg": "ed25519",
+          "key_b64": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+          "pref": 1
+        },
+        {
+          "alg": "ed25519",
+          "key_b64": "MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14="
+        }
+      ],
+      "kind": "individual",
+      "lang": "en-US",
+      "n": "Example;Alice",
+      "nickname": "Al",
+      "note": "multi\nline; note, with specials \\",
+      "photo": "https://alice.example/p.png",
+      "source": "https://alice.example/dsi.vcf",
+      "tel": "+34 600",
+      "url": "https://alice.example"
+    },
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice\\, \"A\" Example\r\nN:Example;Alice;;;\r\nNICKNAME:Al\r\nLANG:en-US\r\nGENDER:F\r\nEMAIL:a@alice.example\r\nCATEGORIES:x,y\r\nBDAY:19900101\r\nANNIVERSARY:20100101\r\nKIND:individual\r\nADR:;;1 Main St;Town;;12345;ES\r\nTEL:+34 600\r\nIMPP:xmpp:a@x\r\nPHOTO:https://alice.example/p.png\r\nNOTE;LANGUAGE=en-US:multi\\nline\\; note\\, with specials \\\\\r\nURL:https://alice.example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFx\r\n oCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEA3XVgQP3VFF4r+\r\n YMtJk3QgOSz5zAWvfZXS0zYfqppf14=\r\nX-SOCIAL;PLATFORM=mastodon:@a@b\r\nFEED=:x\r\nEND:VCARD\r\n"
+  },
+  "long_note": {
+    "args": {
+      "fn": "A",
+      "note": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word ",
+      "source": "https://a.example/x"
+    },
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:A\r\nNOTE;LANGUAGE=en-US:word word word word word word word word word word word \r\n word word word word word word word word word word word word word word word\r\n  word word word word word word word word word word word word word word wor\r\n d word word word word word word word word word word word word word word wo\r\n rd word word word word word word word word word word word word word word w\r\n ord word word word word word word word word word \r\nSOURCE:https://a.example/x\r\nEND:VCARD\r\n"
+  }
+}

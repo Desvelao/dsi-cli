@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "source-missing",
+      "message": "SOURCE property is required"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

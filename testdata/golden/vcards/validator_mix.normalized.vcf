@@ -1,0 +1,15 @@
+BEGIN:VCARD
+VERSION:4.0
+FN:Alice Example
+BDAY:yesterday
+EMAIL:not-an-email
+LANG:xx_YY
+KIND:robot
+SOURCE:https://alice.example/dsi.vcf
+KEY;ALG=ed25519;ENCODING=b;PREF=1;TYPE=public:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=
+X-DSI-VERSION:1
+X-FEED;LANGUAGE=en-US:ftp://bad/feed
+X-FEED:https://a.example/f.rss
+X-FEED:https://a.example/f.rss
+X-SOCIAL;PLATFORM=Mastodon:@x
+END:VCARD

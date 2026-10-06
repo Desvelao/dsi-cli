@@ -1,0 +1,38 @@
+[
+  {
+    "in": "HTTPS://Alice.Example:443/dsi.vcf#frag",
+    "out": "https://alice.example/dsi.vcf"
+  },
+  {
+    "in": "https://alice.example/a/./b/../c.vcf",
+    "out": "https://alice.example/a/c.vcf"
+  },
+  {
+    "in": "http://alice.example:80/",
+    "out": "http://alice.example/"
+  },
+  {
+    "in": "https://alice.example",
+    "out": "https://alice.example/"
+  },
+  {
+    "in": "https://alice.example./x",
+    "out": "https://alice.example/x"
+  },
+  {
+    "in": "https://alice.example/%7euser/%2f",
+    "out": "https://alice.example/~user/%2F"
+  },
+  {
+    "in": "https://alice.example:8443/x?q=1",
+    "out": "https://alice.example:8443/x?q=1"
+  },
+  {
+    "error": "Port could not be cast to integer value as 'abc'",
+    "in": "https://alice.example:abc/x"
+  },
+  {
+    "in": "  https://alice.example/x  ",
+    "out": "https://alice.example/x"
+  }
+]

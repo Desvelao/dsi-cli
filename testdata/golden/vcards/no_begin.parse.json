@@ -1,0 +1,52 @@
+{
+  "adr": null,
+  "anniversary": null,
+  "bday": null,
+  "categories": null,
+  "dsi_version": null,
+  "email": null,
+  "endorsements": [],
+  "errors": [
+    "missing BEGIN:VCARD"
+  ],
+  "feeds": [],
+  "fn": "x",
+  "gender": null,
+  "impp": null,
+  "keys": [],
+  "kind": null,
+  "lang": null,
+  "n": null,
+  "nickname": null,
+  "note": null,
+  "photo": null,
+  "raw": "FN:x\r\nEND:VCARD\r\n",
+  "raw_lines": [
+    {
+      "attr_name": "fn",
+      "attributes": {},
+      "group": null,
+      "line": "FN:x",
+      "name": "FN",
+      "params": [],
+      "raw_value": "x",
+      "value": "x"
+    },
+    {
+      "attr_name": null,
+      "attributes": {},
+      "group": null,
+      "line": "END:VCARD",
+      "name": "END",
+      "params": [],
+      "raw_value": "VCARD",
+      "value": null
+    }
+  ],
+  "revocations": [],
+  "social": [],
+  "source": null,
+  "tel": null,
+  "url": null,
+  "version": null
+}

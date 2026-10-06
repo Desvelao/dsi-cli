@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "version",
+      "message": "VERSION must be 4.0, found '3.0'"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

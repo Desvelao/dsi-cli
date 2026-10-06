@@ -11,3 +11,7 @@ __pycache__/
 
 # Go build output
 /bin/
+
+# Test keys derived from fixed public seeds are not secrets
+!testdata/golden/keys/*.pem
+!testdata/golden/**/*.vcf

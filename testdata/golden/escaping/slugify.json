@@ -1,0 +1,26 @@
+[
+  {
+    "in": "Hello World",
+    "out": "hello-world"
+  },
+  {
+    "in": "Árbol ñandú",
+    "out": "arbol-nandu"
+  },
+  {
+    "in": "  --x--  ",
+    "out": "x"
+  },
+  {
+    "in": "2025/01/a.md",
+    "out": "2025-01-a-md"
+  },
+  {
+    "in": "日本語",
+    "out": ""
+  },
+  {
+    "in": "",
+    "out": ""
+  }
+]

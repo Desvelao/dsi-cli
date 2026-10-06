@@ -1,0 +1,1 @@
+Cannot normalize a vCard with malformed lines: At line 6: invalid PREF value 'x'

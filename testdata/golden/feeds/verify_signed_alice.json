@@ -1,0 +1,32 @@
+[
+  {
+    "guid": "html",
+    "reason": "",
+    "status": "valid",
+    "title": "HTML Post"
+  },
+  {
+    "guid": "nested-deep-post",
+    "reason": "",
+    "status": "valid",
+    "title": "Quoted: Title"
+  },
+  {
+    "guid": "nofront",
+    "reason": "",
+    "status": "valid",
+    "title": "nofront"
+  },
+  {
+    "guid": "hello",
+    "reason": "",
+    "status": "valid",
+    "title": "Hello World"
+  },
+  {
+    "guid": "my-id",
+    "reason": "",
+    "status": "valid",
+    "title": "Explicit"
+  }
+]

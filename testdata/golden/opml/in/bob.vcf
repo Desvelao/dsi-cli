@@ -1,0 +1,6 @@
+BEGIN:VCARD
+VERSION:4.0
+FN:Bob & <Co>
+SOURCE:https://bob.example/dsi.vcf
+X-FEED;CATEGORY=news,blog;TAGS=blog,tech:https://bob.example/f.xml
+END:VCARD

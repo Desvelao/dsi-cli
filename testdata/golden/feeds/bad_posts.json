@@ -1,0 +1,4 @@
+{
+  "baddate.md": "baddate.md: invalid date 'not-a-date' (expected ISO 8601, e.g. 2025-01-31 or 2025-01-31T12:00:00Z)",
+  "unterminated.md": "unterminated.md: unterminated front matter (missing closing '---')"
+}
