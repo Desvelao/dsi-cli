@@ -1,4 +1,24 @@
 {
+  "__errors__": {
+    "break_in_custom": {
+      "error": "Line breaks are not allowed in 'X-A'"
+    },
+    "break_in_tel": {
+      "error": "Line breaks are not allowed in 'tel'"
+    },
+    "break_in_url": {
+      "error": "Line breaks are not allowed in 'url'"
+    },
+    "key_missing_alg": {
+      "error": "Key entry is missing required field 'alg'"
+    },
+    "key_missing_b64": {
+      "error": "Key entry is missing required field 'key_b64'"
+    },
+    "quote_in_lang": {
+      "error": "Invalid character in parameter value: 'en\"US'"
+    }
+  },
   "basic": {
     "args": {
       "fn": "Alice",
@@ -12,10 +32,16 @@
       "anniversary": "20100101",
       "bday": "19900101",
       "categories": "x,y",
-      "custom_attributes": {
-        "FEED=": "x",
-        "X-SOCIAL;PLATFORM=mastodon": "@a@b"
-      },
+      "custom_attributes": [
+        [
+          "X-SOCIAL;PLATFORM=mastodon",
+          "@a@b"
+        ],
+        [
+          "FEED=",
+          "x"
+        ]
+      ],
       "email": "a@alice.example",
       "fn": "Alice, \"A\" Example",
       "gender": "F",

@@ -340,7 +340,26 @@ def gen_vcards():
     }
     out = {}
     for name, kwargs in builds.items():
-        out[name] = {"args": kwargs, "out": build_content(**kwargs)}
+        args = dict(kwargs)
+        if "custom_attributes" in args:  # ordered pairs: JSON objects lose order here
+            args["custom_attributes"] = [list(kv) for kv in args["custom_attributes"].items()]
+        out[name] = {"args": args, "out": build_content(**kwargs)}
+    errors = {
+        "break_in_tel": dict(tel="1\nFN:evil"),
+        "break_in_url": dict(url="https://e.com\r\nX-EVIL:1"),
+        "break_in_custom": dict(custom_attributes={"X-A": "v\r\nFN:evil"}),
+        "key_missing_alg": dict(keys=[{"key_b64": B64["alice"]}]),
+        "key_missing_b64": dict(keys=[{"alg": "ed25519"}]),
+        "quote_in_lang": dict(lang='en"US', note="x"),
+    }
+    err_out = {}
+    for name, kwargs in errors.items():
+        try:
+            build_content(**kwargs)
+            err_out[name] = {"error": None}
+        except ValueError as e:
+            err_out[name] = {"error": str(e)}
+    out["__errors__"] = err_out
     write_json("vcards/build_content.json", out)
 
 
