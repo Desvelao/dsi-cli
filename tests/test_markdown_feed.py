@@ -64,7 +64,9 @@ class TestMarkdownFeed(unittest.TestCase):
         os.utime(p, (ts, ts))
         old = os.environ.get("TZ")
         self.addCleanup(
-            lambda: os.environ.pop("TZ", None) if old is None else os.environ.update(TZ=old)
+            lambda: (
+                os.environ.pop("TZ", None) if old is None else os.environ.update(TZ=old)
+            )
         )
         import time
 
@@ -85,7 +87,7 @@ class TestMarkdownFeed(unittest.TestCase):
     def test_quotes_are_stripped(self):
         p = self.write(
             "---\ntitle: \"Hello: World\"\nlink: 'https://e.com/x'\n"
-            "date: \"2025-01-02\"\nother: \"mismatch'\n---\nb\n"
+            'date: "2025-01-02"\nother: "mismatch\'\n---\nb\n'
         )
         item = MarkdownFeed._parse_file(p)
         self.assertEqual(item["title"], "Hello: World")

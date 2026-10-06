@@ -20,9 +20,7 @@ from ..core.model import vcard_main_attributes
 from ..core.validator import ValidationResult, validate_profile
 from ..endorsements.verify import verify_endorsements
 
-app = Cli(
-    help="Commands related to vCard processing", no_args_is_help=True
-)
+app = Cli(help="Commands related to vCard processing", no_args_is_help=True)
 
 
 @app.command()
@@ -221,8 +219,23 @@ def create(
 
 # Order in which the main attributes are asked for in interactive mode
 _PROMPT_ORDER = (
-    "fn", "n", "nickname", "lang", "gender", "email", "categories", "bday",
-    "anniversary", "kind", "adr", "tel", "impp", "photo", "note", "url", "source",
+    "fn",
+    "n",
+    "nickname",
+    "lang",
+    "gender",
+    "email",
+    "categories",
+    "bday",
+    "anniversary",
+    "kind",
+    "adr",
+    "tel",
+    "impp",
+    "photo",
+    "note",
+    "url",
+    "source",
 )
 
 
@@ -324,7 +337,6 @@ def _prompt_custom_attributes(prompt_with_temp, custom_attributes: dict) -> None
         add_custom = typer.confirm(
             "Do you want to add another custom attribute?", default=False
         )
-
 
 
 def _load_resume_file(path: str) -> dict:
@@ -437,7 +449,11 @@ def fetch(
 
                 if old_text is not None and show_diff:
                     _show_diff(
-                        progress.console, old_text, new_text, str(destination), "(fetched)"
+                        progress.console,
+                        old_text,
+                        new_text,
+                        str(destination),
+                        "(fetched)",
                     )
 
                 if old_text is not None and old_text == new_text:
@@ -456,7 +472,9 @@ def fetch(
                         downloaded += 1
                 else:
                     if old_text is not None and backup:
-                        backup_path = destination.with_suffix(destination.suffix + ".bak")
+                        backup_path = destination.with_suffix(
+                            destination.suffix + ".bak"
+                        )
                         backup_path.write_text(old_text, encoding="utf-8", newline="")
                         progress.console.print(
                             f"[blue]  Backup created:[/blue] {backup_path}"
@@ -529,9 +547,7 @@ def fetch(
                 )
 
             if current_text is not None and current_text == new_text:
-                progress.console.print(
-                    f"  Unchanged: {out_path} (already up to date)"
-                )
+                progress.console.print(f"  Unchanged: {out_path} (already up to date)")
                 unchanged += 1
                 progress.update(task, advance=1)
                 continue
@@ -739,7 +755,10 @@ def endorse(
     help="Generate a QR code from the provided vCard file (support input piping) and save it to a file."
 )
 def qr(
-    input: str = typer.Argument(None, help="vCard file to encode, or literal text to encode if it is not an existing file"),
+    input: str = typer.Argument(
+        None,
+        help="vCard file to encode, or literal text to encode if it is not an existing file",
+    ),
     output: str = typer.Option(
         None, "--output", "-o", help="Output file to save the QR code image"
     ),

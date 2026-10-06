@@ -1,7 +1,6 @@
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
 
-
 LOGO_MAX_FRACTION = 0.25  # logo side as a fraction of the QR modules width
 CAPTION_WIDTH_FRACTION = 0.90  # caption width as a fraction of the image width
 

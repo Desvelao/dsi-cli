@@ -101,7 +101,9 @@ class FoldingTests(unittest.TestCase):
         for part in folded[1:]:
             self.assertTrue(part.startswith(" "))
             self.assertLessEqual(len(part.encode()), 75)
-        self.assertEqual("".join(p[1:] if i else p for i, p in enumerate(folded)), "A" * 200)
+        self.assertEqual(
+            "".join(p[1:] if i else p for i, p in enumerate(folded)), "A" * 200
+        )
 
     def test_fold_respects_multibyte_characters(self):
         text = "N:" + "é€😀" * 60
@@ -127,7 +129,11 @@ class FoldingTests(unittest.TestCase):
         self.assertIn(f":{long_key}\r\n", normalize_vcard(profile))
 
     def test_raw_lines_rebuild_keeps_lines_unfolded(self):
-        source = "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:X\r\nNOTE:" + "b" * 200 + "\r\nEND:VCARD\r\n"
+        source = (
+            "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:X\r\nNOTE:"
+            + "b" * 200
+            + "\r\nEND:VCARD\r\n"
+        )
         rebuilt = build_vcard_from_raw_lines(parse_vcard(source))
         self.assertEqual(rebuilt, source)
         self.assertEqual(parse_vcard(rebuilt).note, "b" * 200)
@@ -147,7 +153,9 @@ class KeyAndParamTests(unittest.TestCase):
         self.assertIn("key_b64", str(ctx.exception))
 
     def test_note_language_uses_lang_or_default(self):
-        self.assertIn("NOTE;LANGUAGE=es-ES:hola", build_content(lang="es-ES", note="hola"))
+        self.assertIn(
+            "NOTE;LANGUAGE=es-ES:hola", build_content(lang="es-ES", note="hola")
+        )
         self.assertIn("NOTE;LANGUAGE=en-US:hi", build_content(note="hi"))
 
     def test_format_param_value(self):

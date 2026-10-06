@@ -31,7 +31,9 @@ class GetLocalFilesTests(unittest.TestCase):
             (root / "b.txt").write_text("x")
             missing = root / "missing"
             warnings = []
-            files = get_local_files_from_inputs([root, missing], file_is_vcard, warnings)
+            files = get_local_files_from_inputs(
+                [root, missing], file_is_vcard, warnings
+            )
             self.assertEqual(files, [root / "a.VCF"])
             self.assertEqual(warnings, [f"Input path does not exist: {missing}"])
 

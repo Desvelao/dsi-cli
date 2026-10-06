@@ -75,7 +75,10 @@ def test_captions(tmp_path, top, bottom):
     if top:
         assert gray.crop((0, 0, img.width, border)).getextrema()[0] < 128
     if bottom:
-        assert gray.crop((0, img.height - border, img.width, img.height)).getextrema()[0] < 128
+        assert (
+            gray.crop((0, img.height - border, img.width, img.height)).getextrema()[0]
+            < 128
+        )
 
 
 @needs_font
@@ -104,5 +107,7 @@ def test_logo_scaled_relative_to_qr(tmp_path):
     assert img.size == _plain_size(tmp_path)
     # centre is logo red; logo width stays under a third of the image
     assert img.getpixel((img.width // 2, img.height // 2)) == (255, 0, 0)
-    reds = [x for x in range(img.width) if img.getpixel((x, img.height // 2)) == (255, 0, 0)]
+    reds = [
+        x for x in range(img.width) if img.getpixel((x, img.height // 2)) == (255, 0, 0)
+    ]
     assert 0 < len(reds) < img.width / 3

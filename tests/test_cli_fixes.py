@@ -53,7 +53,9 @@ class TestFeedsAddFilename(InTmpDir):
         self.assertEqual(result.exit_code, 0, result.output)
         created = list(Path("feeds").glob("*.md"))
         self.assertEqual(len(created), 1, result.output)
-        self.assertEqual(list(Path(".").glob("*t*z")), [])  # no stray extensionless file
+        self.assertEqual(
+            list(Path(".").glob("*t*z")), []
+        )  # no stray extensionless file
 
     def test_missing_parent_folder_is_created(self):
         result = runner.invoke(
@@ -184,7 +186,9 @@ class TestHelpTexts(unittest.TestCase):
         return result.output
 
     def test_feeds_build_has_a_description(self):
-        self.assertIn("Build an RSS feed from a folder of Markdown posts", self.help("feeds"))
+        self.assertIn(
+            "Build an RSS feed from a folder of Markdown posts", self.help("feeds")
+        )
 
     def test_vcard_parse_says_json(self):
         out = self.help("vcard", "parse")

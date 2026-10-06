@@ -65,7 +65,8 @@ def test_values_with_newline_or_equals_roundtrip(cwd):
 
 
 @pytest.mark.parametrize(
-    "content", ["garbage without equals\nfn=Legacy\n=x\n", "{not json", "[1, 2]", "\x00\n"]
+    "content",
+    ["garbage without equals\nfn=Legacy\n=x\n", "{not json", "[1, 2]", "\x00\n"],
 )
 def test_malformed_tmp_does_not_crash(cwd, content):
     (cwd / "vcard_create.tmp").write_text(content)

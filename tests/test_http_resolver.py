@@ -63,7 +63,8 @@ class TestFetchText(unittest.TestCase):
 
     def test_plain_http_can_be_allowed(self):
         with patch(
-            "src.dsipy.core.http.requests.Session.get", return_value=FakeResponse(body=b"x")
+            "src.dsipy.core.http.requests.Session.get",
+            return_value=FakeResponse(body=b"x"),
         ):
             self.assertEqual(
                 fetch_text("http://example.com/a", allow_http=True).text, "x"
@@ -103,7 +104,9 @@ class TestFetchText(unittest.TestCase):
 
         self.resolve.side_effect = resolve
         redirect = FakeResponse(302, headers={"Location": "https://internal.example/x"})
-        with patch("src.dsipy.core.http.requests.Session.get", return_value=redirect) as get:
+        with patch(
+            "src.dsipy.core.http.requests.Session.get", return_value=redirect
+        ) as get:
             with self.assertRaises(FetchError):
                 fetch_text("https://example.com/a")
             self.assertEqual(get.call_count, 1)
@@ -142,7 +145,9 @@ class TestFetchText(unittest.TestCase):
                 fetch_text("https://example.com/a", accepted_types=("text/vcard",))
 
     def test_http_error_status(self):
-        with patch("src.dsipy.core.http.requests.Session.get", return_value=FakeResponse(404)):
+        with patch(
+            "src.dsipy.core.http.requests.Session.get", return_value=FakeResponse(404)
+        ):
             with self.assertRaises(FetchError):
                 fetch_text("https://example.com/a")
 
@@ -156,7 +161,8 @@ class TestPinnedConnection(unittest.TestCase):
                 host=pool.host,
                 path=url,
                 headers=kwargs.get("headers"),
-                server_hostname=getattr(pool, "server_hostname", None) or pool.conn_kw.get("server_hostname"),
+                server_hostname=getattr(pool, "server_hostname", None)
+                or pool.conn_kw.get("server_hostname"),
                 assert_hostname=getattr(pool, "assert_hostname", None),
             )
             raise urllib3.exceptions.ProtocolError("stop")
@@ -169,11 +175,14 @@ class TestPinnedConnection(unittest.TestCase):
     def test_connection_uses_the_validated_ip_after_rebinding(self):
         # Public at check time, private on any later lookup (DNS rebinding).
         answers = iter([[PUBLIC_IP]])
-        with patch(
-            "src.dsipy.core.http._resolve_addresses",
-            side_effect=lambda h, p: next(answers, ["127.0.0.1"]),
-        ), patch(
-            "socket.getaddrinfo", return_value=[(2, 1, 6, "", ("127.0.0.1", 443))]
+        with (
+            patch(
+                "src.dsipy.core.http._resolve_addresses",
+                side_effect=lambda h, p: next(answers, ["127.0.0.1"]),
+            ),
+            patch(
+                "socket.getaddrinfo", return_value=[(2, 1, 6, "", ("127.0.0.1", 443))]
+            ),
         ):
             seen = self.fetch_capturing_pool()
         self.assertEqual(seen["host"], PUBLIC_IP)
@@ -192,8 +201,9 @@ class TestPinnedConnection(unittest.TestCase):
             "HTTP_PROXY": "http://proxy.internal:3128",
             "https_proxy": "http://proxy.internal:3128",
         }
-        with patch.dict("os.environ", env), patch(
-            "src.dsipy.core.http._resolve_addresses", return_value=[PUBLIC_IP]
+        with (
+            patch.dict("os.environ", env),
+            patch("src.dsipy.core.http._resolve_addresses", return_value=[PUBLIC_IP]),
         ):
             seen = self.fetch_capturing_pool()
         self.assertEqual(seen["host"], PUBLIC_IP)
@@ -217,9 +227,13 @@ class TestNormalizeAndSource(unittest.TestCase):
         )
 
     def test_percent_encoding_normalization(self):
-        self.assertEqual(normalize_url("https://e.com/%7Ealice"), "https://e.com/~alice")
+        self.assertEqual(
+            normalize_url("https://e.com/%7Ealice"), "https://e.com/~alice"
+        )
         self.assertEqual(normalize_url("https://e.com/a%2fb"), "https://e.com/a%2Fb")
-        self.assertEqual(normalize_url("https://e.com/a?x=%2f"), "https://e.com/a?x=%2F")
+        self.assertEqual(
+            normalize_url("https://e.com/a?x=%2f"), "https://e.com/a?x=%2F"
+        )
 
     def test_dot_segments(self):
         self.assertEqual(normalize_url("https://e.com/a/./b/../c"), "https://e.com/a/c")
@@ -282,7 +296,10 @@ class TestFetchVcard(unittest.TestCase):
             )
 
     def test_invalid_source_port_is_rejected(self):
-        for bad in ("https://alice.example:abc/dsi.vcf", "https://alice.example:99999/x"):
+        for bad in (
+            "https://alice.example:abc/dsi.vcf",
+            "https://alice.example:99999/x",
+        ):
             with self.assertRaises(SourceMismatchError):
                 self.fetch("https://alice.example/dsi.vcf", vcard(bad))
 
@@ -335,9 +352,11 @@ class TestVCardToFile(unittest.TestCase):
         response = FakeResponse(
             body=vcard(url).encode(), headers={"Content-Type": "text/vcard"}
         )
-        with tempfile.TemporaryDirectory() as tmp, patch(
-            "src.dsipy.core.http._resolve_addresses", return_value=[PUBLIC_IP]
-        ), patch("src.dsipy.core.http.requests.Session.get", return_value=response):
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            patch("src.dsipy.core.http._resolve_addresses", return_value=[PUBLIC_IP]),
+            patch("src.dsipy.core.http.requests.Session.get", return_value=response),
+        ):
             card = VCard(url=url)
             self.assertIsInstance(card.path, Path)
             target = Path(tmp) / card.path.name

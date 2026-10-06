@@ -13,9 +13,7 @@ from ..crypto.keys import (
     b64der_to_public_key,
 )
 
-app = Cli(
-    help="Commands related to keys", no_args_is_help=True
-)
+app = Cli(help="Commands related to keys", no_args_is_help=True)
 
 
 @app.command(help="Generate a new Ed25519 keypair and save to PEM files")
@@ -26,9 +24,7 @@ def create(
     pub: Path = typer.Option(
         "public.pem", "--pub", help="Path to save the public key PEM file"
     ),
-    force: bool = typer.Option(
-        False, "--force", help="Overwrite existing key files"
-    ),
+    force: bool = typer.Option(False, "--force", help="Overwrite existing key files"),
 ):
     try:
         _, _, pub_b64 = action_generate_keypair(priv, pub, force=force)

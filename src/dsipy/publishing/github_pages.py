@@ -27,9 +27,7 @@ class GitHubProvider(Publisher):
     def get_remote(self, path: str):
         url = self._url(path)
         params = {"ref": self.branch}
-        resp = requests.get(
-            url, headers=self.headers, params=params, timeout=TIMEOUT
-        )
+        resp = requests.get(url, headers=self.headers, params=params, timeout=TIMEOUT)
         if resp.status_code == 404:
             return None, None
         resp.raise_for_status()
@@ -58,9 +56,7 @@ class GitHubProvider(Publisher):
         }
         if version:
             payload["sha"] = version
-        resp = requests.put(
-            url, headers=self.headers, json=payload, timeout=TIMEOUT
-        )
+        resp = requests.put(url, headers=self.headers, json=payload, timeout=TIMEOUT)
         if resp.status_code == 409 or (
             resp.status_code == 422 and "sha" in resp.text.lower()
         ):

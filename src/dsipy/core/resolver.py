@@ -150,7 +150,9 @@ def fetch_save_vcard_from_url(
     filename = filename if file_is_vcard(filename) else f"{filename}.vcf"
     destination = output_dir / filename if output_dir else Path(filename)
     try:
-        with open(destination, "w" if overwrite else "x", encoding="utf-8", newline="") as f:
+        with open(
+            destination, "w" if overwrite else "x", encoding="utf-8", newline=""
+        ) as f:
             f.write(text)
     except FileExistsError:
         raise FileExistsError(

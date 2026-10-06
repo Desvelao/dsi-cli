@@ -115,18 +115,20 @@ class TestBuildSigning(BuildBase):
         priv, pub, b64 = self.keys()
         result = self.build("--sign-priv", str(priv), "--sign-pub", str(pub))
         self.assertEqual(result.exit_code, 0, result.output)
-        results = verify_feed_items(
-            self.xml(), {b64: load_public_key_b64_der(b64)}
-        )
+        results = verify_feed_items(self.xml(), {b64: load_public_key_b64_der(b64)})
         self.assertEqual([r.status for r in results], [VALID] * 3)
-        ok = runner.invoke(main_app, ["feeds", "verify", str(self.out), "--pub", str(pub)])
+        ok = runner.invoke(
+            main_app, ["feeds", "verify", str(self.out), "--pub", str(pub)]
+        )
         self.assertEqual(ok.exit_code, 0, ok.output)
 
     def test_tampered_signed_feed_fails_verify(self):
         priv, pub, _ = self.keys()
         self.build("--sign-priv", str(priv), "--sign-pub", str(pub))
         self.out.write_text(self.xml().replace("Body a", "Body X"))
-        bad = runner.invoke(main_app, ["feeds", "verify", str(self.out), "--pub", str(pub)])
+        bad = runner.invoke(
+            main_app, ["feeds", "verify", str(self.out), "--pub", str(pub)]
+        )
         self.assertEqual(bad.exit_code, 1, bad.output)
         self.assertIn("invalid", bad.output)
 

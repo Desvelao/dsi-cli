@@ -49,9 +49,7 @@ class TestNormalizeVcard(unittest.TestCase):
             f"key;pref=1;alg=ed25519;type=public;encoding=b:{ALICE}",
             "END:VCARD",
         )
-        self.assertIn(
-            f"KEY;ALG=ed25519;ENCODING=b;PREF=1;TYPE=public:{ALICE}", out
-        )
+        self.assertIn(f"KEY;ALG=ed25519;ENCODING=b;PREF=1;TYPE=public:{ALICE}", out)
         self.assertIn("FN:Alice\r\n", out)
 
     def test_unfolds_lines(self):
@@ -81,12 +79,8 @@ class TestNormalizeVcard(unittest.TestCase):
         )
 
     def test_idempotent_and_input_order_independent(self):
-        a = self.normalize(
-            "BEGIN:VCARD", "VERSION:4.0", "FN:A", "NOTE:n", "END:VCARD"
-        )
-        b = self.normalize(
-            "BEGIN:VCARD", "VERSION:4.0", "NOTE:n", "FN:A", "END:VCARD"
-        )
+        a = self.normalize("BEGIN:VCARD", "VERSION:4.0", "FN:A", "NOTE:n", "END:VCARD")
+        b = self.normalize("BEGIN:VCARD", "VERSION:4.0", "NOTE:n", "FN:A", "END:VCARD")
         self.assertEqual(a, b)
         self.assertEqual(normalize_vcard(parse_vcard(a)), a)
 

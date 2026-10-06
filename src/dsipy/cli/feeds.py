@@ -389,9 +389,7 @@ def _parse_provider_args(provider_args) -> dict:
 @app.command("publish")
 def publish(
     inputs: List[Path] = typer.Argument(...),
-    provider: str = typer.Option(
-        ..., "--provider", help="Provider: github, s3"
-    ),
+    provider: str = typer.Option(..., "--provider", help="Provider: github, s3"),
     prefix: str = typer.Option("", "--prefix", help="Path prefix on provider"),
     dry_run: bool = typer.Option(
         False,

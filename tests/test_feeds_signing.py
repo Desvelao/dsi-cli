@@ -141,14 +141,28 @@ class TestCDATAAndSignConfig(unittest.TestCase):
     def test_sign_config_without_id_raises_value_error(self):
         with self.assertRaises(ValueError):
             RSSFeed.build(
-                "B", "https://a.example", "d", "A", "a@e.com", "en",
-                datetime(2026, 1, 2), [PLAIN], sign={"key": PRIV},
+                "B",
+                "https://a.example",
+                "d",
+                "A",
+                "a@e.com",
+                "en",
+                datetime(2026, 1, 2),
+                [PLAIN],
+                sign={"key": PRIV},
             )
 
     def test_partial_sign_config_raises_value_error(self):
         for sign in ({"key": PRIV, "id": None}, {"key": None, "id": PUB_B64}):
             with self.assertRaises(ValueError):
                 RSSFeed.build(
-                    "B", "https://a.example", "d", "A", "a@e.com", "en",
-                    datetime(2026, 1, 2), [PLAIN], sign=sign,
+                    "B",
+                    "https://a.example",
+                    "d",
+                    "A",
+                    "a@e.com",
+                    "en",
+                    datetime(2026, 1, 2),
+                    [PLAIN],
+                    sign=sign,
                 )

@@ -79,7 +79,9 @@ class _PinnedAdapter(HTTPAdapter):
         ip = f"[{self._ip}]" if ":" in self._ip else self._ip
         netloc = f"{ip}:{parts.port}" if parts.port else ip
         default_port = 443 if parts.scheme == "https" else 80
-        host_header = self._host if self._port == default_port else f"{self._host}:{self._port}"
+        host_header = (
+            self._host if self._port == default_port else f"{self._host}:{self._port}"
+        )
         request.url = urlunsplit(parts._replace(netloc=netloc))
         request.headers["Host"] = host_header
         return super().send(request, **kwargs)

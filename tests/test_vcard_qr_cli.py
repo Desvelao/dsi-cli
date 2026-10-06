@@ -42,8 +42,17 @@ def test_qr_caption_missing_font(tmp_path):
     out = tmp_path / "q.png"
     result = runner.invoke(
         main_app,
-        ["vcard", "qr", "data", "-o", str(out), "--caption-top", "Hi",
-         "--font", str(tmp_path / "nope.ttf")],
+        [
+            "vcard",
+            "qr",
+            "data",
+            "-o",
+            str(out),
+            "--caption-top",
+            "Hi",
+            "--font",
+            str(tmp_path / "nope.ttf"),
+        ],
     )
     assert result.exit_code == 1
     assert "font file does not exist" in result.output

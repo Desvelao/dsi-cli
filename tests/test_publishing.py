@@ -29,7 +29,11 @@ def gh():
 
 
 def test_github_get_quotes_and_timeout(gh):
-    body = {"content": base64.b64encode(b"hi").decode(), "encoding": "base64", "sha": "s1"}
+    body = {
+        "content": base64.b64encode(b"hi").decode(),
+        "encoding": "base64",
+        "sha": "s1",
+    }
     with patch.object(github_pages.requests, "get", return_value=resp(json=body)) as g:
         assert gh.get_remote("dir/a b.xml") == ("hi", "s1")
     args, kw = g.call_args
@@ -54,7 +58,9 @@ def test_github_large_file_falls_back_to_raw(gh):
 
 
 def test_github_publish_payload_and_timeout(gh):
-    with patch.object(github_pages.requests, "put", return_value=resp(json={"ok": 1})) as p:
+    with patch.object(
+        github_pages.requests, "put", return_value=resp(json={"ok": 1})
+    ) as p:
         assert gh.publish("a.xml", "c", "oldsha") == {"ok": 1}
     kw = p.call_args.kwargs
     assert kw["timeout"] == github_pages.TIMEOUT
@@ -66,7 +72,9 @@ def test_github_publish_payload_and_timeout(gh):
     "status,text", [(409, "conflict"), (422, '{"message":"a.xml does not match sha"}')]
 )
 def test_github_conflict(gh, status, text):
-    with patch.object(github_pages.requests, "put", return_value=resp(status, text=text)):
+    with patch.object(
+        github_pages.requests, "put", return_value=resp(status, text=text)
+    ):
         with pytest.raises(PublishConflictError):
             gh.publish("a.xml", "c", "old")
 

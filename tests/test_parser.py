@@ -262,20 +262,28 @@ class TestVcardFraming(unittest.TestCase):
 
     def test_multiple_cards_parse_only_the_first(self):
         text = crlf(
-            "BEGIN:VCARD", "VERSION:4.0", "FN:First", "END:VCARD",
-            "BEGIN:VCARD", "VERSION:4.0", "FN:Second", "NOTE:x", "END:VCARD",
+            "BEGIN:VCARD",
+            "VERSION:4.0",
+            "FN:First",
+            "END:VCARD",
+            "BEGIN:VCARD",
+            "VERSION:4.0",
+            "FN:Second",
+            "NOTE:x",
+            "END:VCARD",
         )
         p = parse_vcard(text)
         self.assertEqual(p.fn, "First")
         self.assertIsNone(p.note)
-        self.assertEqual(
-            p.errors, ["multiple vCards found; only the first is parsed"]
-        )
+        self.assertEqual(p.errors, ["multiple vCards found; only the first is parsed"])
 
     def test_second_card_after_unterminated_first_is_not_merged(self):
         text = crlf(
-            "BEGIN:VCARD", "VERSION:4.0", "FN:First",
-            "BEGIN:VCARD", "FN:Second",
+            "BEGIN:VCARD",
+            "VERSION:4.0",
+            "FN:First",
+            "BEGIN:VCARD",
+            "FN:Second",
         )
         p = parse_vcard(text)
         self.assertEqual(p.fn, "First")

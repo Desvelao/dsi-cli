@@ -54,7 +54,9 @@ class S3Provider(Publisher):
             )
         except ClientError as e:
             code = str(e.response.get("Error", {}).get("Code", ""))
-            status = str(e.response.get("ResponseMetadata", {}).get("HTTPStatusCode", ""))
+            status = str(
+                e.response.get("ResponseMetadata", {}).get("HTTPStatusCode", "")
+            )
             if code in _CONFLICT_CODES or status in ("412", "409"):
                 raise PublishConflictError(
                     f"S3: s3://{self.bucket}/{key} changed since it was read "

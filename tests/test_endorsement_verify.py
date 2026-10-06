@@ -29,7 +29,13 @@ class TestRevocationRules(unittest.TestCase):
     def test_table(self):
         cases = [
             # (name, reason, revoked_date, signed_date, accepted)
-            ("compromised before", "compromised", REVOKED_AT, "20260101T000000Z", False),
+            (
+                "compromised before",
+                "compromised",
+                REVOKED_AT,
+                "20260101T000000Z",
+                False,
+            ),
             ("compromised no dates", "compromised", None, None, False),
             ("deprecated after", "deprecated", REVOKED_AT, "20270101T000000Z", True),
             ("deprecated no dates", "deprecated", None, None, True),
@@ -37,9 +43,27 @@ class TestRevocationRules(unittest.TestCase):
             ("rotated after", "rotated", REVOKED_AT, "20260221T000001Z", False),
             ("rotated equal boundary", "rotated", REVOKED_AT, REVOKED_AT, False),
             ("rotated missing signed date", "rotated", REVOKED_AT, None, False),
-            ("rotated missing revoked date", "rotated", None, "20260101T000000Z", False),
-            ("rotated malformed revoked date", "rotated", "2026-02-21", "20260101T000000Z", False),
-            ("rotated malformed signed date", "rotated", REVOKED_AT, "yesterday", False),
+            (
+                "rotated missing revoked date",
+                "rotated",
+                None,
+                "20260101T000000Z",
+                False,
+            ),
+            (
+                "rotated malformed revoked date",
+                "rotated",
+                "2026-02-21",
+                "20260101T000000Z",
+                False,
+            ),
+            (
+                "rotated malformed signed date",
+                "rotated",
+                REVOKED_AT,
+                "yesterday",
+                False,
+            ),
             ("no reason before", None, REVOKED_AT, "20260101T000000Z", True),
             ("no reason after", None, REVOKED_AT, "20260301T000000Z", False),
         ]

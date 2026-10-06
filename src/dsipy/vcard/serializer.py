@@ -112,8 +112,16 @@ def build_content(
     # Values written raw (URIs, dates, ...) must not be able to inject new lines.
     # Text fields are escaped below, so they may contain line breaks.
     escaped_fields = {
-        "fn", "nickname", "email", "note", "n", "lang", "gender", "categories",
-        "kind", "adr",
+        "fn",
+        "nickname",
+        "email",
+        "note",
+        "n",
+        "lang",
+        "gender",
+        "categories",
+        "kind",
+        "adr",
     }
     for field_name, field_value in list(locals().items()):
         if field_name in escaped_fields or field_name in ("custom_attributes", "keys"):

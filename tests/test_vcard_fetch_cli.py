@@ -38,9 +38,7 @@ class TestFetchWriteBehaviour(unittest.TestCase):
         self.new = card("New")
 
     def run_fetch(self, remote, *args):
-        with patch(
-            "src.dsipy.core.resolver.fetch_text", return_value=response(remote)
-        ):
+        with patch("src.dsipy.core.resolver.fetch_text", return_value=response(remote)):
             return runner.invoke(main_app, ["vcard", "fetch", *args])
 
     def test_dry_run_url_new_destination_writes_nothing(self):
