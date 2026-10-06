@@ -1,0 +1,1 @@
+{"valid": false, "errors": [{"code": "key-revoked", "message": "The preferred KEY is also listed as revoked"}, {"code": "endorse-signature", "message": "X-ENDORSE #1: the signing key was revoked without a valid DATE"}], "warnings": [{"code": "revkey-date-missing", "message": "REVKEY #1: DATE is missing"}]}

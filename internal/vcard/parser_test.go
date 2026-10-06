@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Desvelao/dsipy/internal/pyutil"
 	"github.com/Desvelao/dsipy/internal/testutil"
 )
 
@@ -70,5 +71,18 @@ func TestParseQuotedPrintableSoftBreak(t *testing.T) {
 	}
 	if *p.Note != "abc=\ndef" {
 		t.Errorf("note: %q", *p.Note)
+	}
+}
+
+func TestParseJSONMatchesPythonDumps(t *testing.T) {
+	for _, name := range testutil.GoldenNames(t, "vcards", ".parse.pyjson") {
+		p := ParseVCard(testutil.GoldenString(t, "vcards/"+name+".vcf"))
+		got, err := pyutil.JSONDumps(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := testutil.GoldenString(t, "vcards/"+name+".parse.pyjson"); got != want {
+			t.Errorf("%s: JSON differs from json.dumps\n got %.300s\nwant %.300s", name, got, want)
+		}
 	}
 }

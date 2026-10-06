@@ -1,0 +1,1 @@
+{"valid": true, "errors": [], "warnings": [{"code": "key-missing", "message": "No KEY: endorsements and feed signatures cannot be verified"}, {"code": "endorse-unverifiable", "message": "X-ENDORSE #1: no usable KEY"}]}

@@ -454,12 +454,15 @@ def gen_vcards():
         write(f"vcards/{name}.vcf", text)
         profile = parse_vcard(text)
         write_json(f"vcards/{name}.parse.json", asdict(profile))
+        # exact `json.dumps(asdict(profile), ensure_ascii=False)` as printed by `vcard parse`
+        write(f"vcards/{name}.parse.pyjson", json.dumps(asdict(profile), ensure_ascii=False))
         try:
             write(f"vcards/{name}.normalized.vcf", normalize_vcard(profile))
         except ValueError as e:
             write(f"vcards/{name}.normalize_error.txt", str(e) + "\n")
         try:
             write_json(f"vcards/{name}.validate.json", validate_profile(profile).to_dict())
+            write(f"vcards/{name}.validate.pyjson", json.dumps(validate_profile(profile).to_dict(), ensure_ascii=False))
         except ValueError as e:
             write_json(f"vcards/{name}.validate.json", {"python_error": str(e)})
         write_json(

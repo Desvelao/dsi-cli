@@ -1,0 +1,1 @@
+{"valid": true, "errors": [], "warnings": [{"code": "dsi-version-duplicate", "message": "X-DSI-VERSION appears more than once"}]}

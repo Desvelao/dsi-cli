@@ -1,0 +1,1 @@
+{"valid": false, "errors": [{"code": "endorse-sig-format", "message": "X-ENDORSE #1: SIG must be 128 lowercase hexadecimal characters"}, {"code": "endorse-date", "message": "X-ENDORSE #1: DATE must use YYYYMMDDThhmmssZ, found 'today'"}, {"code": "endorse-confidence", "message": "X-ENDORSE #1: CONFIDENCE must be low, medium or high"}], "warnings": []}

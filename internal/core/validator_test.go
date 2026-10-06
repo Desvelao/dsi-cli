@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Desvelao/dsipy/internal/pyutil"
 	"github.com/Desvelao/dsipy/internal/testutil"
 	"github.com/Desvelao/dsipy/internal/vcard"
 )
@@ -124,6 +125,28 @@ func TestSplitURL(t *testing.T) {
 		}
 		if err == nil && (r.Scheme != c.scheme || r.Netloc != c.host) {
 			t.Errorf("%q: got %q %q, want %q %q", c.in, r.Scheme, r.Netloc, c.scheme, c.host)
+		}
+	}
+}
+
+func TestValidateJSONMatchesPythonDumps(t *testing.T) {
+	names := testutil.GoldenNames(t, "vcards", ".validate.pyjson")
+	if len(names) < 40 {
+		t.Fatalf("few cases: %d", len(names))
+	}
+	for _, name := range names {
+		res := ValidateProfile(vcard.ParseVCard(testutil.GoldenString(t, "vcards/"+name+".vcf")))
+		got, err := pyutil.JSONDumps(res.ToDict())
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := testutil.GoldenString(t, "vcards/"+name+".validate.pyjson")
+		// set-ordered duplicate warnings and cryptography's version-specific details differ
+		if strings.Contains(want, "-duplicate") || strings.Contains(want, "Details: ") {
+			continue
+		}
+		if got != want {
+			t.Errorf("%s: got %s\nwant %s", name, got, want)
 		}
 	}
 }
