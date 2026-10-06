@@ -3,13 +3,13 @@ name: Build feeds file (reusable)
 on:
   workflow_call:
     inputs:
-      wheel_tag:
-        description: Release tag for wheel download
+      dsi_tag:
+        description: Release tag of Desvelao/dsi-cli to download the dsi binary from (an explicit tag is required for pre-releases)
         required: false
         type: string
-        default: "v0.0.1-alpha1"
+        default: "v0.1.0-alpha1"
       source_dir:
-        description: Source directory used by dsipy command
+        description: Source directory used by the dsi command
         required: false
         type: string
         default: "feeds"
@@ -50,7 +50,7 @@ on:
         required: false
         type: string
       command_args:
-        description: Additional arguments to pass to dsipy feeds build command
+        description: Additional arguments to pass to the dsi feeds build command
         required: false
         type: string
       artifact_name:
@@ -59,8 +59,8 @@ on:
         type: string
         default: "feeds-file"
     secrets:
-      wheel_repo_token:
-        description: Optional token with read access to wheel_repo releases
+      dsi_repo_token:
+        description: Optional token with read access to the dsi-cli releases
         required: false
       feeds_title:
         description: Feed title
@@ -104,19 +104,14 @@ jobs:
       feeds_file: ${{ steps.meta.outputs.feeds_file }}
       artifact_name: ${{ steps.meta.outputs.artifact_name }}
     env:
-      WHEEL_REPO: Desvelao/dsipy
-      WHEEL_TAG: ${{ inputs.wheel_tag }}
-      WHEEL_ASSET: "*.whl"
+      DSI_REPO: Desvelao/dsi-cli
+      DSI_TAG: ${{ inputs.dsi_tag }}
+      DSI_ASSET: dsi_linux_amd64
       FEEDS_FILE: ${{ inputs.feeds_file }}
       ARTIFACT_NAME: ${{ inputs.artifact_name }}
     steps:
       - name: Checkout caller repository
         uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
 
       - name: Resolve output metadata
         id: meta
@@ -125,31 +120,34 @@ jobs:
           echo "feeds_file=${FEEDS_FILE}" >> "$GITHUB_OUTPUT"
           echo "artifact_name=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
 
-      - name: Install wheel from GitHub Release
+      - name: Install dsi from GitHub Release
         env:
-          GH_TOKEN: ${{ secrets.wheel_repo_token || github.token }}
+          GH_TOKEN: ${{ secrets.dsi_repo_token || github.token }}
         run: |
           set -euo pipefail
-          mkdir -p wheel
+          mkdir -p "$RUNNER_TEMP/dsi-download" "$RUNNER_TEMP/dsi-bin"
 
-          tag="${WHEEL_TAG}"
+          tag="${DSI_TAG}"
           if [ -z "$tag" ]; then
-            tag=$(gh release view --repo "$WHEEL_REPO" --json tagName -q .tagName)
+            # latest stable release (pre-releases are not considered: set dsi_tag for those)
+            tag=$(gh release view --repo "$DSI_REPO" --json tagName -q .tagName)
           fi
 
           gh release download "$tag" \
-            --repo "$WHEEL_REPO" \
-            --pattern "$WHEEL_ASSET" \
-            --dir wheel
+            --repo "$DSI_REPO" \
+            --pattern "$DSI_ASSET" \
+            --pattern checksums.txt \
+            --dir "$RUNNER_TEMP/dsi-download"
 
-          wheel_file=$(find wheel -maxdepth 1 -type f -name '*.whl' | head -n 1)
-          if [ -z "$wheel_file" ]; then
-            echo "No wheel found in release $tag for $WHEEL_REPO matching $WHEEL_ASSET"
+          cd "$RUNNER_TEMP/dsi-download"
+          if [ ! -f "$DSI_ASSET" ]; then
+            echo "::error::No $DSI_ASSET asset in release $tag of $DSI_REPO"
             exit 1
           fi
-
-          python -m pip install --upgrade pip
-          python -m pip install "$wheel_file"
+          sha256sum -c checksums.txt --ignore-missing
+          install -m 0755 "$DSI_ASSET" "$RUNNER_TEMP/dsi-bin/dsi"
+          echo "$RUNNER_TEMP/dsi-bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/dsi-bin/dsi" --version
 
       - name: Build feeds file
         env:
@@ -219,7 +217,7 @@ jobs:
           echo "Building ${FEEDS_FILE}"
           # EXTRA_COMMAND_ARGS is intentionally split into words
           # shellcheck disable=SC2086
-          dsipy feeds build "$SOURCE_DIR" \
+          dsi feeds build "$SOURCE_DIR" \
             --title "$FEEDS_TITLE" \
             --link "$link" \
             --description "$FEEDS_DESCRIPTION" \
