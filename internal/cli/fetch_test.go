@@ -14,7 +14,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/core"
+	"github.com/Desvelao/dsi-cli/internal/core"
 )
 
 // remote serves vCards over TLS; the text can change between runs.

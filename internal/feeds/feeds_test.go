@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Desvelao/dsipy/internal/pyutil"
-	"github.com/Desvelao/dsipy/internal/testutil"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/testutil"
 )
 
 // copyPosts copies the golden posts to a temp dir (git does not keep mtimes,

@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Desvelao/dsipy/internal/core"
-	"github.com/Desvelao/dsipy/internal/pyutil"
-	"github.com/Desvelao/dsipy/internal/vcard"
+	"github.com/Desvelao/dsi-cli/internal/core"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
 var cardRe = regexp.MustCompile(`(?is)BEGIN:VCARD.*?END:VCARD`)

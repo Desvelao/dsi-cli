@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Desvelao/dsipy/internal/plugin"
+	"github.com/Desvelao/dsi-cli/internal/plugin"
 )
 
 // pluginHarness installs fake plugins (shell scripts) in a temp plugin dir.

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/testutil"
+	"github.com/Desvelao/dsi-cli/internal/testutil"
 )
 
 func TestEscapeTextGolden(t *testing.T) {

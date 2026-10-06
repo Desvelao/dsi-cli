@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/crypto"
-	"github.com/Desvelao/dsipy/internal/vcard"
+	"github.com/Desvelao/dsi-cli/internal/crypto"
+	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
 func TestKeyCreateAndRefuseOverwrite(t *testing.T) {

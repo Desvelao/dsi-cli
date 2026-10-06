@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Desvelao/dsipy/internal/canonical"
+	"github.com/Desvelao/dsi-cli/internal/canonical"
 )
 
 // SignEndorsement signs an endorsement and returns the lowercase hex signature.

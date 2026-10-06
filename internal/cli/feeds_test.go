@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/crypto"
-	"github.com/Desvelao/dsipy/internal/feeds"
+	"github.com/Desvelao/dsi-cli/internal/crypto"
+	"github.com/Desvelao/dsi-cli/internal/feeds"
 )
 
 var fullOpts = []string{"--title", "T", "--link", "https://example.com/feed.rss", "--description", "D", "--author", "A", "--email", "a@example.com"}

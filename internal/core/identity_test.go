@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/model"
-	"github.com/Desvelao/dsipy/internal/testutil"
+	"github.com/Desvelao/dsi-cli/internal/model"
+	"github.com/Desvelao/dsi-cli/internal/testutil"
 )
 
 const (

@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Desvelao/dsipy/internal/crypto"
-	"github.com/Desvelao/dsipy/internal/model"
-	"github.com/Desvelao/dsipy/internal/pyutil"
-	"github.com/Desvelao/dsipy/internal/vcard"
+	"github.com/Desvelao/dsi-cli/internal/crypto"
+	"github.com/Desvelao/dsi-cli/internal/model"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
 // lifecycleLines returns the logical lines of the profile without BEGIN/END.

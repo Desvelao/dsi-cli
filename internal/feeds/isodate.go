@@ -7,7 +7,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/Desvelao/dsipy/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
 )
 
 var errISO = errors.New("Invalid isoformat string")

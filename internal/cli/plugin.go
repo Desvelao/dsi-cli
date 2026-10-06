@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/Desvelao/dsipy/internal/plugin"
+	"github.com/Desvelao/dsi-cli/internal/plugin"
 	"github.com/spf13/cobra"
 )
 

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Desvelao/dsipy/internal/model"
-	"github.com/Desvelao/dsipy/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/model"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
 )
 
 // The line grammar is a port of vobject's (0.9.x) regular expressions, which the

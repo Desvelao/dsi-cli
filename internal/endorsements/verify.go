@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Desvelao/dsipy/internal/crypto"
-	"github.com/Desvelao/dsipy/internal/model"
+	"github.com/Desvelao/dsi-cli/internal/crypto"
+	"github.com/Desvelao/dsi-cli/internal/model"
 )
 
 // Verification statuses.

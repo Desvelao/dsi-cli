@@ -1,4 +1,4 @@
-module github.com/Desvelao/dsipy
+module github.com/Desvelao/dsi-cli
 
 go 1.26.8
 

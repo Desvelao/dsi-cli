@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Desvelao/dsipy/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
 	"github.com/pmezard/go-difflib/difflib"
 )
 

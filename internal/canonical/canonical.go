@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Desvelao/dsipy/internal/model"
-	"github.com/Desvelao/dsipy/internal/vcard"
+	"github.com/Desvelao/dsi-cli/internal/model"
+	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
 // EndorsementString is "endorse:<BASE64_DER_KEY>".

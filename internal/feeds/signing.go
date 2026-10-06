@@ -8,8 +8,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/Desvelao/dsipy/internal/crypto"
-	"github.com/Desvelao/dsipy/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/crypto"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
 )
 
 // Verification statuses of feed items.

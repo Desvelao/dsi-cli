@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Desvelao/dsipy/internal/crypto"
+	"github.com/Desvelao/dsi-cli/internal/crypto"
 )
 
 // harness runs the CLI in a fresh temp directory, capturing stdout+stderr

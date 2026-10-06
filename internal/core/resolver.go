@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Desvelao/dsipy/internal/model"
-	"github.com/Desvelao/dsipy/internal/pyutil"
-	"github.com/Desvelao/dsipy/internal/vcard"
+	"github.com/Desvelao/dsi-cli/internal/model"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
 var defaultPorts = map[string]int{"http": 80, "https": 443}

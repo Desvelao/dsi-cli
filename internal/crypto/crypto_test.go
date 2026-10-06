@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/testutil"
+	"github.com/Desvelao/dsi-cli/internal/testutil"
 )
 
 const (

@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/testutil"
-	"github.com/Desvelao/dsipy/internal/vcard"
+	"github.com/Desvelao/dsi-cli/internal/testutil"
+	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
 type goldenResult struct {

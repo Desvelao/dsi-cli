@@ -4,9 +4,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Desvelao/dsipy/internal/core"
-	"github.com/Desvelao/dsipy/internal/feeds"
-	"github.com/Desvelao/dsipy/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/core"
+	"github.com/Desvelao/dsi-cli/internal/feeds"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
 	"github.com/spf13/cobra"
 )
 

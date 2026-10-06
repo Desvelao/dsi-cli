@@ -5,15 +5,15 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/Desvelao/dsipy/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
 	"io"
 	"os"
 	"runtime/debug"
 	"strings"
 	"time"
 
-	"github.com/Desvelao/dsipy/internal/core"
-	"github.com/Desvelao/dsipy/internal/plugin"
+	"github.com/Desvelao/dsi-cli/internal/core"
+	"github.com/Desvelao/dsi-cli/internal/plugin"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Desvelao/dsipy/internal/testutil"
+	"github.com/Desvelao/dsi-cli/internal/testutil"
 )
 
 func isoFormat(t time.Time) string {

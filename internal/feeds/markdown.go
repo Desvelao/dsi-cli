@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Desvelao/dsipy/internal/core"
-	"github.com/Desvelao/dsipy/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/core"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/renderer/html"

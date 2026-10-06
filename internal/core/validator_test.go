@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/pyutil"
-	"github.com/Desvelao/dsipy/internal/testutil"
-	"github.com/Desvelao/dsipy/internal/vcard"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/testutil"
+	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
 type goldenValidation struct {

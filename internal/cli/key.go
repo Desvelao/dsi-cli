@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Desvelao/dsipy/internal/core"
-	"github.com/Desvelao/dsipy/internal/crypto"
-	"github.com/Desvelao/dsipy/internal/pyutil"
-	"github.com/Desvelao/dsipy/internal/vcard"
+	"github.com/Desvelao/dsi-cli/internal/core"
+	"github.com/Desvelao/dsi-cli/internal/crypto"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/vcard"
 	"github.com/spf13/cobra"
 )
 

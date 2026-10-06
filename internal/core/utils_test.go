@@ -3,7 +3,7 @@ package core
 import (
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/testutil"
+	"github.com/Desvelao/dsi-cli/internal/testutil"
 )
 
 func TestSlugifyGolden(t *testing.T) {

@@ -13,7 +13,7 @@ import (
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"golang.org/x/image/font/gofont/goregular"
 
-	"github.com/Desvelao/dsipy/internal/testutil"
+	"github.com/Desvelao/dsi-cli/internal/testutil"
 )
 
 const qrData = "https://example.com/vcard"

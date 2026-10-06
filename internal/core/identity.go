@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Desvelao/dsipy/internal/model"
-	"github.com/Desvelao/dsipy/internal/pyutil"
-	"github.com/Desvelao/dsipy/internal/vcard"
+	"github.com/Desvelao/dsi-cli/internal/model"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
 // VCard is a parsed vCard with the place it was loaded from.

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Desvelao/dsipy/internal/crypto"
-	"github.com/Desvelao/dsipy/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/crypto"
+	"github.com/Desvelao/dsi-cli/internal/pyutil"
 )
 
 // Signer signs feed items with an Ed25519 key published under ID (the Base64

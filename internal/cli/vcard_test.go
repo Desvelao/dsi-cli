@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Desvelao/dsipy/internal/core"
-	"github.com/Desvelao/dsipy/internal/crypto"
-	"github.com/Desvelao/dsipy/internal/endorsements"
+	"github.com/Desvelao/dsi-cli/internal/core"
+	"github.com/Desvelao/dsi-cli/internal/crypto"
+	"github.com/Desvelao/dsi-cli/internal/endorsements"
 	"golang.org/x/image/font/gofont/goregular"
 )
 

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/Desvelao/dsipy/internal/cli"
+	"github.com/Desvelao/dsi-cli/internal/cli"
 )
 
 // version is set at build time with -ldflags "-X main.version=...".
