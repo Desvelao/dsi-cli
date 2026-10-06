@@ -84,7 +84,7 @@ func newParseCmd(env *Env) *cobra.Command {
 				return err
 			}()
 			if err != nil {
-				env.secho(red, "Failed to parse vCard: %s", err)
+				env.secho(red, "Failed to parse vCard: %s", pyutil.ErrText(err))
 				return exit(1)
 			}
 			if card == nil {
@@ -125,7 +125,7 @@ func newEndorseCmd(env *Env) *cobra.Command {
 				key, err = crypto.LoadPrivateKeyPEM(privData)
 			}
 			if err != nil {
-				env.secho(red, "Failed to load private key from '%s': %s", priv, err)
+				env.secho(red, "Failed to load private key from '%s': %s", priv, pyutil.ErrText(err))
 				return exit(1)
 			}
 
@@ -184,7 +184,7 @@ func newEndorseCmd(env *Env) *cobra.Command {
 				}()
 				if err != nil {
 					failed++
-					env.secho(red, "Failed to endorse vCard '%s': %s", path, err)
+					env.secho(red, "Failed to endorse vCard '%s': %s", path, pyutil.ErrText(err))
 				}
 			}
 			if failed > 0 {
@@ -282,11 +282,11 @@ func newValidateCmd(env *Env) *cobra.Command {
 			if err != nil {
 				if asJSON {
 					res := &core.ValidationResult{}
-					res.Errors = append(res.Errors, core.Issue{Code: "load", Message: err.Error()})
+					res.Errors = append(res.Errors, core.Issue{Code: "load", Message: pyutil.ErrText(err)})
 					out, _ := pyutil.JSONDumps(res.ToDict())
 					env.echo("%s", out)
 				} else {
-					env.secho(red, "❌ Cannot load '%s': %s", source, err)
+					env.secho(red, "❌ Cannot load '%s': %s", source, pyutil.ErrText(err))
 				}
 				return exit(1)
 			}
@@ -561,7 +561,7 @@ func newFetchCmd(env *Env) *cobra.Command {
 					return nil
 				}()
 				if err != nil {
-					say(red, "  Failed to fetch URL %s: %s", url, err)
+					say(red, "  Failed to fetch URL %s: %s", url, pyutil.ErrText(err))
 					failed++
 				}
 			}
@@ -570,7 +570,7 @@ func newFetchCmd(env *Env) *cobra.Command {
 				say(bold, "Processing: %s", file)
 				card, err := core.NewVCardFromPath(file)
 				if err != nil {
-					say(red, "  Failed to read %s: %s", file, err)
+					say(red, "  Failed to read %s: %s", file, pyutil.ErrText(err))
 					failed++
 					continue
 				}
@@ -584,7 +584,7 @@ func newFetchCmd(env *Env) *cobra.Command {
 				say(plain, "  Fetching: %s", source)
 				fetched, err := env.fetcher().NewVCardFromURL(source, allowHTTP, verifySource)
 				if err != nil {
-					say(red, "  Failed to fetch SOURCE: %s", err)
+					say(red, "  Failed to fetch SOURCE: %s", pyutil.ErrText(err))
 					failed++
 					continue
 				}

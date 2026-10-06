@@ -3,8 +3,12 @@
 package pyutil
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
+	"os"
 	"strings"
+	"syscall"
 	"unicode"
 )
 
@@ -172,4 +176,34 @@ func SplitLines(s string) []string {
 		lines = append(lines, string(cur))
 	}
 	return lines
+}
+
+// OSErrorString formats file-system errors like Python's OSError
+// ("[Errno 2] No such file or directory: 'path'"). ok is false for other errors.
+func OSErrorString(err error) (string, bool) {
+	var errno syscall.Errno
+	capital := func(e syscall.Errno) string {
+		msg := e.Error()
+		if msg == "" {
+			return msg
+		}
+		return strings.ToUpper(msg[:1]) + msg[1:]
+	}
+	var pe *fs.PathError
+	if errors.As(err, &pe) && errors.As(pe.Err, &errno) {
+		return fmt.Sprintf("[Errno %d] %s: %s", int(errno), capital(errno), Repr(pe.Path)), true
+	}
+	var le *os.LinkError
+	if errors.As(err, &le) && errors.As(le.Err, &errno) {
+		return fmt.Sprintf("[Errno %d] %s: %s -> %s", int(errno), capital(errno), Repr(le.Old), Repr(le.New)), true
+	}
+	return "", false
+}
+
+// ErrText is the user-facing text of an error: file-system errors use Python's wording.
+func ErrText(err error) string {
+	if s, ok := OSErrorString(err); ok {
+		return s
+	}
+	return err.Error()
 }

@@ -44,3 +44,21 @@ Known, deliberate differences from the Python implementation (all covered by tes
   duplicate warnings are listed in order of occurrence (Python iterates an unordered set).
 - cryptography's version-specific `Details: ...` suffix of DER errors is not reproduced.
 - `lastBuildDate`/`pubDate` use UTC wall-clock time (Python used the local time labelled GMT).
+
+## Parity check (`make parity`)
+
+`testdata/parity/parity.py` runs the same command lines through the Python CLI and the Go binary
+(`bin/dsi`) inside the `py` container, each in its own scratch directory, and compares exit codes,
+stdout, stderr and the files left behind (contents, modes, PNG sizes). Random key material, dates and
+absolute paths are masked. `make parity ARGS="<scenario substring>"` runs a subset.
+
+- **Scenarios** cover every command and its error paths (about 200 steps).
+- **Cross scenarios** run steps alternately on one implementation and the other in a single directory:
+  feeds signed by Python are verified by Go and vice versa, endorsements, generated keys, rotation,
+  revocation and card creation.
+- **Expected differences** (`EXPECTED` in the script, each neutralising only the text it names):
+  the key-parsing library's error text, Python's unordered confidence-level list, DNS error text and
+  the rich progress bar. Help screens are compared by exit code only (typer/rich vs cobra layout).
+- Not covered: HTTP fetching (Python cannot be pointed at a local test server because of its SSRF
+  guard); it is covered by Go tests against `httptest` servers.
+- `dsi --version` is new (Python had none).

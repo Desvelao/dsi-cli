@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/Desvelao/dsipy/internal/pyutil"
 	"io"
 	"os"
 	"runtime/debug"
@@ -164,8 +165,7 @@ func (e *Env) confirm(text string, def bool) (bool, error) {
 }
 
 func (e *Env) abort() error {
-	fmt.Fprintln(e.Out)
-	fmt.Fprintln(e.Err, "Aborted!")
+	fmt.Fprintln(e.Err, "Aborted.")
 	return exit(1)
 }
 
@@ -182,7 +182,7 @@ func (e *Env) run(name string, fn func(cmd *cobra.Command, args []string) error)
 		if errors.As(err, &ee) || errors.As(err, &ue) {
 			return err
 		}
-		e.secho(red, "❌ Command '%s' failed: %s", name, err)
+		e.secho(red, "❌ Command '%s' failed: %s", name, pyutil.ErrText(err))
 		if debugEnabled() {
 			fmt.Fprintf(e.Err, "%v\n%s\n", err, debug.Stack())
 		}
@@ -226,7 +226,13 @@ func subcommand(use, short string) *cobra.Command {
 		Use:   use,
 		Short: short,
 		Args:  cobra.NoArgs,
-		RunE:  func(cmd *cobra.Command, args []string) error { return cmd.Help() },
+		// like click's no_args_is_help: show the help and exit with the usage code
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := cmd.Help(); err != nil {
+				return err
+			}
+			return exit(2)
+		},
 	}
 }
 

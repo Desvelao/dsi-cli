@@ -139,6 +139,27 @@ func TestPromptAbortOnEOF(t *testing.T) {
 	h := newHarness(t)
 	code, out := h.run("", "feeds", "add", "-i")
 	h.expect(code, out, 1)
-	contains(t, out, "Aborted!")
+	contains(t, out, "Aborted.")
 	notContains(t, out, "failed")
+}
+
+func TestGroupsWithoutArgumentsShowHelpAndExit2(t *testing.T) {
+	h := newHarness(t)
+	for _, group := range []string{"vcard", "feeds", "connections", "key", "plugin"} {
+		code, out := h.run("", group)
+		h.expect(code, out, 2)
+		contains(t, out, "Usage:")
+	}
+	code, out := h.run("")
+	h.expect(code, out, 0) // the bare command only shows the help
+}
+
+func TestFileErrorsUsePythonWording(t *testing.T) {
+	h := newHarness(t)
+	code, out := h.run("", "key", "create", "--priv", "nodir/p.pem", "--pub", "nodir/q.pem")
+	h.expect(code, out, 1)
+	contains(t, out, "[Errno 2] No such file or directory: 'nodir/p.pem'")
+	code, out = h.run("", "vcard", "parse", "/nonexistent/x.vcf")
+	h.expect(code, out, 1)
+	contains(t, out, "The specified path is not a file: /nonexistent/x.vcf")
 }
