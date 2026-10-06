@@ -1,0 +1,341 @@
+{
+  "adr": null,
+  "anniversary": null,
+  "bday": null,
+  "categories": null,
+  "dsi_version": null,
+  "email": null,
+  "endorsements": [],
+  "errors": [],
+  "feeds": [
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "HTTP://A.example/x"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "https://"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "https:///path"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "https://[::1]/x"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "https://[v1.x]/x"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "//a.example/x"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "mailto:a@b.example"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "https://a b.example/"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "https://a.example/trim"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "https://a.example:abc/x"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "1http://a.example/"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "ht+tp-x.y://a.example/"
+    }
+  ],
+  "fn": "Alice Example",
+  "gender": null,
+  "impp": null,
+  "keys": [
+    {
+      "alg": "ed25519",
+      "key_b64": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "pref": 1
+    }
+  ],
+  "kind": null,
+  "lang": null,
+  "n": null,
+  "nickname": null,
+  "note": null,
+  "photo": "http://a.example/p.png",
+  "raw": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nX-FEED:HTTP://A.example/x\r\nX-FEED:https://\r\nX-FEED:https:///path\r\nX-FEED:https://[::1]/x\r\nX-FEED:https://[v1.x]/x\r\nX-FEED://a.example/x\r\nX-FEED:mailto:a@b.example\r\nX-FEED:https://a b.example/\r\nX-FEED:  https://a.example/trim\r\nX-FEED:https://a.example:abc/x\r\nX-FEED:1http://a.example/\r\nX-FEED:ht+tp-x.y://a.example/\r\nURL:data:text/plain;base64,AAAA\r\nURL:relative/path\r\nPHOTO:http://a.example/p.png\r\nEND:VCARD\r\n",
+  "raw_lines": [
+    {
+      "attr_name": null,
+      "attributes": {},
+      "group": null,
+      "line": "BEGIN:VCARD",
+      "name": "BEGIN",
+      "params": [],
+      "raw_value": "VCARD",
+      "value": null
+    },
+    {
+      "attr_name": "version",
+      "attributes": {},
+      "group": null,
+      "line": "VERSION:4.0",
+      "name": "VERSION",
+      "params": [],
+      "raw_value": "4.0",
+      "value": "4.0"
+    },
+    {
+      "attr_name": "fn",
+      "attributes": {},
+      "group": null,
+      "line": "FN:Alice Example",
+      "name": "FN",
+      "params": [],
+      "raw_value": "Alice Example",
+      "value": "Alice Example"
+    },
+    {
+      "attr_name": "source",
+      "attributes": {},
+      "group": null,
+      "line": "SOURCE:https://alice.example/dsi.vcf",
+      "name": "SOURCE",
+      "params": [],
+      "raw_value": "https://alice.example/dsi.vcf",
+      "value": "https://alice.example/dsi.vcf"
+    },
+    {
+      "attr_name": "key",
+      "attributes": {
+        "ALG": "ed25519",
+        "ENCODING": "b",
+        "PREF": "1",
+        "TYPE": "public"
+      },
+      "group": null,
+      "line": "KEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "name": "KEY",
+      "params": [
+        [
+          "TYPE",
+          "public"
+        ],
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "PREF",
+          "1"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "value": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s="
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:HTTP://A.example/x",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "HTTP://A.example/x",
+      "value": "HTTP://A.example/x"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:https://",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "https://",
+      "value": "https://"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:https:///path",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "https:///path",
+      "value": "https:///path"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:https://[::1]/x",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "https://[::1]/x",
+      "value": "https://[::1]/x"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:https://[v1.x]/x",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "https://[v1.x]/x",
+      "value": "https://[v1.x]/x"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED://a.example/x",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "//a.example/x",
+      "value": "//a.example/x"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:mailto:a@b.example",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "mailto:a@b.example",
+      "value": "mailto:a@b.example"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:https://a b.example/",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "https://a b.example/",
+      "value": "https://a b.example/"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:  https://a.example/trim",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "  https://a.example/trim",
+      "value": "  https://a.example/trim"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:https://a.example:abc/x",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "https://a.example:abc/x",
+      "value": "https://a.example:abc/x"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:1http://a.example/",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "1http://a.example/",
+      "value": "1http://a.example/"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:ht+tp-x.y://a.example/",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "ht+tp-x.y://a.example/",
+      "value": "ht+tp-x.y://a.example/"
+    },
+    {
+      "attr_name": "url",
+      "attributes": {},
+      "group": null,
+      "line": "URL:data:text/plain;base64,AAAA",
+      "name": "URL",
+      "params": [],
+      "raw_value": "data:text/plain;base64,AAAA",
+      "value": "data:text/plain;base64,AAAA"
+    },
+    {
+      "attr_name": "url",
+      "attributes": {},
+      "group": null,
+      "line": "URL:relative/path",
+      "name": "URL",
+      "params": [],
+      "raw_value": "relative/path",
+      "value": "relative/path"
+    },
+    {
+      "attr_name": "photo",
+      "attributes": {},
+      "group": null,
+      "line": "PHOTO:http://a.example/p.png",
+      "name": "PHOTO",
+      "params": [],
+      "raw_value": "http://a.example/p.png",
+      "value": "http://a.example/p.png"
+    },
+    {
+      "attr_name": null,
+      "attributes": {},
+      "group": null,
+      "line": "END:VCARD",
+      "name": "END",
+      "params": [],
+      "raw_value": "VCARD",
+      "value": null
+    }
+  ],
+  "revocations": [],
+  "social": [],
+  "source": "https://alice.example/dsi.vcf",
+  "tel": null,
+  "url": "relative/path",
+  "version": "4.0"
+}

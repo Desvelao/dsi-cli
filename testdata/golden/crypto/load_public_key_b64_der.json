@@ -15,7 +15,7 @@
   },
   "rsa": {
     "error": "Public key is not an Ed25519 key",
-    "in": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwlgmVZGs2NDBolkHJDH8XKOQV6/cU8cMz4CGOD4PQAuzIgOHguf2Kht5pGHjY2xJ7fajOP6KPT19SekPq8Fm+t8/WIHwr4Ixuw9Mfjc7tWJjy/i0qJ5z4hG4r/KE5EHMb5vUldhxgAP2TfkHLjqs/WHAtRo+pEBWaVndOsUPEdJ7ydpYK4fxRWRKCsxKoFSyEmBqRsXpvWoaeOxtzSENe41QuR5v6wKlz/+gmna2CHQUVK98/fID/7QqEJg2gpvHsk+BQhrNGfxq+1R+GneM5+jzNyEHzgK5quQsC97r4umXXBCFdcRaxV0rRjCjKqmMpRtKwlqNe43jjRzDCau6jwIDAQAB",
+    "in": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzLaiwR3Wppy32b/PlC9tJFndriccqXjBbar2YHibRLJZ00mvWtlEHmVN7enGedbUdgX/LOgq1uPbTy1Htuho1XiCsvqe5XlJ0XzEO2tuxk5h+US9qXwcWOgVwwJ0zr/feFasp5bVShqNkoTevWldHa/j1PvIIDAjPfG5CPd/WFf6+1qMe2pjoPhNmMfj4J+H4icTNKLf+qHX2n1s0KY/ElEwohpDCrB3KCZgsj25YIrsD0DSog6t/qOn3/CcTXlmC46lGoCOOleUMJlfdP98YGdFBnSFSorwt+6+7/+3qv8SrdQBIxe6LzuGbJEMm3nFudTwv35h3I51SdWPjkOH7wIDAQAB",
     "ok": false
   }
 }

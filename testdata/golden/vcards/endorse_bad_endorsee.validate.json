@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "endorse-signature",
+      "message": "X-ENDORSE #1: Invalid Base64 value: Only base64 data is allowed"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

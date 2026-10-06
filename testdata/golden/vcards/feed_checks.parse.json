@@ -1,0 +1,259 @@
+{
+  "adr": null,
+  "anniversary": null,
+  "bday": null,
+  "categories": null,
+  "dsi_version": null,
+  "email": null,
+  "endorsements": [],
+  "errors": [],
+  "feeds": [
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "feed.xml"
+    },
+    {
+      "category": "",
+      "language": "not_a_tag",
+      "tags": "",
+      "url": "https://a.example/f.xml"
+    },
+    {
+      "category": "a b",
+      "language": "",
+      "tags": "a b",
+      "url": "https://a.example/g.xml"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "ftp://a.example/h.xml"
+    },
+    {
+      "category": "",
+      "language": "",
+      "tags": "",
+      "url": "http://a.example/i.xml"
+    },
+    {
+      "category": "",
+      "language": "en-US-x-private1",
+      "tags": "",
+      "url": "https://a.example/j.xml"
+    },
+    {
+      "category": "",
+      "language": "e",
+      "tags": "",
+      "url": "https://a.example/k.xml"
+    }
+  ],
+  "fn": "Alice Example",
+  "gender": null,
+  "impp": null,
+  "keys": [
+    {
+      "alg": "ed25519",
+      "key_b64": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "pref": 1
+    }
+  ],
+  "kind": null,
+  "lang": null,
+  "n": null,
+  "nickname": null,
+  "note": null,
+  "photo": null,
+  "raw": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nX-FEED:feed.xml\r\nX-FEED;LANGUAGE=not_a_tag:https://a.example/f.xml\r\nX-FEED;TAGS=a b:https://a.example/g.xml\r\nX-FEED:ftp://a.example/h.xml\r\nX-FEED:http://a.example/i.xml\r\nX-FEED;LANGUAGE=en-US-x-private1:https://a.example/j.xml\r\nX-FEED;LANGUAGE=e:https://a.example/k.xml\r\nEND:VCARD\r\n",
+  "raw_lines": [
+    {
+      "attr_name": null,
+      "attributes": {},
+      "group": null,
+      "line": "BEGIN:VCARD",
+      "name": "BEGIN",
+      "params": [],
+      "raw_value": "VCARD",
+      "value": null
+    },
+    {
+      "attr_name": "version",
+      "attributes": {},
+      "group": null,
+      "line": "VERSION:4.0",
+      "name": "VERSION",
+      "params": [],
+      "raw_value": "4.0",
+      "value": "4.0"
+    },
+    {
+      "attr_name": "fn",
+      "attributes": {},
+      "group": null,
+      "line": "FN:Alice Example",
+      "name": "FN",
+      "params": [],
+      "raw_value": "Alice Example",
+      "value": "Alice Example"
+    },
+    {
+      "attr_name": "source",
+      "attributes": {},
+      "group": null,
+      "line": "SOURCE:https://alice.example/dsi.vcf",
+      "name": "SOURCE",
+      "params": [],
+      "raw_value": "https://alice.example/dsi.vcf",
+      "value": "https://alice.example/dsi.vcf"
+    },
+    {
+      "attr_name": "key",
+      "attributes": {
+        "ALG": "ed25519",
+        "ENCODING": "b",
+        "PREF": "1",
+        "TYPE": "public"
+      },
+      "group": null,
+      "line": "KEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "name": "KEY",
+      "params": [
+        [
+          "TYPE",
+          "public"
+        ],
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "PREF",
+          "1"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "value": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s="
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:feed.xml",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "feed.xml",
+      "value": "feed.xml"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {
+        "LANGUAGE": "not_a_tag"
+      },
+      "group": null,
+      "line": "X-FEED;LANGUAGE=not_a_tag:https://a.example/f.xml",
+      "name": "X-FEED",
+      "params": [
+        [
+          "LANGUAGE",
+          "not_a_tag"
+        ]
+      ],
+      "raw_value": "https://a.example/f.xml",
+      "value": "https://a.example/f.xml"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {
+        "TAGS": "a b"
+      },
+      "group": null,
+      "line": "X-FEED;TAGS=a b:https://a.example/g.xml",
+      "name": "X-FEED",
+      "params": [
+        [
+          "TAGS",
+          "a b"
+        ]
+      ],
+      "raw_value": "https://a.example/g.xml",
+      "value": "https://a.example/g.xml"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:ftp://a.example/h.xml",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "ftp://a.example/h.xml",
+      "value": "ftp://a.example/h.xml"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {},
+      "group": null,
+      "line": "X-FEED:http://a.example/i.xml",
+      "name": "X-FEED",
+      "params": [],
+      "raw_value": "http://a.example/i.xml",
+      "value": "http://a.example/i.xml"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {
+        "LANGUAGE": "en-US-x-private1"
+      },
+      "group": null,
+      "line": "X-FEED;LANGUAGE=en-US-x-private1:https://a.example/j.xml",
+      "name": "X-FEED",
+      "params": [
+        [
+          "LANGUAGE",
+          "en-US-x-private1"
+        ]
+      ],
+      "raw_value": "https://a.example/j.xml",
+      "value": "https://a.example/j.xml"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {
+        "LANGUAGE": "e"
+      },
+      "group": null,
+      "line": "X-FEED;LANGUAGE=e:https://a.example/k.xml",
+      "name": "X-FEED",
+      "params": [
+        [
+          "LANGUAGE",
+          "e"
+        ]
+      ],
+      "raw_value": "https://a.example/k.xml",
+      "value": "https://a.example/k.xml"
+    },
+    {
+      "attr_name": null,
+      "attributes": {},
+      "group": null,
+      "line": "END:VCARD",
+      "name": "END",
+      "params": [],
+      "raw_value": "VCARD",
+      "value": null
+    }
+  ],
+  "revocations": [],
+  "social": [],
+  "source": "https://alice.example/dsi.vcf",
+  "tel": null,
+  "url": null,
+  "version": "4.0"
+}

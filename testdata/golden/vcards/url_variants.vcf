@@ -1,0 +1,21 @@
+BEGIN:VCARD
+VERSION:4.0
+FN:Alice Example
+SOURCE:https://alice.example/dsi.vcf
+KEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=
+X-FEED:HTTP://A.example/x
+X-FEED:https://
+X-FEED:https:///path
+X-FEED:https://[::1]/x
+X-FEED:https://[v1.x]/x
+X-FEED://a.example/x
+X-FEED:mailto:a@b.example
+X-FEED:https://a b.example/
+X-FEED:  https://a.example/trim
+X-FEED:https://a.example:abc/x
+X-FEED:1http://a.example/
+X-FEED:ht+tp-x.y://a.example/
+URL:data:text/plain;base64,AAAA
+URL:relative/path
+PHOTO:http://a.example/p.png
+END:VCARD

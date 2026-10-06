@@ -1,0 +1,13 @@
+BEGIN:VCARD
+VERSION:4.0
+FN:Alice Example
+SOURCE:https://alice.example/dsi.vcf
+KEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=
+X-FEED:feed.xml
+X-FEED;LANGUAGE=not_a_tag:https://a.example/f.xml
+X-FEED;TAGS=a b:https://a.example/g.xml
+X-FEED:ftp://a.example/h.xml
+X-FEED:http://a.example/i.xml
+X-FEED;LANGUAGE=en-US-x-private1:https://a.example/j.xml
+X-FEED;LANGUAGE=e:https://a.example/k.xml
+END:VCARD

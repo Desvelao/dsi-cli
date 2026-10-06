@@ -1,0 +1,47 @@
+{
+  "errors": [
+    {
+      "code": "url-invalid",
+      "message": "URL is not an absolute URL: 'relative/path'"
+    },
+    {
+      "code": "feed-invalid",
+      "message": "X-FEED #2 is not an absolute URL: 'https://'"
+    },
+    {
+      "code": "feed-invalid",
+      "message": "X-FEED #3 is not an absolute URL: 'https:///path'"
+    },
+    {
+      "code": "feed-invalid",
+      "message": "X-FEED #6 is not an absolute URL: '//a.example/x'"
+    },
+    {
+      "code": "feed-invalid",
+      "message": "X-FEED #7 is not an absolute URL: 'mailto:a@b.example'"
+    },
+    {
+      "code": "feed-invalid",
+      "message": "X-FEED #8 is not an absolute URL: 'https://a b.example/'"
+    },
+    {
+      "code": "feed-invalid",
+      "message": "X-FEED #11 is not an absolute URL: '1http://a.example/'"
+    },
+    {
+      "code": "feed-scheme",
+      "message": "X-FEED #12 must use http or https, found 'ht+tp-x.y'"
+    }
+  ],
+  "valid": false,
+  "warnings": [
+    {
+      "code": "photo-http",
+      "message": "PHOTO does not use HTTPS: http://a.example/p.png"
+    },
+    {
+      "code": "feed-http",
+      "message": "X-FEED #1 does not use HTTPS: HTTP://A.example/x"
+    }
+  ]
+}

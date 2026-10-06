@@ -1,0 +1,706 @@
+{
+  "adr": null,
+  "anniversary": null,
+  "bday": null,
+  "categories": null,
+  "dsi_version": null,
+  "email": null,
+  "endorsements": [],
+  "errors": [],
+  "feeds": [],
+  "fn": "Alice Example",
+  "gender": null,
+  "impp": null,
+  "keys": [
+    {
+      "alg": "ed25519",
+      "key_b64": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "pref": 1
+    }
+  ],
+  "kind": null,
+  "lang": null,
+  "n": null,
+  "nickname": null,
+  "note": null,
+  "photo": null,
+  "raw": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=2025011T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=202511T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250101t000000z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250230T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000060Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000059Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250101T240000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=00000101T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250101T0000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250101T1:0:0Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000000;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE= 20250101T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000000Z ;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20240229T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nREVKEY;ALG=ed25519;REASON=lost;DATE=20250229T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nEND:VCARD\r\n",
+  "raw_lines": [
+    {
+      "attr_name": null,
+      "attributes": {},
+      "group": null,
+      "line": "BEGIN:VCARD",
+      "name": "BEGIN",
+      "params": [],
+      "raw_value": "VCARD",
+      "value": null
+    },
+    {
+      "attr_name": "version",
+      "attributes": {},
+      "group": null,
+      "line": "VERSION:4.0",
+      "name": "VERSION",
+      "params": [],
+      "raw_value": "4.0",
+      "value": "4.0"
+    },
+    {
+      "attr_name": "fn",
+      "attributes": {},
+      "group": null,
+      "line": "FN:Alice Example",
+      "name": "FN",
+      "params": [],
+      "raw_value": "Alice Example",
+      "value": "Alice Example"
+    },
+    {
+      "attr_name": "source",
+      "attributes": {},
+      "group": null,
+      "line": "SOURCE:https://alice.example/dsi.vcf",
+      "name": "SOURCE",
+      "params": [],
+      "raw_value": "https://alice.example/dsi.vcf",
+      "value": "https://alice.example/dsi.vcf"
+    },
+    {
+      "attr_name": "key",
+      "attributes": {
+        "ALG": "ed25519",
+        "ENCODING": "b",
+        "PREF": "1",
+        "TYPE": "public"
+      },
+      "group": null,
+      "line": "KEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "name": "KEY",
+      "params": [
+        [
+          "TYPE",
+          "public"
+        ],
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "PREF",
+          "1"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "value": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250101T000000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250101T000000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "2025011T000000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=2025011T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "2025011T000000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "202511T000000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=202511T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "202511T000000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250101t000000z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250101t000000z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250101t000000z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250230T000000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250230T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250230T000000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250101T000060Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000060Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250101T000060Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250101T000059Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000059Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250101T000059Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250101T240000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250101T240000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250101T240000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "00000101T000000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=00000101T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "00000101T000000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250101T0000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250101T0000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250101T0000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250101T1",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250101T1:0:0Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250101T1"
+        ]
+      ],
+      "raw_value": "0:0Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "0:0Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250101T000000",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000000;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250101T000000"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": " 20250101T000000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE= 20250101T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          " 20250101T000000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250101T000000Z ",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250101T000000Z ;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250101T000000Z "
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20240229T000000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20240229T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20240229T000000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20250229T000000Z",
+        "ENCODING": "b",
+        "REASON": "lost"
+      },
+      "group": null,
+      "line": "REVKEY;ALG=ed25519;REASON=lost;DATE=20250229T000000Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "lost"
+        ],
+        [
+          "DATE",
+          "20250229T000000Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": null,
+      "attributes": {},
+      "group": null,
+      "line": "END:VCARD",
+      "name": "END",
+      "params": [],
+      "raw_value": "VCARD",
+      "value": null
+    }
+  ],
+  "revocations": [
+    {
+      "date": "20250101T000000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "2025011T000000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "202511T000000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250101t000000z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250230T000000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250101T000060Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250101T000059Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250101T240000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "00000101T000000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250101T0000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250101T1",
+      "key_b64": "0:0Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250101T000000",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": " 20250101T000000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250101T000000Z ",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20240229T000000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    },
+    {
+      "date": "20250229T000000Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "lost"
+    }
+  ],
+  "social": [],
+  "source": "https://alice.example/dsi.vcf",
+  "tel": null,
+  "url": null,
+  "version": "4.0"
+}

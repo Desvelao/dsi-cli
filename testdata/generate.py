@@ -330,6 +330,109 @@ def vcard_cases():
             f"KEY;TYPE=public;ALG=ed25519;PREF=2;ENCODING=b:{B64['carol']}",
             endorse("carol", "bob", "20250101T000000Z"),
         ),
+        "complete_valid": dsi(
+            f"REVKEY;TYPE=public;ALG=ed25519;REASON=rotated;DATE=20260221T110230Z;ENCODING=b:{B64['dave']}",
+            "X-DSI-VERSION;FEATURES=tags,endorse:00",
+            "X-FEED;LANGUAGE=en-US;TAGS=nature:https://alice.example/feed.xml",
+            "X-SOCIAL;PLATFORM=github:alice",
+            endorse("alice", "bob", "20260210T120000Z", "high"),
+        ),
+        "key_problems": dsi(
+            "KEY;TYPE=public;ALG=rsa;ENCODING=b:AAAA",
+            "KEY;TYPE=public;ALG=ed25519;ENCODING=b:not base64!!",
+            "KEY;TYPE=public;ALG=ed25519;ENCODING=b:aGVsbG8=",
+            "KEY;TYPE=public;ENCODING=b:" + B64["bob"],
+            "KEY;TYPE=public;ALG=ed25519;ENCODING=b:" + B64["bob"] + "AA",
+            keys=False,
+        ),
+        "two_preferred": dsi(f"KEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:{B64['bob']}"),
+        "no_preferred": dsi(
+            f"KEY;TYPE=public;ALG=ed25519;PREF=3;ENCODING=b:{B64['bob']}", keys=False
+        ),
+        "preferred_revoked": dsi(
+            f"REVKEY;ALG=ed25519;REASON=compromised;DATE=20260221T110230Z;ENCODING=b:{B64['alice']}"
+        ),
+        "revkey_checks": dsi(
+            f"REVKEY;ALG=ed25519;REASON=whatever;DATE=2026-02-21;ENCODING=b:{B64['dave']}",
+            f"REVKEY;ALG=ed25519;ENCODING=b:{B64['bob']}",
+            "REVKEY;ALG=ed25519;REASON=lost;DATE=20260221T110230Z;ENCODING=b:@@",
+        ),
+        "date_variants": dsi(
+            *[
+                f"REVKEY;ALG=ed25519;REASON=lost;DATE={d};ENCODING=b:{B64['dave']}"
+                for d in [
+                    "20250101T000000Z", "2025011T000000Z", "202511T000000Z", "20250101t000000z",
+                    "20250230T000000Z", "20250101T000060Z", "20250101T000059Z", "20250101T240000Z",
+                    "00000101T000000Z", "20250101T0000Z", "20250101T1:0:0Z", "20250101T000000",
+                    " 20250101T000000Z", "20250101T000000Z ", "20240229T000000Z", "20250229T000000Z",
+                ]
+            ]
+        ),
+        "endorse_format_errors": dsi(
+            f"X-ENDORSE;SIG=ABCD;DATE=today;CONFIDENCE=huge;ENCODING=b:{B64['bob']}"
+        ),
+        "endorse_zero_sig": dsi(
+            f"X-ENDORSE;SIG={'0' * 128};DATE=20260210T120000Z;ENCODING=b:{B64['bob']}"
+        ),
+        "endorse_duplicate": dsi(
+            endorse("alice", "bob", "20260210T120000Z"),
+            endorse("alice", "bob", "20260210T120000Z"),
+        ),
+        "endorse_unverifiable": dsi(
+            f"X-ENDORSE;SIG={'a' * 128};ENCODING=b:{B64['bob']}", keys=False
+        ),
+        "endorse_signed_by_other": dsi(endorse("dave", "bob")),
+        "endorse_bad_endorsee": dsi(
+            f"X-ENDORSE;SIG={'a' * 128};ENCODING=b:@@@"
+        ),
+        "endorse_odd_hex": dsi(endorse("alice", "bob", sig="abc")),
+        "feed_checks": dsi(
+            "X-FEED:feed.xml",
+            "X-FEED;LANGUAGE=not_a_tag:https://a.example/f.xml",
+            "X-FEED;TAGS=a b:https://a.example/g.xml",
+            "X-FEED:ftp://a.example/h.xml",
+            "X-FEED:http://a.example/i.xml",
+            "X-FEED;LANGUAGE=en-US-x-private1:https://a.example/j.xml",
+            "X-FEED;LANGUAGE=e:https://a.example/k.xml",
+        ),
+        "url_variants": dsi(
+            "X-FEED:HTTP://A.example/x",
+            "X-FEED:https://",
+            "X-FEED:https:///path",
+            "X-FEED:https://[::1]/x",
+            "X-FEED:https://[v1.x]/x",
+            "X-FEED://a.example/x",
+            "X-FEED:mailto:a@b.example",
+            "X-FEED:https://a b.example/",
+            "X-FEED:  https://a.example/trim",
+            "X-FEED:https://a.example:abc/x",
+            "X-FEED:1http://a.example/",
+            "X-FEED:ht+tp-x.y://a.example/",
+            "URL:data:text/plain;base64,AAAA",
+            "URL:relative/path",
+            "PHOTO:http://a.example/p.png",
+        ),
+        # Python's validator raises ValueError (crashes) on these; the Go port reports them as invalid URLs
+        "url_crash_unclosed_bracket": dsi("X-FEED:https://[::1/x"),
+        "url_crash_ipv4_in_brackets": dsi("X-FEED:https://[1.2.3.4]/x"),
+        "social_checks": dsi(
+            "X-SOCIAL;PLATFORM=GitHub1:alice",
+            "X-SOCIAL;PLATFORM=x:",
+            "X-SOCIAL;PLATFORM=x:dup",
+            "X-SOCIAL;PLATFORM=x:dup",
+        ),
+        "dsi_version_checks": dsi(
+            "X-DSI-VERSION;FEATURES=a b,ok,:0", "X-DSI-VERSION:01"
+        ),
+        "duplicates": dsi(
+            f"KEY;TYPE=public;ALG=ed25519;PREF=2;ENCODING=b:{B64['alice']}",
+            "SOURCE:https://alice.example/dsi.vcf",
+            "VERSION:4.0",
+            "X-FEED:https://a.example/f",
+            "X-FEED:https://a.example/f",
+            "X-FEED:https://a.example/g",
+            "X-FEED:https://a.example/g",
+        ),
         "validator_mix": dsi(
             "X-FEED;LANGUAGE=en-US:ftp://bad/feed",
             "X-FEED:https://a.example/f.rss",
@@ -355,7 +458,10 @@ def gen_vcards():
             write(f"vcards/{name}.normalized.vcf", normalize_vcard(profile))
         except ValueError as e:
             write(f"vcards/{name}.normalize_error.txt", str(e) + "\n")
-        write_json(f"vcards/{name}.validate.json", validate_profile(profile).to_dict())
+        try:
+            write_json(f"vcards/{name}.validate.json", validate_profile(profile).to_dict())
+        except ValueError as e:
+            write_json(f"vcards/{name}.validate.json", {"python_error": str(e)})
         write_json(
             f"vcards/{name}.verify.json",
             [

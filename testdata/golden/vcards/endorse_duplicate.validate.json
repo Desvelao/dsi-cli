@@ -1,0 +1,10 @@
+{
+  "errors": [],
+  "valid": true,
+  "warnings": [
+    {
+      "code": "endorse-duplicate",
+      "message": "Key endorsed more than once: MCowBQYDK2VwAyEA..."
+    }
+  ]
+}

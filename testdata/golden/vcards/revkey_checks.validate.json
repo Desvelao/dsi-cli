@@ -1,0 +1,27 @@
+{
+  "errors": [
+    {
+      "code": "revkey-reason",
+      "message": "REVKEY #1: unknown REASON 'whatever' (expected one of compromised, deprecated, lost, retired, rotated, superseded)"
+    },
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #1: DATE must use YYYYMMDDThhmmssZ, found '2026-02-21'"
+    },
+    {
+      "code": "revkey-invalid",
+      "message": "REVKEY #3: Invalid Base64 value: Only base64 data is allowed"
+    }
+  ],
+  "valid": false,
+  "warnings": [
+    {
+      "code": "revkey-reason-missing",
+      "message": "REVKEY #2: REASON is missing"
+    },
+    {
+      "code": "revkey-date-missing",
+      "message": "REVKEY #2: DATE is missing"
+    }
+  ]
+}
