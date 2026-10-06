@@ -97,4 +97,5 @@ dsipy feeds build feeds -o feeds.rss --title "Blog" --link https://alice.example
 - `use_html_content: true` (or `yes`) renders the body as Markdown to HTML.
 - The item id (`guid`) is the front matter `id`, or the slug of the file path relative to the feed directory without extension.
 - `--limit N` keeps the N newest items (items are sorted by date, newest first); `--limit 0` produces an empty feed and a negative value is rejected.
+- In the reusable workflow (`gha-build-feeds.yml`) the `feeds_limit` input is optional: when empty or unset, `--limit` is not passed and the feed is unlimited.
 - Signing (`--sign-priv` and `--sign-pub`, both required, PEM files; giving only one exits 1) is applied to the items after templating.

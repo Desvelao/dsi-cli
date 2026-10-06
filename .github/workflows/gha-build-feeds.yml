@@ -14,10 +14,9 @@ on:
         type: string
         default: "feeds"
       feeds_limit:
-        description: Limit number of states to include in the feed
+        description: Max number of newest items to include in the feed. Empty = unlimited.
         required: false
-        type: number
-        default: 0
+        type: string
       feeds_file:
         description: Output feed filename
         required: false
@@ -212,6 +211,11 @@ jobs:
             if [ -n "$FEEDS_VARS_INPUT" ]; then printf '%s\n' "$FEEDS_VARS_INPUT"; fi
           } > feeds.vars
 
+          limit_args=()
+          if [ -n "$FEEDS_LIMIT" ]; then
+            limit_args=(--limit "$FEEDS_LIMIT")
+          fi
+
           echo "Building ${FEEDS_FILE}"
           # EXTRA_COMMAND_ARGS is intentionally split into words
           # shellcheck disable=SC2086
@@ -222,7 +226,7 @@ jobs:
             --author "$FEEDS_AUTHOR" \
             --email "$FEEDS_EMAIL" \
             --output "$FEEDS_FILE" \
-            --limit "$FEEDS_LIMIT" \
+            "${limit_args[@]}" \
             --var-file feeds.vars \
             "${sign_args[@]}" \
             $EXTRA_COMMAND_ARGS
