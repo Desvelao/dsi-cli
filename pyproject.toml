@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dsipy"
-version = "0.0.1"
+version = "0.0.2"
 description = "A CLI tool with subcommands for vCard, feeds, and connections processing"
 authors = [{name = "Desvelao", email = "iamdesvelao@gmail.com"}]
 readme = "README.md"
