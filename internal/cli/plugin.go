@@ -148,26 +148,23 @@ func newPluginCmd(env *Env) *cobra.Command {
 	return group
 }
 
-// addPluginHelp lists the installed plugins in the root help.
+// addPluginHelp lists the installed plugins after the root help. (A custom
+// usage template function would make the linker keep much more code.)
 func addPluginHelp(root *cobra.Command, env *Env) {
-	cobra.AddTemplateFunc("dsiPlugins", func() string {
-		plugins := env.finder().List()
-		if len(plugins) == 0 {
-			return ""
+	defaultHelp := root.HelpFunc()
+	root.SetHelpFunc(func(cmd *cobra.Command, args []string) {
+		defaultHelp(cmd, args)
+		if cmd != root {
+			return
 		}
 		var names []string
-		for _, p := range plugins {
+		for _, p := range env.finder().List() {
 			if !isCoreCommand(root, p.Name) {
 				names = append(names, "  "+p.Name)
 			}
 		}
-		if len(names) == 0 {
-			return ""
+		if len(names) > 0 {
+			fmt.Fprintf(env.Out, "\nPlugins (run with `dsi <name>`):\n%s\n", strings.Join(names, "\n"))
 		}
-		// the template puts the blank lines around the next block itself
-		return "\n\nPlugins (run with `dsi <name>`):\n" + strings.Join(names, "\n")
 	})
-	tpl := strings.Replace(root.UsageTemplate(), "{{if .HasAvailableLocalFlags}}",
-		"{{if not .HasParent}}{{dsiPlugins}}{{end}}{{if .HasAvailableLocalFlags}}", 1)
-	root.SetUsageTemplate(tpl)
 }
