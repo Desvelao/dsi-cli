@@ -604,6 +604,14 @@ def gen_resolver():
         "https://alice.example:8443/x?q=1",
         "https://alice.example:abc/x",
         "  https://alice.example/x  ",
+        "https://e.com/%7Ealice", "https://e.com/a%2fb", "https://e.com/a?x=%2f", "https://e.com/a/b/..",
+        "https://e.com/../a", "https://e.com:99999/a", "https://e.com:0/a", "https://e.com:00443/a",
+        "HTTP://[::1]:443/", "http://[2001:DB8::1]:80/p", "https://user:pw@E.com/x", "https://e.com?x=1",
+        "https://e.com/%zz", "https://e.com/a%41b%7e", "https:e.com", "e.com/path", "", "https://",
+        "ftp://e.com:21/x", "mailto:a@b.example", "https://e.com/a//b/./c/", "https://e.com/.", "https://e.com/..",
+        "https://e.com/a/../../b", "https://e.com/a/.", "https://E.COM./X?Q=%7e#f", "//e.com/x",
+        "https://e.com:/x", "https://[::1]/x", "https://e.com/%E2%82%AC", "https://e.com/€",
+        "https://exämple.com/", "http://e.com:80", "https://e.com/?", "https://e.com/#",
     ]
     out = []
     for u in urls:
@@ -620,7 +628,69 @@ def gen_resolver():
         ('attachment; filename=".hidden"', "https://a.example/x/ok.vcf"),
         ("", "https://a.example/"),
         ("", "https://a.example/.."),
+        ('attachment; filename=plain.vcf', "https://a.example/x"),
+        ('attachment; filename="with space.vcf"', "https://a.example/x"),
+        ("attachment; filename*=UTF-8''caf%C3%A9.vcf", "https://a.example/x"),
+        ("attachment; filename*=UTF-8''..%2F..%2Fevil.vcf", "https://a.example/x"),
+        ('inline', "https://a.example/path/card.vcf?x=1"),
+        ('attachment; filename=""', "https://a.example/path/card.vcf"),
+        ('attachment; name="n.vcf"', "https://a.example/path/card.vcf"),
+        ('attachment; filename="a/b/c.vcf"', "https://a.example/x"),
+        ('attachment; filename="C:\\Users\\me\\card.vcf"', "https://a.example/x"),
+        ("", "https://a.example/.hidden"),
+        ("", "https://a.example/dir/"),
+        ("", "https://a.example/a%20b.vcf"),
+        ('attachment; filename=.', "https://a.example/ok.vcf"),
+        ('attachment; filename="x.vcf"; filename="y.vcf"', "https://a.example/z"),
     ]
+    import ipaddress
+    from src.dsipy.core.http import _validate_url
+    from urllib.parse import urljoin
+    ips = [
+        "8.8.8.8", "1.1.1.1", "93.184.216.34", "0.0.0.0", "0.255.255.255", "10.0.0.1", "10.255.255.255", "100.64.0.1",
+        "100.127.255.255", "100.128.0.1", "127.0.0.1", "127.255.255.255", "169.254.169.254", "172.15.255.255",
+        "172.16.0.1", "172.31.255.255", "172.32.0.1", "192.0.0.1", "192.0.0.9", "192.0.0.10", "192.0.0.11", "192.0.0.170",
+        "192.0.0.171", "192.0.2.1", "192.88.99.1", "192.168.0.1", "198.17.255.255", "198.18.0.1", "198.19.255.255",
+        "198.20.0.1", "198.51.100.1", "203.0.113.1", "224.0.0.1", "239.255.255.255", "240.0.0.1", "255.255.255.255",
+        "::", "::1", "::2", "::ffff:8.8.8.8", "::ffff:10.0.0.1", "::ffff:127.0.0.1", "::ffff:100.64.0.1",
+        "64:ff9b::808:808", "64:ff9b:1::1", "100::1", "100:0:0:1::1", "2001::1", "2001:1::1", "2001:1::2", "2001:1::3",
+        "2001:3::1", "2001:4:112::1", "2001:20::1", "2001:30::1", "2001:db8::1", "2001:4860:4860::8888", "2002::1",
+        "2606:4700:4700::1111", "3fff::1", "3ffe::1", "fc00::1", "fd12:3456::1", "fe80::1", "fec0::1", "ff02::1",
+        "2a00:1450:4009::200e", "::ffff:0:0", "::127.0.0.1", "fe80::1%eth0",
+    ]
+    write_json(
+        "resolver/is_global.json",
+        [{"ip": ip, "global": ipaddress.ip_address(ip.split("%")[0]).is_global} for ip in ips],
+    )
+    joins = [
+        ("https://example.com/a/b", loc)
+        for loc in ["/x", "c", "../c", "./c", "//other.example/x", "https://x.example/y", "?q=1", "#frag", "", "http://x.example",
+                    "../../../c", "c/d?e#f", "/x/../y", "ftp://x/y", "javascript:alert(1)", "//x", "x:y", "/\\evil.example"]
+    ]
+    write_json("resolver/urljoin.json", [{"base": b, "location": l, "out": urljoin(b, l)} for b, l in joins])
+    urls = ["https://e.com/a", "http://e.com/a", "ftp://e.com/a", "file:///etc/passwd", "https:///a", "https://u:p@e.com/a",
+            "https://u@e.com/a", "https://:p@e.com/a", "https://e.com:0/a", "https://e.com:8443/a", "https://e.com:abc/a",
+            "https://[::1]:8443/a", "HTTPS://E.com/a", "https://", "", "//e.com/a", "e.com", "https://e.com:99999/",
+            "https://[::1/a"]
+    vres = []
+    for allow in (False, True):
+        for u in urls:
+            try:
+                h, port = _validate_url(u, allow)
+                vres.append({"url": u, "allow_http": allow, "host": h, "port": port})
+            except ValueError as e:
+                vres.append({"url": u, "allow_http": allow, "error": str(e)})
+    write_json("resolver/validate_url.json", vres)
+    bodies = [b"ok", "caf\u00e9".encode(), b"\xff", b"abc\xff", b"\xc3", b"\xc3\x28", b"\xe2\x82", b"\xe2\x82\x28", b"\xe2", b"a\xe2\x28\xa1",
+              b"\xf0\x9f\x98", b"\xf0\x28\x8c\xbc", b"\xed\xa0\x80", b"\xc0\x80", b"\xf5\x80\x80\x80", b"\x80", b"\xe0\x80\x80",
+              b"\xf4\x90\x80\x80", b"\xe2\x82\xac\xe2\x82"]
+    ures = []
+    for b in bodies:
+        try:
+            b.decode("utf-8"); ures.append({"hex": b.hex(), "ok": True})
+        except UnicodeDecodeError as e:
+            ures.append({"hex": b.hex(), "ok": False, "error": str(e)})
+    write_json("resolver/utf8_errors.json", ures)
     write_json(
         "resolver/safe_filename.json",
         [{"content_disposition": cd, "url": u, "out": safe_filename(cd, u)} for cd, u in names],

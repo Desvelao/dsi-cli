@@ -2,8 +2,10 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"net/netip"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/Desvelao/dsipy/internal/pyutil"
@@ -21,11 +23,14 @@ var ipvFuture = regexp.MustCompile(`^v[a-fA-F0-9]+\..+$`)
 
 // SplitURL splits a URL like Python 3.12's urllib.parse.urlsplit, including the
 // errors it raises for malformed bracketed hosts and netlocs.
-func SplitURL(rawurl string) (SplitResult, error) {
+func SplitURL(rawurl string) (SplitResult, error) { return splitURL(rawurl, "") }
+
+// splitURL is SplitURL with a default scheme for URLs that have none.
+func splitURL(rawurl, defaultScheme string) (SplitResult, error) {
 	url := strings.TrimLeftFunc(rawurl, func(r rune) bool { return r <= 0x20 })
 	url = strings.NewReplacer("\t", "", "\r", "", "\n", "").Replace(url)
 
-	var r SplitResult
+	r := SplitResult{Scheme: defaultScheme}
 	if i := strings.Index(url, ":"); i > 0 && isASCIIAlpha(url[0]) {
 		ok := true
 		for _, c := range url[:i] {
@@ -114,3 +119,236 @@ func checkNetloc(netloc string) error {
 
 // HasSpace reports whether the string contains any whitespace (Python isspace).
 func HasSpace(s string) bool { return strings.IndexFunc(s, pyutil.IsSpace) >= 0 }
+
+func (r SplitResult) userinfo() (info string, have bool, hostinfo string) {
+	if i := strings.LastIndex(r.Netloc, "@"); i >= 0 {
+		return r.Netloc[:i], true, r.Netloc[i+1:]
+	}
+	return "", false, r.Netloc
+}
+
+// Username is the user part of the netloc ("" when absent, like a falsy None).
+func (r SplitResult) Username() string {
+	info, have, _ := r.userinfo()
+	if !have {
+		return ""
+	}
+	user, _, _ := strings.Cut(info, ":")
+	return user
+}
+
+// Password is the password part of the netloc.
+func (r SplitResult) Password() string {
+	info, have, _ := r.userinfo()
+	if !have {
+		return ""
+	}
+	_, pass, _ := strings.Cut(info, ":")
+	return pass
+}
+
+func (r SplitResult) hostinfo() (host, port string) {
+	_, _, hostinfo := r.userinfo()
+	if _, bracketed, ok := strings.Cut(hostinfo, "["); ok {
+		var rest string
+		host, rest, _ = strings.Cut(bracketed, "]")
+		_, port, _ = strings.Cut(rest, ":")
+		return host, port
+	}
+	host, port, _ = strings.Cut(hostinfo, ":")
+	return host, port
+}
+
+// Hostname is the lower-cased host without brackets or port ("" when absent).
+func (r SplitResult) Hostname() string {
+	host, _ := r.hostinfo()
+	if host == "" {
+		return ""
+	}
+	name, zone, found := strings.Cut(host, "%")
+	if found {
+		return strings.ToLower(name) + "%" + zone
+	}
+	return strings.ToLower(name)
+}
+
+// Port parses the port. It returns (0, false, nil) when there is none and an
+// error with Python's messages when it is not a number in 0-65535.
+func (r SplitResult) Port() (port int, present bool, err error) {
+	_, p := r.hostinfo()
+	if p == "" {
+		return 0, false, nil
+	}
+	for i := 0; i < len(p); i++ {
+		if p[i] < '0' || p[i] > '9' {
+			return 0, false, fmt.Errorf("Port could not be cast to integer value as %s", pyutil.Repr(p))
+		}
+	}
+	n, convErr := strconv.Atoi(p)
+	if convErr != nil || n > 65535 {
+		return 0, false, errors.New("Port out of range 0-65535")
+	}
+	return n, true, nil
+}
+
+var usesNetloc = map[string]bool{
+	"": true, "ftp": true, "http": true, "gopher": true, "nntp": true, "telnet": true, "imap": true,
+	"wais": true, "file": true, "mms": true, "https": true, "shttp": true, "snews": true, "prospero": true,
+	"rtsp": true, "rtspu": true, "rsync": true, "svn": true, "svn+ssh": true, "sftp": true, "nfs": true,
+	"git": true, "git+ssh": true, "ws": true, "wss": true,
+}
+
+var usesRelative = map[string]bool{
+	"": true, "ftp": true, "http": true, "gopher": true, "nntp": true, "imap": true, "wais": true,
+	"file": true, "https": true, "shttp": true, "mms": true, "prospero": true, "rtsp": true, "rtspu": true,
+	"sftp": true, "svn": true, "svn+ssh": true, "ws": true, "wss": true,
+}
+
+var usesParams = map[string]bool{
+	"": true, "ftp": true, "hdl": true, "prospero": true, "http": true, "imap": true, "https": true,
+	"shttp": true, "rtsp": true, "rtspu": true, "sip": true, "sips": true, "mms": true, "sftp": true, "tel": true,
+}
+
+// Unsplit joins the parts like urllib.parse.urlunsplit.
+func Unsplit(scheme, netloc, path, query, fragment string) string {
+	url := path
+	switch {
+	case netloc != "":
+		if url != "" && url[0] != '/' {
+			url = "/" + url
+		}
+		url = "//" + netloc + url
+	case strings.HasPrefix(url, "//"):
+		url = "//" + url
+	case scheme != "" && usesNetloc[scheme] && (url == "" || url[0] == '/'):
+		url = "//" + url
+	}
+	if scheme != "" {
+		url = scheme + ":" + url
+	}
+	if query != "" {
+		url += "?" + query
+	}
+	if fragment != "" {
+		url += "#" + fragment
+	}
+	return url
+}
+
+// splitParams splits ";params" off the last path segment.
+func splitParams(path string) (string, string) {
+	var i int
+	if strings.Contains(path, "/") {
+		i = strings.Index(path[strings.LastIndex(path, "/"):], ";")
+		if i < 0 {
+			return path, ""
+		}
+		i += strings.LastIndex(path, "/")
+	} else {
+		i = strings.Index(path, ";")
+		if i < 0 {
+			return path, ""
+		}
+	}
+	return path[:i], path[i+1:]
+}
+
+type parsedURL struct {
+	SplitResult
+	Params string
+}
+
+func urlParse(url, defaultScheme string) (parsedURL, error) {
+	r, err := splitURL(url, defaultScheme)
+	if err != nil {
+		return parsedURL{}, err
+	}
+	p := parsedURL{SplitResult: r}
+	if usesParams[r.Scheme] && strings.Contains(r.Path, ";") {
+		p.Path, p.Params = splitParams(r.Path)
+	}
+	return p, nil
+}
+
+func (p parsedURL) unparse() string {
+	path := p.Path
+	if p.Params != "" {
+		path += ";" + p.Params
+	}
+	return Unsplit(p.Scheme, p.Netloc, path, p.Query, p.Fragment)
+}
+
+// URLJoin resolves ref against base like urllib.parse.urljoin.
+func URLJoin(base, ref string) (string, error) {
+	if base == "" {
+		return ref, nil
+	}
+	if ref == "" {
+		return base, nil
+	}
+	b, err := urlParse(base, "")
+	if err != nil {
+		return "", err
+	}
+	u, err := urlParse(ref, b.Scheme)
+	if err != nil {
+		return "", err
+	}
+	if u.Scheme != b.Scheme || !usesRelative[u.Scheme] {
+		return ref, nil
+	}
+	if usesNetloc[u.Scheme] {
+		if u.Netloc != "" {
+			return u.unparse(), nil
+		}
+		u.Netloc = b.Netloc
+	}
+	if u.Path == "" && u.Params == "" {
+		u.Path, u.Params = b.Path, b.Params
+		if u.Query == "" {
+			u.Query = b.Query
+		}
+		return u.unparse(), nil
+	}
+	baseParts := strings.Split(b.Path, "/")
+	if baseParts[len(baseParts)-1] != "" {
+		baseParts = baseParts[:len(baseParts)-1]
+	}
+	var segments []string
+	if strings.HasPrefix(u.Path, "/") {
+		segments = strings.Split(u.Path, "/")
+	} else {
+		segments = append(append([]string(nil), baseParts...), strings.Split(u.Path, "/")...)
+		// segments[1:-1] = filter(None, segments[1:-1])
+		if len(segments) > 2 {
+			kept := []string{segments[0]}
+			for _, seg := range segments[1 : len(segments)-1] {
+				if seg != "" {
+					kept = append(kept, seg)
+				}
+			}
+			segments = append(kept, segments[len(segments)-1])
+		}
+	}
+	var resolved []string
+	for _, seg := range segments {
+		switch seg {
+		case "..":
+			if len(resolved) > 0 {
+				resolved = resolved[:len(resolved)-1]
+			}
+		case ".":
+		default:
+			resolved = append(resolved, seg)
+		}
+	}
+	if last := segments[len(segments)-1]; last == "." || last == ".." {
+		resolved = append(resolved, "")
+	}
+	path := strings.Join(resolved, "/")
+	if path == "" {
+		path = "/"
+	}
+	u.Path = path
+	return u.unparse(), nil
+}

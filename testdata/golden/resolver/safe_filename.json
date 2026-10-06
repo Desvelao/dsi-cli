@@ -33,5 +33,75 @@
     "content_disposition": "",
     "out": "vcard.vcf",
     "url": "https://a.example/.."
+  },
+  {
+    "content_disposition": "attachment; filename=plain.vcf",
+    "out": "plain.vcf",
+    "url": "https://a.example/x"
+  },
+  {
+    "content_disposition": "attachment; filename=\"with space.vcf\"",
+    "out": "with space.vcf",
+    "url": "https://a.example/x"
+  },
+  {
+    "content_disposition": "attachment; filename*=UTF-8''caf%C3%A9.vcf",
+    "out": "café.vcf",
+    "url": "https://a.example/x"
+  },
+  {
+    "content_disposition": "attachment; filename*=UTF-8''..%2F..%2Fevil.vcf",
+    "out": "evil.vcf",
+    "url": "https://a.example/x"
+  },
+  {
+    "content_disposition": "inline",
+    "out": "card.vcf",
+    "url": "https://a.example/path/card.vcf?x=1"
+  },
+  {
+    "content_disposition": "attachment; filename=\"\"",
+    "out": "card.vcf",
+    "url": "https://a.example/path/card.vcf"
+  },
+  {
+    "content_disposition": "attachment; name=\"n.vcf\"",
+    "out": "card.vcf",
+    "url": "https://a.example/path/card.vcf"
+  },
+  {
+    "content_disposition": "attachment; filename=\"a/b/c.vcf\"",
+    "out": "c.vcf",
+    "url": "https://a.example/x"
+  },
+  {
+    "content_disposition": "attachment; filename=\"C:\\Users\\me\\card.vcf\"",
+    "out": "card.vcf",
+    "url": "https://a.example/x"
+  },
+  {
+    "content_disposition": "",
+    "out": "vcard.vcf",
+    "url": "https://a.example/.hidden"
+  },
+  {
+    "content_disposition": "",
+    "out": "dir",
+    "url": "https://a.example/dir/"
+  },
+  {
+    "content_disposition": "",
+    "out": "a%20b.vcf",
+    "url": "https://a.example/a%20b.vcf"
+  },
+  {
+    "content_disposition": "attachment; filename=.",
+    "out": "ok.vcf",
+    "url": "https://a.example/ok.vcf"
+  },
+  {
+    "content_disposition": "attachment; filename=\"x.vcf\"; filename=\"y.vcf\"",
+    "out": "x.vcf",
+    "url": "https://a.example/z"
   }
 ]

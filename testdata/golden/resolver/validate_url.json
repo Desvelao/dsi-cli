@@ -1,0 +1,203 @@
+[
+  {
+    "allow_http": false,
+    "host": "e.com",
+    "port": 443,
+    "url": "https://e.com/a"
+  },
+  {
+    "allow_http": false,
+    "error": "Unsupported URL scheme 'http' in http://e.com/a (allowed: https)",
+    "url": "http://e.com/a"
+  },
+  {
+    "allow_http": false,
+    "error": "Unsupported URL scheme 'ftp' in ftp://e.com/a (allowed: https)",
+    "url": "ftp://e.com/a"
+  },
+  {
+    "allow_http": false,
+    "error": "Unsupported URL scheme 'file' in file:///etc/passwd (allowed: https)",
+    "url": "file:///etc/passwd"
+  },
+  {
+    "allow_http": false,
+    "error": "URL has no host: https:///a",
+    "url": "https:///a"
+  },
+  {
+    "allow_http": false,
+    "error": "URLs with embedded credentials are not allowed",
+    "url": "https://u:p@e.com/a"
+  },
+  {
+    "allow_http": false,
+    "error": "URLs with embedded credentials are not allowed",
+    "url": "https://u@e.com/a"
+  },
+  {
+    "allow_http": false,
+    "error": "URLs with embedded credentials are not allowed",
+    "url": "https://:p@e.com/a"
+  },
+  {
+    "allow_http": false,
+    "host": "e.com",
+    "port": 443,
+    "url": "https://e.com:0/a"
+  },
+  {
+    "allow_http": false,
+    "host": "e.com",
+    "port": 8443,
+    "url": "https://e.com:8443/a"
+  },
+  {
+    "allow_http": false,
+    "error": "Port could not be cast to integer value as 'abc'",
+    "url": "https://e.com:abc/a"
+  },
+  {
+    "allow_http": false,
+    "host": "::1",
+    "port": 8443,
+    "url": "https://[::1]:8443/a"
+  },
+  {
+    "allow_http": false,
+    "host": "e.com",
+    "port": 443,
+    "url": "HTTPS://E.com/a"
+  },
+  {
+    "allow_http": false,
+    "error": "URL has no host: https://",
+    "url": "https://"
+  },
+  {
+    "allow_http": false,
+    "error": "Unsupported URL scheme '' in  (allowed: https)",
+    "url": ""
+  },
+  {
+    "allow_http": false,
+    "error": "Unsupported URL scheme '' in //e.com/a (allowed: https)",
+    "url": "//e.com/a"
+  },
+  {
+    "allow_http": false,
+    "error": "Unsupported URL scheme '' in e.com (allowed: https)",
+    "url": "e.com"
+  },
+  {
+    "allow_http": false,
+    "error": "Port out of range 0-65535",
+    "url": "https://e.com:99999/"
+  },
+  {
+    "allow_http": false,
+    "error": "Invalid IPv6 URL",
+    "url": "https://[::1/a"
+  },
+  {
+    "allow_http": true,
+    "host": "e.com",
+    "port": 443,
+    "url": "https://e.com/a"
+  },
+  {
+    "allow_http": true,
+    "host": "e.com",
+    "port": 80,
+    "url": "http://e.com/a"
+  },
+  {
+    "allow_http": true,
+    "error": "Unsupported URL scheme 'ftp' in ftp://e.com/a (allowed: https, http)",
+    "url": "ftp://e.com/a"
+  },
+  {
+    "allow_http": true,
+    "error": "Unsupported URL scheme 'file' in file:///etc/passwd (allowed: https, http)",
+    "url": "file:///etc/passwd"
+  },
+  {
+    "allow_http": true,
+    "error": "URL has no host: https:///a",
+    "url": "https:///a"
+  },
+  {
+    "allow_http": true,
+    "error": "URLs with embedded credentials are not allowed",
+    "url": "https://u:p@e.com/a"
+  },
+  {
+    "allow_http": true,
+    "error": "URLs with embedded credentials are not allowed",
+    "url": "https://u@e.com/a"
+  },
+  {
+    "allow_http": true,
+    "error": "URLs with embedded credentials are not allowed",
+    "url": "https://:p@e.com/a"
+  },
+  {
+    "allow_http": true,
+    "host": "e.com",
+    "port": 443,
+    "url": "https://e.com:0/a"
+  },
+  {
+    "allow_http": true,
+    "host": "e.com",
+    "port": 8443,
+    "url": "https://e.com:8443/a"
+  },
+  {
+    "allow_http": true,
+    "error": "Port could not be cast to integer value as 'abc'",
+    "url": "https://e.com:abc/a"
+  },
+  {
+    "allow_http": true,
+    "host": "::1",
+    "port": 8443,
+    "url": "https://[::1]:8443/a"
+  },
+  {
+    "allow_http": true,
+    "host": "e.com",
+    "port": 443,
+    "url": "HTTPS://E.com/a"
+  },
+  {
+    "allow_http": true,
+    "error": "URL has no host: https://",
+    "url": "https://"
+  },
+  {
+    "allow_http": true,
+    "error": "Unsupported URL scheme '' in  (allowed: https, http)",
+    "url": ""
+  },
+  {
+    "allow_http": true,
+    "error": "Unsupported URL scheme '' in //e.com/a (allowed: https, http)",
+    "url": "//e.com/a"
+  },
+  {
+    "allow_http": true,
+    "error": "Unsupported URL scheme '' in e.com (allowed: https, http)",
+    "url": "e.com"
+  },
+  {
+    "allow_http": true,
+    "error": "Port out of range 0-65535",
+    "url": "https://e.com:99999/"
+  },
+  {
+    "allow_http": true,
+    "error": "Invalid IPv6 URL",
+    "url": "https://[::1/a"
+  }
+]
