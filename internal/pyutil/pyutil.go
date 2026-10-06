@@ -99,3 +99,77 @@ func Repr(s string) string {
 	b.WriteRune(quote)
 	return b.String()
 }
+
+// OrderedMap is an insertion-ordered string map, like a Python dict[str, str].
+type OrderedMap struct {
+	keys []string
+	vals map[string]string
+}
+
+// NewOrderedMap returns an empty map.
+func NewOrderedMap() *OrderedMap { return &OrderedMap{vals: map[string]string{}} }
+
+// Set stores a value; an existing key keeps its position.
+func (m *OrderedMap) Set(key, value string) {
+	if _, ok := m.vals[key]; !ok {
+		m.keys = append(m.keys, key)
+	}
+	m.vals[key] = value
+}
+
+// Get returns the value and whether the key is present.
+func (m *OrderedMap) Get(key string) (string, bool) {
+	v, ok := m.vals[key]
+	return v, ok
+}
+
+// Value returns the value or "" when absent.
+func (m *OrderedMap) Value(key string) string { return m.vals[key] }
+
+// Keys returns the keys in insertion order.
+func (m *OrderedMap) Keys() []string { return append([]string(nil), m.keys...) }
+
+// Len is the number of entries.
+func (m *OrderedMap) Len() int { return len(m.keys) }
+
+// Clone returns a copy.
+func (m *OrderedMap) Clone() *OrderedMap {
+	c := NewOrderedMap()
+	for _, k := range m.keys {
+		c.Set(k, m.vals[k])
+	}
+	return c
+}
+
+// SplitLines is Python's str.splitlines(): it splits on \n, \r\n, \r, \v, \f,
+// \x1c-\x1e, \x85,   and   and drops the separators.
+func SplitLines(s string) []string {
+	var lines []string
+	runes := []rune(s)
+	pos := 0
+	var cur []rune
+	for pos < len(runes) {
+		r := runes[pos]
+		isBreak := false
+		switch r {
+		case '\n', '\v', '\f', 0x1c, 0x1d, 0x1e, 0x85, 0x2028, 0x2029:
+			isBreak = true
+		case '\r':
+			isBreak = true
+			if pos+1 < len(runes) && runes[pos+1] == '\n' {
+				pos++
+			}
+		}
+		if isBreak {
+			lines = append(lines, string(cur))
+			cur = nil
+		} else {
+			cur = append(cur, r)
+		}
+		pos++
+	}
+	if len(cur) > 0 {
+		lines = append(lines, string(cur))
+	}
+	return lines
+}

@@ -1,0 +1,198 @@
+[
+  {
+    "in": "plain text",
+    "out": "<p>plain text</p>"
+  },
+  {
+    "in": "# Heading\n\ntext",
+    "out": "<h1>Heading</h1>\n<p>text</p>"
+  },
+  {
+    "in": "Setext\n======\n\ntext",
+    "out": "<h1>Setext</h1>\n<p>text</p>"
+  },
+  {
+    "in": "## H2 ##\n",
+    "out": "<h2>H2</h2>"
+  },
+  {
+    "in": "*em* **strong** ***both*** `code` ~~strike~~",
+    "out": "<p><em>em</em> <strong>strong</strong> <strong><em>both</em></strong> <code>code</code> ~~strike~~</p>"
+  },
+  {
+    "in": "line one  \nline two",
+    "out": "<p>line one<br />\nline two</p>"
+  },
+  {
+    "in": "line one\nline two",
+    "out": "<p>line one\nline two</p>"
+  },
+  {
+    "in": "> quote\n> more\n\n> second",
+    "out": "<blockquote>\n<p>quote\nmore</p>\n<p>second</p>\n</blockquote>"
+  },
+  {
+    "in": "- a\n- b\n    - nested\n- c",
+    "out": "<ul>\n<li>a</li>\n<li>b<ul>\n<li>nested</li>\n</ul>\n</li>\n<li>c</li>\n</ul>"
+  },
+  {
+    "in": "1. one\n2. two\n10. ten",
+    "out": "<ol>\n<li>one</li>\n<li>two</li>\n<li>ten</li>\n</ol>"
+  },
+  {
+    "in": "* a\n\n* b (loose)",
+    "out": "<ul>\n<li>\n<p>a</p>\n</li>\n<li>\n<p>b (loose)</p>\n</li>\n</ul>"
+  },
+  {
+    "in": "[link](https://x.example \"title\") and ![img](https://x.example/i.png \"t\")",
+    "out": "<p><a href=\"https://x.example\" title=\"title\">link</a> and <img alt=\"img\" src=\"https://x.example/i.png\" title=\"t\" /></p>"
+  },
+  {
+    "in": "<https://auto.example> and <me@x.example>",
+    "out": "<p><a href=\"https://auto.example\">https://auto.example</a> and <a href=\"&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#101;&#64;&#120;&#46;&#101;&#120;&#97;&#109;&#112;&#108;&#101;\">&#109;&#101;&#64;&#120;&#46;&#101;&#120;&#97;&#109;&#112;&#108;&#101;</a></p>"
+  },
+  {
+    "in": "<div>raw <b>html</b></div>\n\ntext",
+    "out": "<div>raw <b>html</b></div>\n\n<p>text</p>"
+  },
+  {
+    "in": "inline <span class=\"x\">html</span> ok",
+    "out": "<p>inline <span class=\"x\">html</span> ok</p>"
+  },
+  {
+    "in": "A & B < C > D &copy; &amp; &#169;",
+    "out": "<p>A &amp; B &lt; C &gt; D &copy; &amp; &#169;</p>"
+  },
+  {
+    "in": "```python\nprint('hi')\n```",
+    "out": "<pre><code class=\"language-python\">print('hi')\n</code></pre>"
+  },
+  {
+    "in": "    indented code\n    more",
+    "out": "<pre><code>indented code\nmore\n</code></pre>"
+  },
+  {
+    "in": "~~~\ntilde fence\n~~~",
+    "out": "<pre><code>tilde fence\n</code></pre>"
+  },
+  {
+    "in": "---\n\n***\n\n___",
+    "out": "<hr />\n<hr />\n<hr />"
+  },
+  {
+    "in": "| a | b |\n|---|:-:|\n| 1 | 2 |\n| 3 | 4 |",
+    "out": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th style=\"text-align: center;\">b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td>\n<td style=\"text-align: center;\">2</td>\n</tr>\n<tr>\n<td>3</td>\n<td style=\"text-align: center;\">4</td>\n</tr>\n</tbody>\n</table>"
+  },
+  {
+    "in": "Term\n:   Definition\n:   Another\n\nTerm 2\n:   Def 2",
+    "out": "<dl>\n<dt>Term</dt>\n<dd>Definition</dd>\n<dd>Another</dd>\n<dt>Term 2</dt>\n<dd>Def 2</dd>\n</dl>"
+  },
+  {
+    "in": "Footnote ref[^1].\n\n[^1]: The note.",
+    "out": "<p>Footnote ref<sup id=\"fnref:1\"><a class=\"footnote-ref\" href=\"#fn:1\">1</a></sup>.</p>\n<div class=\"footnote\">\n<hr />\n<ol>\n<li id=\"fn:1\">\n<p>The note.&#160;<a class=\"footnote-backref\" href=\"#fnref:1\" title=\"Jump back to footnote 1 in the text\">&#8617;</a></p>\n</li>\n</ol>\n</div>"
+  },
+  {
+    "in": "*[HTML]: Hyper Text Markup Language\n\nThe HTML spec",
+    "out": "<p>The <abbr title=\"Hyper Text Markup Language\">HTML</abbr> spec</p>"
+  },
+  {
+    "in": "## Heading {#custom-id .cls}\n",
+    "out": "<h2 class=\"cls\" id=\"custom-id\">Heading</h2>"
+  },
+  {
+    "in": "para {: .cls }",
+    "out": "<p>para {: .cls }</p>"
+  },
+  {
+    "in": "<div markdown=\"1\">\n*inside*\n</div>",
+    "out": "<div>\n<p><em>inside</em></p>\n</div>"
+  },
+  {
+    "in": "escaped \\*not em\\* and \\# not heading",
+    "out": "<p>escaped *not em* and # not heading</p>"
+  },
+  {
+    "in": "http://bare.example/url not autolinked",
+    "out": "<p>http://bare.example/url not autolinked</p>"
+  },
+  {
+    "in": "[ref link][1]\n\n[1]: https://ref.example \"Ref\"",
+    "out": "<p><a href=\"https://ref.example\" title=\"Ref\">ref link</a></p>"
+  },
+  {
+    "in": "Unicode: café ☃ 日本語 😀",
+    "out": "<p>Unicode: café ☃ 日本語 😀</p>"
+  },
+  {
+    "in": "Tab\there",
+    "out": "<p>Tab here</p>"
+  },
+  {
+    "in": "",
+    "out": ""
+  },
+  {
+    "in": "   \n\n",
+    "out": ""
+  },
+  {
+    "in": "a\r\nb\r\n\r\nc",
+    "out": "<p>a\nb</p>\n<p>c</p>"
+  },
+  {
+    "in": "<!-- comment -->\n\ntext",
+    "out": "<!-- comment -->\n\n<p>text</p>"
+  },
+  {
+    "in": "1) paren list\n2) two",
+    "out": "<p>1) paren list\n2) two</p>"
+  },
+  {
+    "in": "+ plus list\n+ two",
+    "out": "<ul>\n<li>plus list</li>\n<li>two</li>\n</ul>"
+  },
+  {
+    "in": "Hard  \nbreak\\\nbackslash",
+    "out": "<p>Hard<br />\nbreak\\\nbackslash</p>"
+  },
+  {
+    "in": "## \n",
+    "out": "<h2></h2>"
+  },
+  {
+    "in": "#NoSpace",
+    "out": "<h1>NoSpace</h1>"
+  },
+  {
+    "in": "text\n- list right after",
+    "out": "<p>text\n- list right after</p>"
+  },
+  {
+    "in": "![alt *em*](x.png)",
+    "out": "<p><img alt=\"alt *em*\" src=\"x.png\" /></p>"
+  },
+  {
+    "in": "[empty]()",
+    "out": "<p><a href=\"\">empty</a></p>"
+  },
+  {
+    "in": "`` `tick` ``",
+    "out": "<p><code>`tick`</code></p>"
+  },
+  {
+    "in": "**unclosed",
+    "out": "<p>**unclosed</p>"
+  },
+  {
+    "in": "_under_ and __dunder__ and snake_case_word",
+    "out": "<p><em>under</em> and <strong>dunder</strong> and snake_case_word</p>"
+  },
+  {
+    "in": "5 * 3 * 2",
+    "out": "<p>5 * 3 * 2</p>"
+  },
+  {
+    "in": "a<b and c>d",
+    "out": "<p>a<b and c>d</p>"
+  }
+]

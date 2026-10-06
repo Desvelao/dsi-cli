@@ -17,11 +17,11 @@
     },
     {
       "code": "feed-duplicate",
-      "message": "Feed URL appears more than once: https://a.example/f"
+      "message": "Feed URL appears more than once: https://a.example/g"
     },
     {
       "code": "feed-duplicate",
-      "message": "Feed URL appears more than once: https://a.example/g"
+      "message": "Feed URL appears more than once: https://a.example/f"
     }
   ]
 }

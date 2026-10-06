@@ -36,12 +36,12 @@
   {
     "content": "Just text, no front matter.",
     "content_type": "text",
-    "date": "2025-01-01T00:00:00",
+    "date": "2025-01-01T00:00:01",
     "id": "nofront",
     "image": null,
     "link": null,
     "metadata": {
-      "date": "2025-01-01T00:00:00Z",
+      "date": "2025-01-01T00:00:01Z",
       "file_ext": ".md",
       "file_name": "nofront.md",
       "title": "nofront"

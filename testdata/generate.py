@@ -733,6 +733,64 @@ def state_to_json(state, root):
     return s
 
 
+def gen_feed_primitives():
+    import markdown as md
+    from src.dsipy.feeds.markdown import _parse_date, _unquote
+    dates = [
+        "2025-01-01", "2025-01-01T10:00:00", "2025-01-01 10:00:00", "2025-01-01T10:00:00Z", "2025-01-01T10:00:00+02:00",
+        "2025-01-01T10:00:00-0530", "2025-01-01T10:00:00+05", "2025-01-01T10:00", "2025-01-01T10", "2025-01-01T10:00:00.5",
+        "2025-01-01T10:00:00.123456", "2025-01-01T10:00:00.1234567", "2025-01-01T10:00:00,5", "20250101", "20250101T100000",
+        "20250101T1000", "2025-W01-1", "2025W011", "2025-W01", "2025-W53-1", "2025-01-01X10:00", "2025-01-01t10:00:00",
+        "2025-1-1", "2025-13-01", "2025-02-30", "2024-02-29", "2025-01-01T25:00", "2025-01-01T24:00:00", "2025-01-01T10:60",
+        "2025-01-01T10:00:60", "  2025-01-01  ", "", "today", "2025", "2025-01", "2025-01-01T", "2025-01-01T10:00:00+24:00",
+        "2025-01-01T10:00:00+05:30:15", "2025-01-01T10:00:00Z ", "0001-01-01T00:00:00+01:00", "9999-12-31T23:59:59-01:00",
+        "2025-01-01T10:00:00+00:00", "2025-01-01 10:00:00 +02:00", "2025-01-01T10:00:00z", "٢٠٢٥-٠١-٠١", "2025-01-01T10:00:00.Z",
+        "2025-01-01T10:00:00.1Z", "2025-01-01T1000", "2025-01-01T100000", "2025-01-01T10:0000", "20250101T10:00:00",
+    ]
+    out = []
+    for d in dates:
+        try:
+            out.append({"in": d, "out": _parse_date(d).isoformat()})
+        except (ValueError, OverflowError) as e:  # OverflowError is an uncaught crash in Python
+            out.append({"in": d, "error": True})
+    import random
+    rnd = random.Random(20250101)
+    dts = ["2025-01-01", "20250101", "2025-W01-1", "2025W011", "2025-W01", "2025W01", "2025-W53-1", "2020-W53-7", "2025-02-29",
+           "2024-02-29", "0001-01-01", "9999-12-31", "2025-1-01", "2025-01-1", "2025-W00-1", "2025-W01-0", "2025-W01-8", "2025-W5-1", "2025-001"]
+    seps = ["T", " ", "t", "_", "\u00e9", "T "]
+    times = ["", "10", "10:00", "10:00:00", "1000", "100000", "10:0000", "1000:00", "10:00:00.5", "10:00:00.123456789", "10:00:00,5",
+             "10:00:00.", "24:00", "23:59:59", "00:00:00", "10:00:00x", "10:60", "1", "10:", "10:00:", "10-00", "10:00:00.1234", "10:00.5"]
+    tzs = ["", "Z", "z", "+02:00", "-02:00", "+0200", "+02", "+2", "+24:00", "+23:59", "+05:30:15", "+05:30:15.5", " +02:00", "-00:00",
+           "+", "+0200Z", "Z ", "+02:0", "+02:00:", "+ab"]
+    fuzz = set()
+    while len(fuzz) < 1800:
+        fuzz.add(rnd.choice(dts) + rnd.choice(seps) + rnd.choice(times) + rnd.choice(tzs))
+    for d in sorted(fuzz):
+        try:
+            out.append({"in": d, "out": _parse_date(d).isoformat()})
+        except (ValueError, OverflowError):
+            out.append({"in": d, "error": True})
+    write_json("feeds/iso_dates.json", out)
+
+    snippets = [
+        "plain text", "# Heading\n\ntext", "Setext\n======\n\ntext", "## H2 ##\n", "*em* **strong** ***both*** `code` ~~strike~~",
+        "line one  \nline two", "line one\nline two", "> quote\n> more\n\n> second", "- a\n- b\n    - nested\n- c", "1. one\n2. two\n10. ten",
+        "* a\n\n* b (loose)", "[link](https://x.example \"title\") and ![img](https://x.example/i.png \"t\")", "<https://auto.example> and <me@x.example>",
+        "<div>raw <b>html</b></div>\n\ntext", "inline <span class=\"x\">html</span> ok", "A & B < C > D &copy; &amp; &#169;", "```python\nprint('hi')\n```",
+        "    indented code\n    more", "~~~\ntilde fence\n~~~", "---\n\n***\n\n___", "| a | b |\n|---|:-:|\n| 1 | 2 |\n| 3 | 4 |",
+        "Term\n:   Definition\n:   Another\n\nTerm 2\n:   Def 2", "Footnote ref[^1].\n\n[^1]: The note.", "*[HTML]: Hyper Text Markup Language\n\nThe HTML spec",
+        "## Heading {#custom-id .cls}\n", "para {: .cls }", "<div markdown=\"1\">\n*inside*\n</div>", "escaped \\*not em\\* and \\# not heading",
+        "http://bare.example/url not autolinked", "[ref link][1]\n\n[1]: https://ref.example \"Ref\"", "Unicode: café ☃ 日本語 😀", "Tab\there", "", "   \n\n", "a\r\nb\r\n\r\nc",
+        "<!-- comment -->\n\ntext", "1) paren list\n2) two", "+ plus list\n+ two", "Hard  \nbreak\\\nbackslash", "## \n", "#NoSpace", "text\n- list right after",
+        "![alt *em*](x.png)", "[empty]()", "`` `tick` ``", "**unclosed", "_under_ and __dunder__ and snake_case_word", "5 * 3 * 2", "a<b and c>d",
+    ]
+    write_json(
+        "feeds/markdown_cases.json",
+        [{"in": t, "out": md.markdown(t, extensions=["extra"])} for t in snippets],
+    )
+    write_json("feeds/unquote.json", [{"in": v, "out": _unquote(v)} for v in ["'a'", '"a"', "\"a'", "'", "\"\"", "a", "''", "'a b' c", " 'a' "]])
+
+
 def gen_feeds():
     posts_dir = ROOT / "golden" / "feeds" / "posts"
     if posts_dir.exists():
@@ -742,7 +800,7 @@ def gen_feeds():
     # nofront.md has no date: use a fixed mtime so the fallback is deterministic
     import os
     for p in posts_dir.rglob("nofront.md"):
-        os.utime(p, (1735689600, 1735689600))  # 2025-01-01T00:00:00Z
+        os.utime(p, (1735689601, 1735689601))  # 2025-01-01T00:00:01Z (distinct from hello.md: ties depend on directory order)
 
     states = MarkdownFeed.collect(str(posts_dir))
     write_json(
@@ -823,9 +881,13 @@ def gen_feeds():
     (tmp / "alice.vcf").write_text(cases_for_opml()["alice"], encoding="utf-8", newline="")
     (tmp / "bob.vcf").write_text(cases_for_opml()["bob"], encoding="utf-8", newline="")
     (tmp / "nofeeds.vcf").write_text(dsi(), encoding="utf-8", newline="")
+    (tmp / "carol.vcf").write_text(
+        crlf("BEGIN:VCARD", "VERSION:4.0", "FN:Carol\\nTwo \\\\ \u2028 \x1f", "SOURCE:https://c.example/d.vcf",
+             "X-FEED;CATEGORY= a , ,b ;TAGS=b,c:https://c.example/f.rss?a=1&b=2", "X-FEED:", "END:VCARD"),
+        encoding="utf-8", newline="")
     warnings = []
     xml = generate_opml_from_vcards(
-        [tmp / "alice.vcf", tmp / "bob.vcf", tmp / "nofeeds.vcf"], warnings
+        [tmp / "alice.vcf", tmp / "bob.vcf", tmp / "nofeeds.vcf", tmp / "carol.vcf", tmp / "missing.vcf"], warnings
     )
     write("opml/feeds.opml", xml)
     write_json("opml/warnings.json", warnings)
@@ -840,7 +902,7 @@ def cases_for_opml():
         "bob": crlf(
             "BEGIN:VCARD",
             "VERSION:4.0",
-            "FN:Bob & <Co>",
+            "FN:Bob & <Co> \"B\" 'x' é\ttab",
             "SOURCE:https://bob.example/dsi.vcf",
             "X-FEED;CATEGORY=news,blog;TAGS=blog,tech:https://bob.example/f.xml",
             "END:VCARD",
@@ -870,6 +932,7 @@ def main():
     gen_lifecycle()
     gen_canonical()
     gen_resolver()
+    gen_feed_primitives()
     gen_feeds()
     write_versions()
     print(f"golden files written to {OUT}")
