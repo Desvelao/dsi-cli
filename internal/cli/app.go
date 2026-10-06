@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Desvelao/dsipy/internal/core"
+	"github.com/Desvelao/dsipy/internal/plugin"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -27,6 +28,8 @@ type Env struct {
 	StdinTTY bool
 	Fetcher  *core.Fetcher
 	Now      func() time.Time
+	// Plugins overrides where plugins are searched (nil: plugin dir and PATH).
+	Plugins *plugin.Finder
 
 	reader *bufio.Reader
 }
@@ -212,7 +215,8 @@ func NewRootCmd(version string, env *Env) *cobra.Command {
 	root.SetOut(env.Out)
 	root.SetErr(env.Err)
 	root.SetFlagErrorFunc(func(c *cobra.Command, err error) error { return &UsageError{err.Error()} })
-	root.AddCommand(newKeyCmd(env), newConnectionsCmd(env), newFeedsCmd(env), newVCardCmd(env))
+	root.AddCommand(newKeyCmd(env), newConnectionsCmd(env), newFeedsCmd(env), newVCardCmd(env), newPluginCmd(env))
+	addPluginHelp(root, env)
 	return root
 }
 
@@ -229,6 +233,9 @@ func subcommand(use, short string) *cobra.Command {
 // ExecuteEnv runs the CLI with an explicit environment and returns the exit code.
 func ExecuteEnv(version string, args []string, env *Env) int {
 	root := NewRootCmd(version, env)
+	if code, ok := env.dispatchPlugin(root, version, args); ok {
+		return code
+	}
 	root.SetArgs(args)
 	err := root.Execute()
 	if err == nil {
