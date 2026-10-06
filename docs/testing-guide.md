@@ -1,38 +1,28 @@
 # Hands-on testing guide
 
-A step-by-step walkthrough of every `dsipy` feature that you can run yourself. Every step shows the command, what you should see, and a `PASS`/`FAIL` line so you know straight away whether it behaved as expected. Failure cases are included on purpose: an error with the right message and exit code *is* the expected result.
+A step-by-step walkthrough of every `dsi` feature that you can run yourself. Every step shows the command, what you should see, and a `PASS`/`FAIL` line so you know straight away whether it behaved as expected. Failure cases are included on purpose: an error with the right message and exit code *is* the expected result.
 
-- Everything runs in a throw-away folder (`/tmp/dsipy-lab`), so no keys, cards or feeds end up in the repository. **Do not run these commands inside `src/`.**
+- Everything runs in a throw-away folder (`/tmp/dsi-lab`), so no keys, cards or feeds end up in the repository. **Do not run these commands inside the repository checkout.**
 - Blocks tagged `bash` can be pasted as they are, in order, in one terminal (they share state and the working directory). Blocks tagged `sh` are optional or interactive and are not part of the automatic run.
 - Keys, dates and signatures are random or time-based, so your values will differ from the sample output. The `PASS`/`FAIL` lines and exit codes are what matter.
-- For a flag-by-flag reference see [commands.md](commands.md); for publishing and templates see [publishing.md](publishing.md).
+- For a flag-by-flag reference see [commands.md](commands.md); for templates see [publishing.md](publishing.md); for plugins see [plugins.md](plugins.md).
 
-Contents: [0 Setup](#0-setup) · [1 Keys](#1-keys) · [2 Create a vCard](#2-create-a-vcard) · [3 Validate and inspect](#3-validate-inspect-normalize-parse) · [4 Key rotation and revocation](#4-key-add-rotate-revoke) · [5 Endorsements](#5-endorsements) · [6 QR codes](#6-qr-codes) · [7 Fetch](#7-fetch-remote-cards) · [8 Build feeds](#8-feeds-init-add-build) · [9 Sign and verify](#9-sign-and-verify-feeds) · [10 Publish](#10-publish-feeds) · [11 OPML](#11-connections-opml) · [12 Automated tests](#12-automated-tests) · [13 Behaviour notes](#13-behaviour-notes) · [14 Cleanup](#14-cleanup)
+Contents: [0 Setup](#0-setup) · [1 Keys](#1-keys) · [2 Create a vCard](#2-create-a-vcard) · [3 Validate and inspect](#3-validate-inspect-normalize-parse) · [4 Key rotation and revocation](#4-key-add-rotate-revoke) · [5 Endorsements](#5-endorsements) · [6 QR codes](#6-qr-codes) · [7 Fetch](#7-fetch-remote-cards) · [8 Build feeds](#8-feeds-init-add-build) · [9 Sign and verify](#9-sign-and-verify-feeds) · [10 Plugins](#10-plugins) · [11 OPML](#11-connections-opml) · [12 Automated tests](#12-automated-tests) · [13 Behaviour notes](#13-behaviour-notes) · [14 Cleanup](#14-cleanup)
 
 ## 0. Setup
 
-You need Python 3.12+ and a checkout of this repository. Install into a virtual environment *outside* the repo:
+You need the `dsi` binary on your `PATH` (see the [README](../README.md#install)), or build it from a checkout with `make build` (it ends up in `bin/dsi`) and put that directory on the `PATH`. The checks use standard tools (`grep`, `sed` (GNU), `stat`, `file`); `xmllint`, `zbarimg` and `fc-list` are optional.
 
 ```sh
-export REPO=~/projects/dsi-tools            # adjust to your checkout
-python3 -m venv ~/.venvs/dsipy && . ~/.venvs/dsipy/bin/activate
-pip install -e "$REPO[dev]"
-dsipy --help
+dsi --version
+dsi --help
 ```
 
-If `pip install -e` fails with *"Cannot update time stamp of directory 'src/dsipy.egg-info'"*, that folder is owned by root (it was created by a container run). Either remove it (`sudo rm -rf "$REPO/src/dsipy.egg-info"`) and install again, or skip the install and use the fallback below, which only needs the dependencies in your venv.
-
-Now start the lab. This block defines two helpers used everywhere below and, if `dsipy` is not installed, a fallback that runs it from the repository sources:
+Now start the lab. This block defines two helpers used everywhere below:
 
 ```bash
-export REPO="${REPO:-$HOME/projects/dsi-tools}"
-mkdir -p /tmp/dsipy-lab && cd /tmp/dsipy-lab
-
-if ! command -v dsipy >/dev/null 2>&1; then
-  export PYTHONPATH="$REPO/src" PYTHONDONTWRITEBYTECODE=1
-  dsipy() { python3 -m dsipy "$@"; }
-  export -f dsipy                    # so `sh -c` checks below can see it
-fi
+mkdir -p /tmp/dsi-lab && cd /tmp/dsi-lab
+command -v dsi >/dev/null || { echo "dsi is not on the PATH"; return 1 2>/dev/null || exit 1; }
 
 # expect <exit code> <command...>: run a command and compare its exit code
 expect() { local want=$1; shift; "$@"; local got=$?
@@ -40,21 +30,25 @@ expect() { local want=$1; shift; "$@"; local got=$?
 # check <description> <command...>: PASS if the command succeeds silently
 check() { local d=$1; shift; if "$@" >/dev/null 2>&1; then echo "PASS: $d"; else echo "FAIL: $d"; fi; }
 
-expect 0 dsipy --help
-expect 0 dsipy vcard --help
-expect 0 dsipy key --help
-expect 0 dsipy feeds --help
-expect 0 dsipy connections --help
+expect 0 dsi --help
+expect 0 dsi --version
+expect 2 dsi vcard          # a group without a subcommand shows its help and exits 2
+expect 0 dsi vcard --help
+expect 0 dsi key --help
+expect 0 dsi feeds --help
+expect 0 dsi connections --help
+expect 0 dsi plugin list
+expect 2 dsi no-such-command
 ```
 
-Expected: the top-level help lists `vcard`, `feeds`, `connections` and `key`, plus the global `--debug` option; every line above ends in `PASS`.
+Expected: the top-level help lists `vcard`, `feeds`, `connections`, `key` and `plugin`, plus the global `--debug` option; every line above ends in `PASS`.
 
-**Debug mode.** Errors are normally one red line. `--debug` (or `DSIPY_DEBUG=1`) also prints the Python traceback:
+**Debug mode.** Errors are normally one red line. `--debug` (or `DSI_DEBUG=1`) also prints a Go stack trace:
 
 ```bash
-expect 1 dsipy key pub-decode "not-base64!!"              # one-line error
-expect 1 dsipy --debug key pub-decode "not-base64!!"      # error + traceback
-DSIPY_DEBUG=1 dsipy key pub-decode "not-base64!!" 2>&1 | grep -c Traceback   # prints 1 or more
+expect 1 dsi key pub-decode "not-base64!!"              # one-line error
+expect 1 dsi --debug key pub-decode "not-base64!!"      # error + stack trace
+DSI_DEBUG=1 dsi key pub-decode "not-base64!!" 2>&1 | grep -c goroutine   # prints 1 or more
 ```
 
 ## 1. Keys
@@ -62,7 +56,7 @@ DSIPY_DEBUG=1 dsipy key pub-decode "not-base64!!" 2>&1 | grep -c Traceback   # p
 Ed25519 key pairs, as PEM files. **Needs:** nothing.
 
 ```bash
-expect 0 dsipy key create --priv alice.key --pub alice.pub
+expect 0 dsi key create --priv alice.key --pub alice.pub
 check "private key is mode 600" test "$(stat -c %a alice.key)" = 600
 ```
 
@@ -74,8 +68,8 @@ check "private key is mode 600" test "$(stat -c %a alice.key)" = 600
 **It never overwrites a key silently:**
 
 ```bash
-expect 1 dsipy key create --priv alice.key --pub alice.pub          # refuses
-expect 0 dsipy key create --priv alice.key --pub alice.pub --force  # explicit overwrite
+expect 1 dsi key create --priv alice.key --pub alice.pub          # refuses
+expect 0 dsi key create --priv alice.key --pub alice.pub --force  # explicit overwrite
 check "private key is still mode 600 after --force" test "$(stat -c %a alice.key)" = 600
 ```
 
@@ -84,11 +78,11 @@ Expected on the refusal: `❌ 'alice.key' already exists; refusing to overwrite 
 **Encode / decode** the public key between PEM and the Base64 form that goes in a vCard:
 
 ```bash
-B64=$(dsipy key pub-encode alice.pub)
+B64=$(dsi key pub-encode alice.pub)
 echo "$B64"
-check "pub-decode (argument) round-trips" test "$(dsipy key pub-decode "$B64")" = "$(cat alice.pub)"
-check "pub-decode (stdin) round-trips"    test "$(echo "$B64" | dsipy key pub-decode)" = "$(cat alice.pub)"
-expect 1 dsipy key pub-decode "not-base64!!"
+check "pub-decode (argument) round-trips" test "$(dsi key pub-decode "$B64")" = "$(cat alice.pub)"
+check "pub-decode (stdin) round-trips"    test "$(echo "$B64" | dsi key pub-decode)" = "$(cat alice.pub)"
+expect 1 dsi key pub-decode "not-base64!!"
 ```
 
 ## 2. Create a vCard
@@ -96,7 +90,7 @@ expect 1 dsipy key pub-decode "not-base64!!"
 **Needs:** nothing (this creates your identity for the rest of the guide).
 
 ```bash
-expect 0 dsipy vcard create -o alice.vcf --fn "Alice Example" \
+expect 0 dsi vcard create -o alice.vcf --fn "Alice Example" \
   --source https://alice.example/dsi.vcf --generate-key
 cat alice.vcf
 check "private key written with mode 600" test "$(stat -c %a vcard_private.pem)" = 600
@@ -119,29 +113,29 @@ END:VCARD
 **Key files are protected:** running it again must not clobber `vcard_private.pem`. Prove `--force` in a side folder so `alice.vcf` keeps matching its key:
 
 ```bash
-expect 1 dsipy vcard create -o again.vcf --fn "Alice Example" --source https://alice.example/dsi.vcf --generate-key
+expect 1 dsi vcard create -o again.vcf --fn "Alice Example" --source https://alice.example/dsi.vcf --generate-key
 check "alice's key file untouched" test -f vcard_private.pem
 mkdir -p forcedemo && ( cd forcedemo \
-  && dsipy vcard create -o a.vcf --fn A --source https://a.example/dsi.vcf --generate-key >/dev/null \
-  && expect 1 dsipy vcard create -o a.vcf --fn A --source https://a.example/dsi.vcf --generate-key \
-  && expect 0 dsipy vcard create -o a.vcf --fn A --source https://a.example/dsi.vcf --generate-key --force )
+  && dsi vcard create -o a.vcf --fn A --source https://a.example/dsi.vcf --generate-key >/dev/null \
+  && expect 1 dsi vcard create -o a.vcf --fn A --source https://a.example/dsi.vcf --generate-key \
+  && expect 0 dsi vcard create -o a.vcf --fn A --source https://a.example/dsi.vcf --generate-key --force )
 ```
 
 **More fields** (text is escaped properly, so commas and semicolons in values are safe):
 
 ```bash
-expect 0 dsipy vcard create -o rich.vcf --fn "Rich, Card" --n "Card;Rich" --nickname rich \
+expect 0 dsi vcard create -o rich.vcf --fn "Rich, Card" --n "Card;Rich" --nickname rich \
   --email rich@example.com --categories "tech,music" --note "Hello; world" \
   --url https://rich.example --source https://rich.example/dsi.vcf
-expect 0 dsipy vcard validate rich.vcf
+expect 0 dsi vcard validate rich.vcf
 ```
 
 **Interactive mode and resume.** `-i` asks for every field. If you cancel (Ctrl-C), your answers are kept in `vcard_create.tmp` and `--resume` offers them as defaults; the file is deleted once the card is saved. Try it for real:
 
 ```sh
-dsipy vcard create -i -o carol.vcf       # type a name, then press Ctrl-C
+dsi vcard create -i -o carol.vcf       # type a name, then press Ctrl-C
 ls vcard_create.tmp                        # exists
-dsipy vcard create -i --resume -o carol.vcf   # your earlier answers are the defaults; finish it
+dsi vcard create -i --resume -o carol.vcf   # your earlier answers are the defaults; finish it
 ls vcard_create.tmp                        # gone
 ```
 
@@ -149,12 +143,12 @@ Or scripted (answers piped in; `SOURCE` is mandatory in interactive mode):
 
 ```bash
 mkdir -p inter && cd inter
-printf 'Carol Example\nCarol\n' | expect 1 dsipy vcard create -i -o carol.vcf     # input ends early = cancel
+printf 'Carol Example\nCarol\n' | expect 1 dsi vcard create -i -o carol.vcf     # input ends early = cancel
 check "temp file kept after a cancel" test -f vcard_create.tmp
 mkdir -p ign && cp vcard_create.tmp ign/        # a plain run overwrites the temp file, so test on a copy
-check "temp file ignored without --resume" sh -c 'cd ign && printf "\n" | dsipy vcard create -i -o x.vcf 2>&1 | grep -q "Full Name (FN) \[\]"'
+check "temp file ignored without --resume" sh -c 'cd ign && printf "\n" | dsi vcard create -i -o x.vcf 2>&1 | grep -q "Full Name (FN) \[\]"'
 ( for i in $(seq 16); do echo; done; echo https://carol.example/dsi.vcf; printf 'n\nn\nn\nn\nn\ny\n' ) \
-  | expect 0 dsipy vcard create -i --resume -o carol.vcf
+  | expect 0 dsi vcard create -i --resume -o carol.vcf
 check "card was saved with the resumed name" grep -q '^FN:Carol Example' carol.vcf
 check "temp file deleted after saving" test ! -f vcard_create.tmp
 cd ..
@@ -165,11 +159,11 @@ cd ..
 **Needs:** `alice.vcf` from step 2.
 
 ```bash
-expect 0 dsipy vcard validate alice.vcf
-dsipy vcard validate alice.vcf --json
-expect 0 dsipy vcard validate alice.vcf --strict
-cat alice.vcf | expect 0 dsipy vcard validate -
-expect 0 dsipy vcard inspect alice.vcf
+expect 0 dsi vcard validate alice.vcf
+dsi vcard validate alice.vcf --json
+expect 0 dsi vcard validate alice.vcf --strict
+cat alice.vcf | expect 0 dsi vcard validate -
+expect 0 dsi vcard inspect alice.vcf
 ```
 
 ```text
@@ -188,42 +182,43 @@ Keys
 **Things that must be rejected** (exit 1):
 
 ```bash
-check "creating without --source warns" sh -c 'dsipy vcard create -o nosource.vcf --fn "No Source" 2>&1 | grep -q "No SOURCE"'
+check "creating without --source warns" sh -c 'dsi vcard create -o nosource.vcf --fn "No Source" 2>&1 | grep -q "No SOURCE"'
 check "the card was still created" test -f nosource.vcf
-expect 1 dsipy vcard validate nosource.vcf          # ❌ [source-missing] SOURCE property is required
-dsipy vcard validate nosource.vcf --json || true    # {"valid": false, "errors": [{"code": "source-missing", ...
+expect 1 dsi vcard validate nosource.vcf          # ❌ [source-missing] SOURCE property is required
+dsi vcard validate nosource.vcf --json || true    # {"valid": false, "errors": [{"code": "source-missing", ...
 cat alice.vcf alice.vcf > two.vcf
-expect 1 dsipy vcard validate two.vcf               # ❌ [malformed-line] multiple vCards found; only the first is parsed
+expect 1 dsi vcard validate two.vcf               # ❌ [malformed-line] multiple vCards found; only the first is parsed
 grep -v '^END' alice.vcf > noend.vcf
-expect 1 dsipy vcard validate noend.vcf             # ❌ ... missing END:VCARD
-expect 1 dsipy vcard validate does-not-exist.vcf    # ❌ Cannot load ...
+expect 1 dsi vcard validate noend.vcf             # ❌ ... missing END:VCARD
+expect 1 dsi vcard validate does-not-exist.vcf    # ❌ Cannot load ...
 ```
 
 `--strict` also fails on warnings. A card with no KEY has a warning only, so:
 
 ```bash
 printf 'BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Zed\r\nSOURCE:https://z.example/dsi.vcf\r\nEND:VCARD\r\n' > nokey.vcf
-expect 0 dsipy vcard validate nokey.vcf             # valid, with a [key-missing] warning
-expect 1 dsipy vcard validate nokey.vcf --strict    # warning becomes a failure
+expect 0 dsi vcard validate nokey.vcf             # valid, with a [key-missing] warning
+expect 1 dsi vcard validate nokey.vcf --strict    # warning becomes a failure
 ```
 
 **Normalize** prints the deterministic form used for signing (CRLF line endings, sorted parameters). With `--write` it rewrites the file:
 
 ```bash
 printf 'BEGIN:VCARD\nVERSION:4.0\nSOURCE:https://z.example/dsi.vcf\nFN:Zed\nEND:VCARD\n' > messy.vcf
-dsipy vcard validate messy.vcf                      # warning: [line-endings] Lines are not terminated with CRLF
-expect 0 dsipy vcard normalize messy.vcf --write
-check "line-ending warning is gone" sh -c '! dsipy vcard validate messy.vcf | grep -q line-endings'
-expect 1 dsipy vcard normalize https://localhost/x.vcf --write     # ❌ --write needs a local file.
+dsi vcard validate messy.vcf                      # warning: [line-endings] Lines are not terminated with CRLF
+expect 0 dsi vcard normalize messy.vcf --write
+check "line-ending warning is gone" sh -c '! dsi vcard validate messy.vcf | grep -q line-endings'
+expect 1 dsi vcard normalize https://localhost/x.vcf --write     # ❌ --write needs a local file.
 ```
 
 **Parse** prints the card as JSON (from a file, from a pipe, or `-`):
 
 ```bash
-dsipy vcard parse alice.vcf | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['fn'], d['source'], len(d['keys']), 'key(s)')"
-cat alice.vcf | expect 0 dsipy vcard parse > /dev/null
-expect 0 dsipy vcard parse - < alice.vcf > /dev/null
-expect 1 dsipy vcard parse < /dev/null             # ❌ No input data provided for parsing.
+dsi vcard parse alice.vcf | grep -o '"fn": "[^"]*"\|"source": "[^"]*"'
+check "parse prints the name" sh -c 'dsi vcard parse alice.vcf | grep -q "\"fn\": \"Alice Example\""' 
+cat alice.vcf | expect 0 dsi vcard parse > /dev/null
+expect 0 dsi vcard parse - < alice.vcf > /dev/null
+expect 1 dsi vcard parse < /dev/null             # ❌ No input data provided for parsing.
 ```
 
 ## 4. Key add, rotate, revoke
@@ -234,32 +229,32 @@ expect 1 dsipy vcard parse < /dev/null             # ❌ No input data provided 
 cp alice.vcf work.vcf
 
 # add: generates a NEW key pair (so --priv/--pub must be paths that do not exist yet) ...
-expect 0 dsipy key add work.vcf --priv add.key --pub add.pub --no-pref -o work_added.vcf
+expect 0 dsi key add work.vcf --priv add.key --pub add.pub --no-pref -o work_added.vcf
 check "two KEY lines after add" test "$(grep -c '^KEY' work_added.vcf)" = 2
 # ... or adds a public key you already have
-dsipy key create --priv k2.key --pub k2.pub >/dev/null
-expect 0 dsipy key add work.vcf --public-key "$(dsipy key pub-encode k2.pub)" --pref -o work_pk.vcf
-expect 1 dsipy key add work.vcf --priv add.key --pub add.pub -o x.vcf      # refuses to overwrite add.key
+dsi key create --priv k2.key --pub k2.pub >/dev/null
+expect 0 dsi key add work.vcf --public-key "$(dsi key pub-encode k2.pub)" --pref -o work_pk.vcf
+expect 1 dsi key add work.vcf --priv add.key --pub add.pub -o x.vcf      # refuses to overwrite add.key
 ```
 
 **Rotate** makes a new preferred key and revokes the old one in one step:
 
 ```bash
-expect 0 dsipy key rotate work.vcf --priv rot.key --pub rot.pub --reason rotated -o work_rot.vcf
+expect 0 dsi key rotate work.vcf --priv rot.key --pub rot.pub --reason rotated -o work_rot.vcf
 grep -E '^(KEY|REVKEY)' work_rot.vcf | cut -c1-80
 check "one REVKEY line"  test "$(grep -c '^REVKEY' work_rot.vcf)" = 1
-check "rotated card is valid" dsipy vcard validate work_rot.vcf
-dsipy vcard inspect work_rot.vcf | sed -n 4,8p                  # Keys: 2 / Revoked: 1
+check "rotated card is valid" dsi vcard validate work_rot.vcf
+dsi vcard inspect work_rot.vcf | sed -n 4,8p                  # Keys: 2 / Revoked: 1
 ```
 
 **Revoke** a key explicitly (reasons: compromised, rotated, superseded, retired, lost, deprecated):
 
 ```bash
-expect 0 dsipy key revoke work_rot.vcf --pub rot.pub --reason compromised -o work_rev.vcf
-# ⚠️ The vCard has no usable key left. Add one with `dsipy key add`.
-expect 0 dsipy vcard validate work_rev.vcf              # valid, but warns [key-pref-missing]
-expect 1 dsipy vcard validate work_rev.vcf --strict
-expect 1 dsipy key revoke work_rot.vcf --pub rot.pub --reason bogus   # Unknown reason 'bogus' ...
+expect 0 dsi key revoke work_rot.vcf --pub rot.pub --reason compromised -o work_rev.vcf
+# ⚠️ The vCard has no usable key left. Add one with `dsi key add`.
+expect 0 dsi vcard validate work_rev.vcf              # valid, but warns [key-pref-missing]
+expect 1 dsi vcard validate work_rev.vcf --strict
+expect 1 dsi key revoke work_rot.vcf --pub rot.pub --reason bogus   # Unknown reason 'bogus' ...
 ```
 
 ## 5. Endorsements
@@ -269,7 +264,7 @@ An endorsement is your signature over someone else's public key, stored in your 
 Create a second identity, Bob, in his own folder:
 
 ```bash
-mkdir -p bob && ( cd bob && dsipy vcard create -o bob.vcf --fn "Bob Builder" \
+mkdir -p bob && ( cd bob && dsi vcard create -o bob.vcf --fn "Bob Builder" \
   --source https://bob.example/dsi.vcf --generate-key >/dev/null )
 ls bob
 ```
@@ -277,12 +272,12 @@ ls bob
 Endorse Bob with Alice's key. Without `--write` it only prints the line; with it, the line is added to your card:
 
 ```bash
-expect 0 dsipy vcard endorse bob/bob.vcf --priv vcard_private.pem
-expect 0 dsipy vcard endorse bob/bob.vcf --priv vcard_private.pem -c high --vcard alice.vcf --write
+expect 0 dsi vcard endorse bob/bob.vcf --priv vcard_private.pem
+expect 0 dsi vcard endorse bob/bob.vcf --priv vcard_private.pem -c high --vcard alice.vcf --write
 check "X-ENDORSE line added to alice.vcf" grep -q '^X-ENDORSE' alice.vcf
-expect 0 dsipy vcard verify alice.vcf
-expect 0 dsipy vcard validate alice.vcf
-dsipy vcard inspect alice.vcf | tail -2                  # Endorsements 1
+expect 0 dsi vcard verify alice.vcf
+expect 0 dsi vcard validate alice.vcf
+dsi vcard inspect alice.vcf | tail -2                  # Endorsements 1
 ```
 
 ```text
@@ -292,25 +287,22 @@ dsipy vcard inspect alice.vcf | tail -2                  # Endorsements 1
 **Tampering must be caught.** Change one hex digit of the signature, then try an uppercase signature (the format requires lowercase):
 
 ```bash
-python3 - <<'PY'
-import re
-t = open('alice.vcf', newline='').read()
-flip = lambda m: 'SIG=' + ('0' if m.group(1) != '0' else '1')
-open('alice_bad.vcf', 'w', newline='').write(re.sub(r'SIG=([0-9a-f])', flip, t, count=1))
-open('alice_upper.vcf', 'w', newline='').write(re.sub(r'SIG=([0-9a-f]+)', lambda m: 'SIG=' + m.group(1).upper(), t))
-PY
-expect 1 dsipy vcard verify alice_bad.vcf       # invalid ... (signature does not match any key)
-expect 1 dsipy vcard verify alice_upper.vcf     # invalid ... (signature must be lowercase hexadecimal)
-expect 1 dsipy vcard validate alice_upper.vcf   # ❌ [endorse-sig-format] ... lowercase hexadecimal
+# flip the first hex digit of the first signature (0 becomes 1, anything else becomes 0)
+sed -E '0,/SIG=[0-9a-f]/{s/SIG=0/SIG=1/;t;s/SIG=[1-9a-f]/SIG=0/}' alice.vcf > alice_bad.vcf
+# uppercase every signature (GNU sed)
+sed -E 's/SIG=([0-9a-f]+)/SIG=\U\1/' alice.vcf > alice_upper.vcf
+expect 1 dsi vcard verify alice_bad.vcf       # invalid ... (signature does not match any key)
+expect 1 dsi vcard verify alice_upper.vcf     # invalid ... (signature must be lowercase hexadecimal)
+expect 1 dsi vcard validate alice_upper.vcf   # ❌ [endorse-sig-format] ... lowercase hexadecimal
 ```
 
 **A revoked signer is not trusted.** Revoke Alice's signing key and re-verify:
 
 ```bash
-expect 0 dsipy key revoke alice.vcf --key "$(dsipy key pub-encode vcard_public.pem)" --reason compromised -o alice_revoked.vcf
-expect 1 dsipy vcard verify alice_revoked.vcf   # invalid ... (the signing key was revoked as compromised)
-expect 2 dsipy vcard endorse bob/bob.vcf        # usage error: missing --priv
-expect 1 dsipy vcard endorse missing.vcf --priv vcard_private.pem   # ❌ No valid vCard files found.
+expect 0 dsi key revoke alice.vcf --key "$(dsi key pub-encode vcard_public.pem)" --reason compromised -o alice_revoked.vcf
+expect 1 dsi vcard verify alice_revoked.vcf   # invalid ... (the signing key was revoked as compromised)
+expect 2 dsi vcard endorse bob/bob.vcf        # usage error: missing --priv
+expect 1 dsi vcard endorse missing.vcf --priv vcard_private.pem   # ❌ No valid vCard files found.
 ```
 
 ## 6. QR codes
@@ -318,15 +310,15 @@ expect 1 dsipy vcard endorse missing.vcf --priv vcard_private.pem   # ❌ No val
 **Needs:** `alice.vcf`. For captions you need a `.ttf` font (the sample command finds one on Linux; elsewhere set `FONT` yourself).
 
 ```bash
-expect 0 dsipy vcard qr alice.vcf -o qr.png                 # the whole card as a QR code
-expect 0 dsipy vcard qr "https://alice.example" -o qr_text.png   # any text that is not a file
-cat alice.vcf | expect 0 dsipy vcard qr -o qr_pipe.png      # from a pipe
+expect 0 dsi vcard qr alice.vcf -o qr.png                 # the whole card as a QR code
+expect 0 dsi vcard qr "https://alice.example" -o qr_text.png   # any text that is not a file
+cat alice.vcf | expect 0 dsi vcard qr -o qr_pipe.png      # from a pipe
 file qr.png                                                  # PNG image data, 1210 x 1210 (size grows with the data)
 
 FONT="${FONT:-$(fc-list 2>/dev/null | grep -i 'DejaVuSans.ttf' | head -1 | cut -d: -f1)}"; echo "font: $FONT"
-expect 0 dsipy vcard qr alice.vcf -o qr_cap.png -t "Alice" -b "alice.example" -f "$FONT"
-python3 -c "from PIL import Image; Image.new('RGBA',(60,60),(200,30,30,255)).save('logo.png')"
-expect 0 dsipy vcard qr alice.vcf -o qr_logo.png -i logo.png     # logo in the centre
+expect 0 dsi vcard qr alice.vcf -o qr_cap.png -t "Alice" -b "alice.example" -f "$FONT"
+printf 'GIF89a\x01\x00\x01\x00\x80\x00\x00\xc8\x1e\x1e\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b' > logo.gif   # a 1x1 red GIF (any PNG, JPEG, GIF or WebP works)
+expect 0 dsi vcard qr alice.vcf -o qr_logo.png -i logo.gif     # logo in the centre
 ```
 
 Open `qr_cap.png` in an image viewer: "Alice" above the code and "alice.example" below. If `zbarimg` is installed (`zbar-tools`), prove the codes decode back to the data:
@@ -342,10 +334,10 @@ command -v zbarimg >/dev/null && {
 **Errors** (all exit 1): captions need an existing font, an output file is mandatory, a missing logo is rejected:
 
 ```bash
-expect 1 dsipy vcard qr alice.vcf -o e1.png -t "Alice"                  # ❌ A font file must be specified when using captions.
-expect 1 dsipy vcard qr alice.vcf -o e2.png -t "Alice" -f /nope.ttf     # ❌ The specified font file does not exist
-expect 1 dsipy vcard qr alice.vcf                                       # ❌ Output file path is required
-expect 1 dsipy vcard qr alice.vcf -o e3.png -i nope.png                 # ❌ The specified image file does not exist
+expect 1 dsi vcard qr alice.vcf -o e1.png -t "Alice"                  # ❌ A font file must be specified when using captions.
+expect 1 dsi vcard qr alice.vcf -o e2.png -t "Alice" -f /nope.ttf     # ❌ The specified font file does not exist
+expect 1 dsi vcard qr alice.vcf                                       # ❌ Output file path is required
+expect 1 dsi vcard qr alice.vcf -o e3.png -i nope.png                 # ❌ The specified image file does not exist
 ```
 
 ## 7. Fetch remote cards
@@ -355,42 +347,42 @@ expect 1 dsipy vcard qr alice.vcf -o e3.png -i nope.png                 # ❌ Th
 **Checks that need no internet** (the failures are the expected result; each prints a summary with `Failed: 1` and exits 1):
 
 ```bash
-expect 1 dsipy vcard fetch http://example.com/dsi.vcf --dry-run     # Unsupported URL scheme 'http' (allowed: https)
-expect 1 dsipy vcard fetch https://localhost/dsi.vcf --dry-run       # Refusing to fetch 'localhost': it resolves to a non-public address
-expect 1 dsipy vcard fetch https://127.0.0.1/dsi.vcf -n              # same, for an IP
-check "a failed fetch does not print Done." sh -c '! dsipy vcard fetch https://127.0.0.1/dsi.vcf -n 2>&1 | grep -q "Done\."'
-expect 1 dsipy vcard fetch https://192.168.1.10/dsi.vcf -n           # same, for a private range
-expect 1 dsipy vcard fetch alice.vcf --dry-run                       # Cannot resolve host 'alice.example' (a reserved, never-resolving name)
-expect 0 dsipy vcard fetch nosource.vcf --dry-run                    # No SOURCE property found. Skipping.  (Skipped: 1)
-expect 1 dsipy vcard fetch nope.vcf                                  # No valid .vcf files or URLs provided.
+expect 1 dsi vcard fetch http://example.com/dsi.vcf --dry-run     # Unsupported URL scheme 'http' (allowed: https)
+expect 1 dsi vcard fetch https://localhost/dsi.vcf --dry-run       # Refusing to fetch 'localhost': it resolves to a non-public address
+expect 1 dsi vcard fetch https://127.0.0.1/dsi.vcf -n              # same, for an IP
+check "a failed fetch does not print Done." sh -c '! dsi vcard fetch https://127.0.0.1/dsi.vcf -n 2>&1 | grep -q "Done\."'
+expect 1 dsi vcard fetch https://192.168.1.10/dsi.vcf -n           # same, for a private range
+expect 1 dsi vcard fetch alice.vcf --dry-run                       # Cannot resolve host 'alice.example' (a reserved, never-resolving name)
+expect 0 dsi vcard fetch nosource.vcf --dry-run                    # No SOURCE property found. Skipping.  (Skipped: 1)
+expect 1 dsi vcard fetch nope.vcf                                  # No valid .vcf files or URLs provided.
 ```
 
 **The full flow needs a card hosted on a real HTTPS URL** (GitHub Pages, any static host). Put a card there whose `SOURCE` is exactly that URL, then:
 
 ```sh
 URL=https://YOU.github.io/dsi.vcf
-dsipy vcard create -o remote.vcf --fn "Remote" --source $URL     # publish remote.vcf at $URL first
-mkdir mirror && dsipy vcard fetch $URL -o mirror                 # downloads mirror/dsi.vcf   (Downloaded: 1)
-dsipy vcard fetch $URL -o mirror                                 # nothing changed            (Unchanged: 1)
+dsi vcard create -o remote.vcf --fn "Remote" --source $URL     # publish remote.vcf at $URL first
+mkdir mirror && dsi vcard fetch $URL -o mirror                 # downloads mirror/dsi.vcf   (Downloaded: 1)
+dsi vcard fetch $URL -o mirror                                 # nothing changed            (Unchanged: 1)
 # change the hosted card (e.g. edit FN), then:
-dsipy vcard fetch $URL -o mirror --dry-run --diff               # shows the diff, writes nothing (Would update: 1)
-dsipy vcard fetch $URL -o mirror --backup                       # updates and keeps mirror/dsi.vcf.bak (Updated: 1)
-dsipy vcard fetch mirror/dsi.vcf --dry-run                      # re-reads the SOURCE inside a local file
+dsi vcard fetch $URL -o mirror --dry-run --diff               # shows the diff, writes nothing (Would update: 1)
+dsi vcard fetch $URL -o mirror --backup                       # updates and keeps mirror/dsi.vcf.bak (Updated: 1)
+dsi vcard fetch mirror/dsi.vcf --dry-run                      # re-reads the SOURCE inside a local file
 ```
 
-You can also verify the whole flow offline: the automated tests mock the network (`python -m pytest tests/test_vcard_fetch_cli.py -v`, see [12](#12-automated-tests)).
+You can also verify the whole flow offline: the automated tests run it against a local TLS server (`make test`, see [12](#12-automated-tests)).
 
 ## 8. Feeds: init, add, build
 
 A feed is a folder of Markdown posts with a small front matter block. **Needs:** nothing.
 
 ```bash
-expect 0 dsipy feeds init feeds                    # creates feeds/ and a sample feeds/hello.md
+expect 0 dsi feeds init feeds                    # creates feeds/ and a sample feeds/hello.md
 cat feeds/hello.md
-expect 0 dsipy feeds init feeds                    # idempotent: "Directory already exists"
-expect 0 dsipy feeds init nosample --no-sample     # only a .gitkeep
-expect 0 dsipy feeds add --title "Second post" --message "More news & <b>things</b>" --filename feeds/second.md
-expect 1 dsipy feeds add --title "Second post" --message "x" --filename feeds/second.md    # refuses to overwrite
+expect 0 dsi feeds init feeds                    # idempotent: "Directory already exists"
+expect 0 dsi feeds init nosample --no-sample     # only a .gitkeep
+expect 0 dsi feeds add --title "Second post" --message "More news & <b>things</b>" --filename feeds/second.md
+expect 1 dsi feeds add --title "Second post" --message "x" --filename feeds/second.md    # refuses to overwrite
 ```
 
 Now a few posts that exercise the interesting rules (dates in different formats, nested folders, a pinned id, HTML, special characters):
@@ -405,40 +397,40 @@ printf -- '---\ntitle: Html post\ndate: 2025-02-01 08:30\nuse_html_content: true
 **Build.** Title, link, description, author and e-mail are required:
 
 ```bash
-expect 1 dsipy feeds build feeds -o feed.rss </dev/null    # ❌ The title cannot be empty. (fails fast, never hangs waiting for input)
-expect 1 dsipy feeds build no-such-folder -o x.rss -t T -k https://a.example -d D -a A -e a@a.example   # ❌ Directory not found
-expect 0 dsipy feeds build feeds -o feed.rss -t "Alice Feed" -k https://alice.example \
+expect 1 dsi feeds build feeds -o feed.rss </dev/null    # ❌ The title cannot be empty. (fails fast, never hangs waiting for input)
+expect 1 dsi feeds build no-such-folder -o x.rss -t T -k https://a.example -d D -a A -e a@a.example   # ❌ Directory not found
+expect 0 dsi feeds build feeds -o feed.rss -t "Alice Feed" -k https://alice.example \
   -d "Alice's news" -a Alice -e alice@alice.example
 ```
 
 Verify the result is valid XML and every rule worked:
 
 ```bash
-python3 - <<'PY'
-import xml.etree.ElementTree as E
-root = E.parse('feed.rss').getroot()            # raises if the XML is malformed or a namespace is unbound
-print('root:', root.tag, '| items:', len(root.findall('.//item')))
-for it in root.iter('item'):
-    print(' -', it.findtext('title'), '|', it.findtext('guid'), '|', it.findtext('pubDate'))
-PY
+command -v xmllint >/dev/null && check "feed.rss is well-formed XML" xmllint --noout feed.rss
+echo "items: $(grep -o '<item>' feed.rss | wc -l)"
+grep -o '<item><title>[^<]*</title>\|<guid[^>]*>[^<]*</guid>\|<pubDate>[^<]*</pubDate>' feed.rss
 check "media namespace is declared" grep -q 'xmlns:media="http://search.yahoo.com/mrss/"' feed.rss
 check "HTML post is wrapped in CDATA" grep -q '<!\[CDATA\[<p>Hello' feed.rss
 ```
 
 ```text
-root: rss | items: 5
- - Second post | second | Sat, 03 Oct 2026 15:47:41 GMT
- - Hello DSI | hello | ...
- - Quoted & <title> | 2025-nested | Sat, 01 Mar 2025 08:00:00 GMT     <- +02:00 converted to UTC; id = path without extension
- - Html post | html | Sat, 01 Feb 2025 08:30:00 GMT                    <- "YYYY-MM-DD HH:MM" accepted
- - Pinned id | my-pinned-id | Wed, 15 Jan 2025 00:00:00 GMT           <- `id:` front matter wins
+items: 5
+<item><title>Second post</title>
+<pubDate>Sat, 03 Oct 2026 15:47:41 GMT</pubDate>
+<guid isPermaLink="false">second</guid>
+...
+<item><title>Quoted &amp; &lt;title&gt;</title>
+<pubDate>Sat, 01 Mar 2025 08:00:00 GMT</pubDate>      <- +02:00 converted to UTC
+<guid isPermaLink="false">2025-nested</guid>           <- id = path without extension
+...
+<guid isPermaLink="false">my-pinned-id</guid>          <- `id:` front matter wins
 ```
 
 The ids come from the file path *relative to the folder you build*, so they are the same wherever the folder lives:
 
 ```bash
 cp -r feeds feeds_copy
-dsipy feeds build feeds_copy -o copy.rss -t T -k https://alice.example -d D -a A -e a@a.example
+dsi feeds build feeds_copy -o copy.rss -t T -k https://alice.example -d D -a A -e a@a.example
 check "guids identical for a copied folder" sh -c 'diff <(grep -o "<guid[^>]*>[^<]*" feed.rss | sort) <(grep -o "<guid[^>]*>[^<]*" copy.rss | sort)'
 ```
 
@@ -446,9 +438,9 @@ check "guids identical for a copied folder" sh -c 'diff <(grep -o "<guid[^>]*>[^
 
 ```bash
 B="-t T -k https://a.example -d D -a A -e a@a.example"
-expect 0 dsipy feeds build feeds -o lim2.rss $B --limit 2
-expect 0 dsipy feeds build feeds -o lim0.rss $B --limit 0
-expect 2 dsipy feeds build feeds -o limneg.rss $B --limit -1
+expect 0 dsi feeds build feeds -o lim2.rss $B --limit 2
+expect 0 dsi feeds build feeds -o lim0.rss $B --limit 0
+expect 2 dsi feeds build feeds -o limneg.rss $B --limit -1
 check "limit 2 gives 2 items" test "$(grep -o '<item>' lim2.rss | wc -l)" = 2
 check "limit 0 gives 0 items" test "$(grep -o '<item>' lim0.rss | wc -l)" = 0
 check "no file written for a rejected limit" test ! -f limneg.rss
@@ -460,45 +452,41 @@ check "no file written for a rejected limit" test ! -f limneg.rss
 mkdir -p tpl
 printf -- '---\ntitle: Release {{ version }}\ndate: 2025-03-01\nlink: {{ site }}/posts/{{ file_name }}\nuse_html_content: true\n---\nRead **more** at {{ site }}. Unknown: {{ nope }}\n' > tpl/rel.md
 printf '# comment\nsite=https://file.example\nversion=0.9\n' > vars.env
-expect 0 dsipy feeds build tpl -o tpl.rss $B --var site=https://cli.example --var version=1.2 --var-file vars.env
-python3 - <<'PY'
-import xml.etree.ElementTree as E
-i = E.parse('tpl.rss').getroot().find('.//item')
-print(i.findtext('title')); print(i.findtext('link')); print(i.findtext('description'))
-PY
+expect 0 dsi feeds build tpl -o tpl.rss $B --var site=https://cli.example --var version=1.2 --var-file vars.env
+grep -o '<title>Release[^<]*</title>\|<link>https://cli[^<]*</link>\|<description>.*</description>' tpl.rss
 ```
 
 ```text
-Release 1.2
-https://cli.example/posts/rel.md
-<p>Read <strong>more</strong> at https://cli.example. Unknown: {{ nope }}</p>
+<title>Release 1.2</title>
+<link>https://cli.example/posts/rel.md</link>
+<description><![CDATA[<p>Read <strong>more</strong> at https://cli.example. Unknown: {{ nope }}</p>]]></description>
 ```
 
 Errors (the build never half-succeeds silently, and the message names the file):
 
 ```bash
-expect 2 dsipy feeds build tpl -o x.rss $B --var foo                  # Invalid --var 'foo': expected key=value
-expect 1 dsipy feeds build tpl -o x.rss $B --var-file missing.env     # Variable file not found
+expect 2 dsi feeds build tpl -o x.rss $B --var foo                  # Invalid --var 'foo': expected key=value
+expect 1 dsi feeds build tpl -o x.rss $B --var-file missing.env     # Variable file not found
 printf -- '---\ntitle: Bad date\ndate: not-a-date\n---\nx\n' > tpl/bad.md
-expect 1 dsipy feeds build tpl -o x.rss $B                            # tpl/bad.md: invalid date 'not-a-date' ...
+expect 1 dsi feeds build tpl -o x.rss $B                            # tpl/bad.md: invalid date 'not-a-date' ...
 rm tpl/bad.md
 printf -- '---\ntitle: Unterminated\ndate: 2025-01-01\nBody without closing marker\n' > tpl/unterm.md
-expect 1 dsipy feeds build tpl -o x.rss $B                            # tpl/unterm.md: unterminated front matter
+expect 1 dsi feeds build tpl -o x.rss $B                            # tpl/unterm.md: unterminated front matter
 rm tpl/unterm.md
 ```
 
 **Interactive** (`-i` asks for what is missing; the `feeds add` prompts are filename, then title, then message). Accepting every default must give a proper `.md` post inside `feeds/`:
 
 ```bash
-mkdir -p addtest && ( cd addtest && printf '\n\n\n' | dsipy feeds add -i >/dev/null \
+mkdir -p addtest && ( cd addtest && printf '\n\n\n' | dsi feeds add -i >/dev/null \
   && check "default post is feeds/<timestamp>.md" sh -c 'ls feeds/*.md >/dev/null' )
 ```
 
 Try the rest by hand:
 
 ```sh
-dsipy feeds add -i
-dsipy feeds build feeds -o interactive.rss -i
+dsi feeds add -i
+dsi feeds build feeds -o interactive.rss -i
 ```
 
 ## 9. Sign and verify feeds
@@ -506,10 +494,10 @@ dsipy feeds build feeds -o interactive.rss -i
 Signing adds an Ed25519 `<signature>` to every item so readers can prove a post came from the owner of a key. **Needs:** `feeds/` (step 8) and Alice's key pair `vcard_private.pem` / `vcard_public.pem` (step 2).
 
 ```bash
-expect 0 dsipy feeds build feeds -o signed.rss $B --sign-priv vcard_private.pem --sign-pub vcard_public.pem
+expect 0 dsi feeds build feeds -o signed.rss $B --sign-priv vcard_private.pem --sign-pub vcard_public.pem
 check "every item has a signature" test "$(grep -o '<signature' signed.rss | wc -l)" = "$(grep -o '<item>' signed.rss | wc -l)"
-expect 0 dsipy feeds verify signed.rss --pub vcard_public.pem     # public key
-expect 0 dsipy feeds verify signed.rss --vcard alice.vcf          # keys taken from the vCard
+expect 0 dsi feeds verify signed.rss --pub vcard_public.pem     # public key
+expect 0 dsi feeds verify signed.rss --vcard alice.vcf          # keys taken from the vCard
 ```
 
 ```text
@@ -522,97 +510,50 @@ expect 0 dsipy feeds verify signed.rss --vcard alice.vcf          # keys taken f
 
 ```bash
 sed 's|<title>Hello DSI</title>|<title>Hello EVIL</title>|' signed.rss > tampered.rss
-expect 1 dsipy feeds verify tampered.rss --vcard alice.vcf        # ❌ invalid  Hello EVIL (bad signature)
-expect 1 dsipy feeds verify signed.rss --pub k2.pub               # wrong key: no matching key for key-id ...
-expect 1 dsipy feeds verify signed.rss                            # ❌ Pass --vcard or --pub
-expect 0 dsipy feeds verify feed.rss --vcard alice.vcf            # unsigned feed: ⚠️ unsigned (warnings, not failures)
-expect 1 dsipy feeds build feeds -o one.rss $B --sign-priv vcard_private.pem   # ❌ Signing needs both --sign-priv and --sign-pub
-expect 1 dsipy feeds build feeds -o one.rss $B --sign-pub vcard_public.pem
-expect 1 dsipy feeds build feeds -o one.rss $B --sign-priv nope.pem --sign-pub vcard_public.pem   # ❌ Signing key file not found for --sign-priv: nope.pem
+expect 1 dsi feeds verify tampered.rss --vcard alice.vcf        # ❌ invalid  Hello EVIL (bad signature)
+expect 1 dsi feeds verify signed.rss --pub k2.pub               # wrong key: no matching key for key-id ...
+expect 1 dsi feeds verify signed.rss                            # ❌ Pass --vcard or --pub
+expect 0 dsi feeds verify feed.rss --vcard alice.vcf            # unsigned feed: ⚠️ unsigned (warnings, not failures)
+expect 1 dsi feeds build feeds -o one.rss $B --sign-priv vcard_private.pem   # ❌ Signing needs both --sign-priv and --sign-pub
+expect 1 dsi feeds build feeds -o one.rss $B --sign-pub vcard_public.pem
+expect 1 dsi feeds build feeds -o one.rss $B --sign-priv nope.pem --sign-pub vcard_public.pem   # ❌ Signing key file not found for --sign-priv: nope.pem
 check "no half-signed file was written" test ! -f one.rss
 ```
 
-## 10. Publish feeds
+## 10. Plugins
 
-`feeds publish` uploads feed files (`.xml`, `.rss`, `.json`) to GitHub Pages (`--provider github`) or S3 (`--provider s3`). Files keep their path relative to the folder you pass; for each file the tool reads the current remote copy, shows what would change, and writes only when different. It exits `1` if any file failed. Providers and their `--arg key=value` options are listed in [publishing.md](publishing.md).
-
-**Argument errors need no account:**
+`dsi` can be extended with executables named `dsi-<name>`; `dsi <name> args...` runs them (details in [plugins.md](plugins.md)). Publishing feeds to GitHub or S3 is meant to be such a plugin (`dsi-publish`, not released yet), so here we use a small stand-in. **Needs:** nothing.
 
 ```bash
-mkdir -p out/a out/b && cp feed.rss out/feed.rss && cp signed.rss out/a/feed.rss && cp lim2.rss out/b/feed.rss
-echo '{"x":1}' > out/data.json && echo ignored > out/notes.txt
-expect 1 dsipy feeds publish out --provider webdav                      # Unknown provider type: webdav
-expect 1 dsipy feeds publish out --provider github --arg owner=me       # missing required argument(s): repo, branch, token
-expect 1 dsipy feeds publish out --provider s3                          # missing required argument(s): bucket
-expect 2 dsipy feeds publish out --provider s3 --arg bucket             # Invalid --arg 'bucket': expected key=value
-mkdir -p emptydir
-expect 1 dsipy feeds publish emptydir --provider s3 --arg bucket=b --dry-run   # No feed files found
+mkdir -p plugins
+cat > plugins/dsi-hello <<'EOF'
+#!/bin/sh
+echo "hello from a plugin: args=[$*] version=$DSI_VERSION"
+[ "$1" = "--fail" ] && exit 7
+[ "$1" = "--stdin" ] && cat
+exit 0
+EOF
+chmod +x plugins/dsi-hello
+export DSI_PLUGIN_DIR="$PWD/plugins"
+
+expect 0 dsi hello a "b c" --flag        # hello from a plugin: args=[a b c --flag] version=...
+expect 7 dsi hello --fail                # the plugin's exit code is dsi's exit code
+echo "piped text" | dsi hello --stdin    # stdin is passed through
+check "plugin list shows it"    sh -c 'dsi plugin list | grep -q "^hello"'
+check "dsi --help lists it"     sh -c 'dsi --help | grep -A3 "^Plugins" | grep -q hello'
+expect 2 dsi publish                     # no dsi-publish plugin installed: No such command 'publish'
 ```
 
-**The whole flow, offline.** This tiny driver swaps the provider for a local folder (`./remote/`), so you can watch dry-run, publish, "unchanged", diff and nested paths without credentials:
+**Plugins cannot shadow core commands, and names cannot escape the directory:**
 
 ```bash
-cat > local_publish.py <<'PY'
-"""Run dsipy with a fake 'local' provider that publishes into ./remote/ (no network)."""
-import hashlib
-from pathlib import Path
-
-from dsipy.cli import feeds as feeds_cli
-from dsipy.cli.app import main_app
-from dsipy.publishing.base import PublishConflictError, Publisher
-
-ROOT = Path("remote")
-
-
-def _version(text):
-    return hashlib.sha1(text.encode()).hexdigest()
-
-
-class LocalPublisher(Publisher):
-    def get_remote(self, path):
-        target = ROOT / path
-        if not target.exists():
-            return None, None
-        text = target.read_text()
-        return text, _version(text)
-
-    def publish(self, path, content, version):
-        target = ROOT / path
-        if target.exists() and version != _version(target.read_text()):
-            raise PublishConflictError(f"{path} changed on the remote")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(content)
-
-
-feeds_cli.get_publisher = lambda provider, **kwargs: LocalPublisher()
-main_app()
-PY
-lp() { python3 local_publish.py "$@"; }
-
-expect 0 lp feeds publish out --provider local --prefix site --dry-run    # "Dry-run: would publish" x4, Would publish: 4
-check "dry-run wrote nothing" test ! -e remote
-expect 0 lp feeds publish out --provider local --prefix site             # Published: 4
-check "directory structure is kept" test -f remote/site/a/feed.rss -a -f remote/site/b/feed.rss -a -f remote/site/data.json
-check "non-feed files are ignored"  test ! -e remote/site/notes.txt
-expect 0 lp feeds publish out --provider local --prefix site             # second run: Unchanged: 4
-echo "changed locally" >> out/feed.rss
-expect 0 lp feeds publish out --provider local --prefix site --diff --dry-run   # shows a unified diff for feed.rss only
-expect 0 lp feeds publish out --provider local --prefix site             # Published: 1, Unchanged: 3
+printf '#!/bin/sh\necho "SHADOWED"\n' > plugins/dsi-key && chmod +x plugins/dsi-key
+check "dsi key still runs the core command" sh -c '! dsi key --help | grep -q SHADOWED'
+dsi plugin list | grep key                                  # key  ...  (shadowed by the core command, cannot be run)
+expect 2 dsi ../plugins/dsi-hello
+rm plugins/dsi-key
+unset DSI_PLUGIN_DIR
 ```
-
-**Against a real account** (optional; this publishes for real, so use a scratch repository or bucket). `--dry-run` still *reads* the remote file to compute the diff, so it needs valid credentials, but it never writes:
-
-```sh
-# GitHub Pages: a token with "Contents: read & write" on the repo
-dsipy feeds publish out --provider github --arg owner=YOU --arg repo=YOUR-SITE --arg branch=main --arg token=ghp_xxx --dry-run --diff
-dsipy feeds publish out --provider github --arg owner=YOU --arg repo=YOUR-SITE --arg branch=main --arg token=ghp_xxx
-
-# S3: credentials come from the normal AWS chain (env vars, ~/.aws, instance role)
-dsipy feeds publish out --provider s3 --arg bucket=YOUR-BUCKET --arg region=eu-west-1 --prefix site --dry-run --diff
-dsipy feeds publish out --provider s3 --arg bucket=YOUR-BUCKET --arg region=eu-west-1 --prefix site
-```
-
-Things to look for: nested files keep their folders; a second run reports `Unchanged`; if someone changes the remote file between the read and the write you get a *Conflict* message and exit `1` instead of silently overwriting; and S3 without a known ETag only *creates* files, it never overwrites.
 
 ## 11. connections (OPML)
 
@@ -620,71 +561,62 @@ Things to look for: nested files keep their folders; a second run reports `Uncha
 
 ```bash
 mkdir -p friends
-python3 - <<'PY'
-add = lambda s, extra: s.replace('END:VCARD\r\n', extra + 'END:VCARD\r\n')
-a = open('alice.vcf', newline='').read()
-open('friends/alice.vcf', 'w', newline='').write(add(a,
-    'X-FEED;LANGUAGE=en-US;CATEGORY=tech:https://alice.example/feed.rss\r\n'
-    'X-FEED;LANGUAGE=es-ES;TAGS=cocina,viajes:https://alice.example/es.rss\r\n'))
-b = open('bob/bob.vcf', newline='').read()
-open('friends/bob.vcf', 'w', newline='').write(add(b, 'X-FEED:https://bob.example/feed.rss\r\n'))
-open('friends/nofeed.vcf', 'w', newline='').write(a)           # valid card, no feed
-open('friends/broken.vcf', 'w').write('this is not a vcard\n')   # garbage
-PY
+sed 's|^END:VCARD|X-FEED;LANGUAGE=en-US;CATEGORY=tech:https://alice.example/feed.rss\r\nX-FEED;LANGUAGE=es-ES;TAGS=cocina,viajes:https://alice.example/es.rss\r\nEND:VCARD|' alice.vcf > friends/alice.vcf
+sed 's|^END:VCARD|X-FEED:https://bob.example/feed.rss\r\nEND:VCARD|' bob/bob.vcf > friends/bob.vcf
+cp alice.vcf friends/nofeed.vcf                                   # valid card, no feed
+printf 'this is not a vcard\n' > friends/broken.vcf                # garbage
 mkdir -p onlyfeeds && cp friends/alice.vcf friends/bob.vcf onlyfeeds/
-expect 0 dsipy connections feed friends                  # OPML to stdout; "Skipping malformed vCard in friends/broken.vcf"
-expect 0 dsipy connections feed friends -o following.opml
-python3 - <<'PY'
-import xml.etree.ElementTree as E
-for o in E.parse('following.opml').getroot().iter('outline'):
-    print(o.attrib)
-PY
+expect 0 dsi connections feed friends                  # OPML to stdout; "Skipping malformed vCard in friends/broken.vcf"
+expect 0 dsi connections feed friends -o following.opml
+grep -o '<outline [^>]*>' following.opml
 ```
 
 ```text
-{'text': 'Bob Builder', 'type': 'rss', 'xmlUrl': 'https://bob.example/feed.rss', 'title': 'Bob Builder'}
-{'text': 'Alice Example', 'type': 'rss', 'category': 'tech', 'xmlUrl': 'https://alice.example/feed.rss', 'language': 'en-US', 'title': 'Alice Example'}
-{'text': 'Alice Example', 'type': 'rss', 'category': 'cocina,viajes', 'xmlUrl': 'https://alice.example/es.rss', 'language': 'es-ES', 'title': 'Alice Example'}
+<outline text="Alice Example" type="rss" category="tech" xmlUrl="https://alice.example/feed.rss" language="en-US" title="Alice Example" />
+<outline text="Alice Example" type="rss" category="cocina,viajes" xmlUrl="https://alice.example/es.rss" language="es-ES" title="Alice Example" />
+<outline text="Bob Builder" type="rss" xmlUrl="https://bob.example/feed.rss" title="Bob Builder" />
 ```
 
 Three outlines from two cards (Alice has two feeds), the broken card was skipped with a warning, and the card without feeds contributed nothing. More cases:
 
 ```bash
 check "alice's two feeds both present" test "$(grep -o 'alice.example/[a-z]*.rss' following.opml | sort -u | wc -l)" = 2
-expect 0 dsipy connections feed onlyfeeds/alice.vcf onlyfeeds/bob.vcf -o sub/dir/two.opml     # creates parent folders
+expect 0 dsi connections feed onlyfeeds/alice.vcf onlyfeeds/bob.vcf -o sub/dir/two.opml     # creates parent folders
 check "output folder created" test -f sub/dir/two.opml
-expect 1 dsipy connections feed friends/nofeed.vcf     # ❌ No valid vCards with feed URLs found
-expect 1 dsipy connections feed does-not-exist         # ❌ No vCard files found
+expect 1 dsi connections feed friends/nofeed.vcf     # ❌ No valid vCards with feed URLs found
+expect 1 dsi connections feed does-not-exist         # ❌ No vCard files found
 ```
 
 ## 12. Automated tests
 
-The same behaviour is covered by the test suite. From the repository root, in an environment with the dev extras (`pip install -e ".[dev]"`):
+The same behaviour is covered by the Go test suite. From the repository root (tests run in the Docker dev container, no local Go needed):
 
 ```sh
-python -m pytest tests -q          # expect: 341 passed
-python -m pytest tests/test_vcard_fetch_cli.py -v     # for example: the fetch flow with the network mocked
+make test      # go test ./...
+make lint      # go vet + gofmt check
 ```
 
-| Feature | Test files |
+| Feature | Tests |
 |---|---|
-| `key` (create/add/rotate/revoke/encode) | `test_key_app.py`, `test_action_generate_keypair.py`, `test_lifecycle_cli.py`, `test_crypto.py` |
-| `vcard create` (flags, interactive, resume) | `test_vcard_cli.py`, `test_vcard_create_cli.py`, `test_vcard_serializer.py` |
-| `vcard validate/inspect/normalize/parse` | `test_validator.py`, `test_parser.py`, `test_canonical_utils.py`, `test_vcard_parse_cli.py` |
-| `vcard endorse/verify` | `test_endorsement_verify.py`, `test_vcard_cli.py` |
-| `vcard fetch` and URL safety | `test_vcard_fetch_cli.py`, `test_http_resolver.py`, `test_files.py` |
-| `vcard qr` | `test_qr.py`, `test_vcard_qr_cli.py` |
-| `feeds init/add/build` | `test_feeds_init.py`, `test_feeds_build.py`, `test_feeds_build_options.py`, `test_markdown_feed.py` |
-| Feed signing and `feeds verify` | `test_feeds_signing.py` |
-| `feeds publish` and providers | `test_feeds_publish_cli.py`, `test_publishing.py` |
-| `connections feed` | `test_generate_opml_from_vcards.py`, `test_feeds_build_options.py` |
-| CLI help text and error handling | `test_cli_help.py`, `test_cli_errors.py` |
+| `key` (create/add/rotate/revoke/encode) | `internal/cli/key_test.go`, `internal/crypto/crypto_test.go`, `internal/core/lifecycle_test.go` |
+| `vcard create` (flags, interactive, resume) | `internal/cli/vcard_test.go`, `internal/vcard/serializer_test.go` |
+| `vcard validate/inspect/normalize/parse` | `internal/core/validator_test.go`, `internal/vcard/parser_test.go`, `internal/canonical/canonical_test.go`, `internal/cli/vcard_test.go` |
+| `vcard endorse/verify` | `internal/endorsements/verify_test.go`, `internal/cli/vcard_test.go` |
+| `vcard fetch` and URL safety | `internal/cli/fetch_test.go`, `internal/core/fetch_test.go`, `internal/core/resolver_golden_test.go` |
+| `vcard qr` | `internal/vcard/qr_test.go`, `internal/cli/vcard_test.go` |
+| `feeds init/add/build/verify`, signing, OPML | `internal/cli/feeds_test.go`, `internal/feeds/feeds_test.go`, `internal/feeds/isodate_test.go` |
+| `connections feed` | `internal/cli/key_test.go`, `internal/feeds/feeds_test.go` |
+| Plugins | `internal/plugin/plugin_test.go`, `internal/cli/plugin_test.go` |
+| CLI help text and error handling | `internal/cli/app_test.go` |
+
+Most packages also compare against the frozen golden fixtures of the original Python tool (`testdata/golden`, see `testdata/README.md`).
 
 ## 13. Behaviour notes
 
 Things that can surprise you, all intended:
 
-- `feeds publish --dry-run` writes nothing but still *reads* the remote copy of every file (to tell "would publish" from "unchanged"), so it needs working credentials. For a credential-free run use the offline driver in step 10.
+- There is no `feeds publish` in the core; publishing is meant to be a `dsi-publish` plugin (see step 10).
+- A command group run without a subcommand (`dsi vcard`) prints its help and exits `2`.
 - `vcard create` without `--source` still creates the card but warns; `vcard validate` rejects it until a `SOURCE` is set. In interactive mode `SOURCE` is mandatory.
 - `feeds verify` on an unsigned feed warns (`unsigned`) and exits `0`; only an invalid signature exits `1`.
 - `--sign-priv` / `--sign-pub` accept a key *file* or the PEM *text* itself (handy for CI secrets); a value that is neither is reported as "not found".
@@ -694,7 +626,7 @@ Things that can surprise you, all intended:
 ## 14. Cleanup
 
 ```sh
-rm -rf /tmp/dsipy-lab      # the whole sandbox, including the demo private keys
+rm -rf /tmp/dsi-lab      # the whole sandbox, including the demo private keys
 ```
 
 The demo keys here are throw-away. Never reuse keys from this folder for a real identity, and keep real `*.pem` files out of git (the repository `.gitignore` already excludes `*.pem`, `out/` and `*.vcf`).

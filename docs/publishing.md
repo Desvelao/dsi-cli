@@ -1,79 +1,14 @@
-# Publishing feeds
+# Feed templates and publishing
 
-`dsipy feeds publish` uploads feed files (`.xml`, `.rss`, `.json`) to a provider. Only the feeds are published this way; host your `dsi.vcf` yourself (see [getting started](getting-started.md)).
+## Publishing
 
-```sh
-dsipy feeds publish <file-or-dir>... --provider <github|s3> [--arg key=value]... \
-  [--prefix <path>] [--diff] [--dry-run]
-```
+`dsi` builds and verifies feeds; it does not upload them. The previous Python tool had `feeds publish` (GitHub Pages and S3 providers); in the Go rewrite that is **not part of the core**, so that the binary stays small and free of cloud SDKs. It is meant to be provided by an external `dsi-publish` [plugin](plugins.md) (not released yet): once installed it would run as `dsi publish ...`.
 
-- `inputs`: files or directories. A directory is searched recursively and each file is published under its path relative to that directory (`out/2025/a.rss` with input `out` becomes `2025/a.rss`). A file given directly is published under its file name.
-- `--provider`: `github` or `s3` (required). Any other value fails with `Unknown provider type`. There are no `webdav` or `local` providers.
-- `--prefix`: path prepended to every remote path (`/` is appended if missing).
-- `--arg key=value`: provider-specific setting, repeatable. Split at the first `=`, so values may contain `=`. An argument without `=` is rejected. Unknown keys are ignored.
-
-## Providers
-
-### github
-
-Writes through the GitHub contents API (one commit per changed file) on a branch.
-
-| `--arg` | Required | Meaning |
-|---|---|---|
-| `owner` | yes | User or organization |
-| `repo` | yes | Repository name |
-| `branch` | yes | Branch to commit to (for GitHub Pages, usually `gh-pages`) |
-| `token` | yes | Personal access token with write access to the repository contents |
-
-```sh
-dsipy feeds publish out/ --provider github \
-  --arg owner=alice --arg repo=alice.github.io --arg branch=gh-pages \
-  --arg token="$GITHUB_TOKEN" --prefix feeds
-```
-
-The token is only read from `--arg token=...`; `dsipy` does not read any environment variable for it, so pass it from your shell or CI secret as above. Beware that command lines may be visible in process lists and shell history. `--prefix` is the directory inside the repository.
-
-### s3
-
-| `--arg` | Required | Meaning |
-|---|---|---|
-| `bucket` | yes | Bucket name |
-| `prefix` | no | Key prefix (slashes at both ends are trimmed) |
-| `region` | no | AWS region for the client |
-
-Credentials are not passed to `dsipy`: boto3's default credential chain is used (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN`, `AWS_PROFILE`, `~/.aws`, instance or role credentials). The key is `<--arg prefix>/<--prefix>/<relative path>`; in practice use one of them. Content type is `application/xml` for `.xml`, `.rss` and `.opml`.
-
-```sh
-AWS_PROFILE=dsi dsipy feeds publish feeds.rss --provider s3 \
-  --arg bucket=my-bucket --arg region=eu-west-1 --prefix public
-```
-
-## What happens for each file
-
-1. The local file is read as UTF-8 and the remote copy is fetched (this needs working credentials even with `--dry-run`).
-2. `--diff`: when a remote copy exists, a unified diff (remote vs local) is printed, or `No differences.`
-3. If the contents are identical the file is reported `Unchanged` and skipped.
-4. `--dry-run`: the file is reported as one that would be published and nothing is written.
-5. Otherwise it is uploaded.
-
-The summary shows `Published` (or `Would publish` with `--dry-run`), `Unchanged` and `Failed`.
-
-## Conflicts
-
-Uploads are conditional on the version that was read in step 1 (GitHub `sha`, S3 `ETag`):
-
-- File changed remotely in the meantime: `Conflict (remote changed since it was read)`; the file counts as failed. Run the command again.
-- S3 file that did not exist when read: it is created only if it still does not exist, so a file created by someone else meanwhile is never overwritten (this needs a bucket and region that support S3 conditional writes).
-
-## Exit codes
-
-`0` when every file was published, unchanged or (dry-run) would be published. `1` when no feed file is found, or when any file failed (unreadable, remote fetch error, conflict, upload error); the other files are still processed. A bad `--arg` or a missing required provider argument is reported before anything is uploaded (the latter as an error message from the provider selection).
-
-Use `dsipy --debug ...` (or `DSIPY_DEBUG=1`) to get full tracebacks.
+Until then, host the generated files with any tool you like (for GitHub Pages see [dsi-publish-template-github-pages](https://github.com/Desvelao/dsi-publish-template-github-pages), or use the reusable workflow `.github/workflows/gha-build-feeds.yml` to build the feed in CI).
 
 # Feed templates
 
-`dsipy feeds build` replaces `{{ name }}` placeholders in these item fields: title, id, link, image and content. Other fields (such as `date`) are not templated.
+`dsi feeds build` replaces `{{ name }}` placeholders in these item fields: title, id, link, image and content. Other fields (such as `date`) are not templated.
 
 ```markdown
 ---
@@ -85,7 +20,7 @@ Read more at {{ site }}.
 ```
 
 ```sh
-dsipy feeds build feeds -o feeds.rss --title "Blog" --link https://alice.example \
+dsi feeds build feeds -o feeds.rss --title "Blog" --link https://alice.example \
   --description "Notes" --author Alice --email alice@example.com \
   --var site=https://alice.example --var version=1.2 --var-file vars.env
 ```
