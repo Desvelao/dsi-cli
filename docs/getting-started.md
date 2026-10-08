@@ -4,7 +4,7 @@ A DSI identity is one vCard (`dsi.vcf`) that you host at a public HTTPS URL, plu
 
 ## 0. Install
 
-Download the `dsi` binary of your platform from the [Releases](https://github.com/Desvelao/dsi-cli/releases) page, check it against `checksums.txt`, make it executable and put it on your `PATH` (see the [README](../README.md#install)):
+Download the `dsi` binary of your platform from the [Releases](https://github.com/Desvelao/dsi-cli/releases) page, check it against `checksums.txt`, make it executable and put it on your `PATH` (copy-paste commands and the `releases/download/<tag>/dsi_<os>_<arch>` URL pattern are in the [README](../README.md#install)):
 
 ```sh
 dsi --version

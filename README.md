@@ -13,16 +13,24 @@ New here? Read the short [getting started guide](docs/getting-started.md). More:
 Download the binary for your platform from the [Releases](https://github.com/Desvelao/dsi-cli/releases) page (`dsi_linux_amd64`, `dsi_linux_arm64`, `dsi_darwin_amd64`, `dsi_darwin_arm64`, `dsi_windows_amd64.exe`, `dsi_windows_arm64.exe`), check it against `checksums.txt` and put it on your `PATH`:
 
 ```sh
-# latest stable release; for a pre-release or a pinned version use .../releases/download/<tag>/ instead
-base=https://github.com/Desvelao/dsi-cli/releases/latest/download
-curl -fsSLO "$base/dsi_linux_amd64"
+# Until the first stable release, set the tag explicitly (".../releases/latest/download" only resolves stable releases)
+tag=v0.1.0-alpha1
+base=https://github.com/Desvelao/dsi-cli/releases/download/$tag
+
+os=$(uname -s | tr '[:upper:]' '[:lower:]')                      # linux | darwin
+case "$(uname -m)" in x86_64) arch=amd64 ;; arm64|aarch64) arch=arm64 ;; esac
+asset=dsi_${os}_${arch}
+
+curl -fsSLO "$base/$asset"
 curl -fsSLO "$base/checksums.txt"
-sha256sum -c checksums.txt --ignore-missing
-install -m 0755 dsi_linux_amd64 ~/.local/bin/dsi
+sha256sum -c checksums.txt --ignore-missing                       # macOS: shasum -a 256 -c checksums.txt --ignore-missing
+install -m 0755 "$asset" ~/.local/bin/dsi
 dsi --version
 ```
 
-With a Go toolchain you can also build it from source: `go install github.com/Desvelao/dsi-cli/cmd/dsi@latest` (use `@<tag>` for a pre-release).
+For example, `https://github.com/Desvelao/dsi-cli/releases/download/v0.1.0-alpha1/dsi_darwin_arm64`. On Windows download `dsi_windows_amd64.exe` (or `_arm64`) from the same place and rename it to `dsi.exe`.
+
+With a Go toolchain you can also build it from source: `go install github.com/Desvelao/dsi-cli/cmd/dsi@v0.1.0-alpha1` (`@latest` does not pick pre-releases).
 
 > The first releases (`v0.1.0-alpha*`) are pre-releases.
 
