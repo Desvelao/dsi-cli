@@ -1,0 +1,10 @@
+{
+  "errors": [],
+  "valid": true,
+  "warnings": [
+    {
+      "code": "source-http",
+      "message": "SOURCE does not use HTTPS: http://alice.example/dsi.vcf"
+    }
+  ]
+}

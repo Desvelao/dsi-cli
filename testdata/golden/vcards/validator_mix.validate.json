@@ -1,0 +1,19 @@
+{
+  "errors": [
+    {
+      "code": "feed-scheme",
+      "message": "X-FEED #1 must use http or https, found 'ftp'"
+    },
+    {
+      "code": "dsi-version",
+      "message": "X-DSI-VERSION must be a two-digit revision, found '1'"
+    }
+  ],
+  "valid": false,
+  "warnings": [
+    {
+      "code": "feed-duplicate",
+      "message": "Feed URL appears more than once: https://a.example/f.rss"
+    }
+  ]
+}

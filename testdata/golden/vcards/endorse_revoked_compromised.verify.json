@@ -1,0 +1,8 @@
+[
+  {
+    "endorsee": "MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=",
+    "reason": "the signing key was revoked as compromised",
+    "signer": null,
+    "status": "invalid"
+  }
+]

@@ -1,0 +1,8 @@
+[
+  {
+    "endorsee": "MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=",
+    "reason": "non-hexadecimal number found in fromhex() arg at position 3",
+    "signer": null,
+    "status": "invalid"
+  }
+]

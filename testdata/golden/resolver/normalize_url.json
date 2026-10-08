@@ -1,0 +1,178 @@
+[
+  {
+    "in": "HTTPS://Alice.Example:443/dsi.vcf#frag",
+    "out": "https://alice.example/dsi.vcf"
+  },
+  {
+    "in": "https://alice.example/a/./b/../c.vcf",
+    "out": "https://alice.example/a/c.vcf"
+  },
+  {
+    "in": "http://alice.example:80/",
+    "out": "http://alice.example/"
+  },
+  {
+    "in": "https://alice.example",
+    "out": "https://alice.example/"
+  },
+  {
+    "in": "https://alice.example./x",
+    "out": "https://alice.example/x"
+  },
+  {
+    "in": "https://alice.example/%7euser/%2f",
+    "out": "https://alice.example/~user/%2F"
+  },
+  {
+    "in": "https://alice.example:8443/x?q=1",
+    "out": "https://alice.example:8443/x?q=1"
+  },
+  {
+    "error": "Port could not be cast to integer value as 'abc'",
+    "in": "https://alice.example:abc/x"
+  },
+  {
+    "in": "  https://alice.example/x  ",
+    "out": "https://alice.example/x"
+  },
+  {
+    "in": "https://e.com/%7Ealice",
+    "out": "https://e.com/~alice"
+  },
+  {
+    "in": "https://e.com/a%2fb",
+    "out": "https://e.com/a%2Fb"
+  },
+  {
+    "in": "https://e.com/a?x=%2f",
+    "out": "https://e.com/a?x=%2F"
+  },
+  {
+    "in": "https://e.com/a/b/..",
+    "out": "https://e.com/a/"
+  },
+  {
+    "in": "https://e.com/../a",
+    "out": "https://e.com/a"
+  },
+  {
+    "error": "Port out of range 0-65535",
+    "in": "https://e.com:99999/a"
+  },
+  {
+    "in": "https://e.com:0/a",
+    "out": "https://e.com/a"
+  },
+  {
+    "in": "https://e.com:00443/a",
+    "out": "https://e.com/a"
+  },
+  {
+    "in": "HTTP://[::1]:443/",
+    "out": "http://[::1]:443/"
+  },
+  {
+    "in": "http://[2001:DB8::1]:80/p",
+    "out": "http://[2001:db8::1]/p"
+  },
+  {
+    "in": "https://user:pw@E.com/x",
+    "out": "https://user:pw@e.com/x"
+  },
+  {
+    "in": "https://e.com?x=1",
+    "out": "https://e.com/?x=1"
+  },
+  {
+    "in": "https://e.com/%zz",
+    "out": "https://e.com/%zz"
+  },
+  {
+    "in": "https://e.com/a%41b%7e",
+    "out": "https://e.com/aAb~"
+  },
+  {
+    "in": "https:e.com",
+    "out": "https:e.com"
+  },
+  {
+    "in": "e.com/path",
+    "out": "e.com/path"
+  },
+  {
+    "in": "",
+    "out": "/"
+  },
+  {
+    "in": "https://",
+    "out": "https:///"
+  },
+  {
+    "in": "ftp://e.com:21/x",
+    "out": "ftp://e.com:21/x"
+  },
+  {
+    "in": "mailto:a@b.example",
+    "out": "mailto:a@b.example"
+  },
+  {
+    "in": "https://e.com/a//b/./c/",
+    "out": "https://e.com/a//b/c/"
+  },
+  {
+    "in": "https://e.com/.",
+    "out": "https://e.com/"
+  },
+  {
+    "in": "https://e.com/..",
+    "out": "https://e.com/"
+  },
+  {
+    "in": "https://e.com/a/../../b",
+    "out": "https://e.com/b"
+  },
+  {
+    "in": "https://e.com/a/.",
+    "out": "https://e.com/a/"
+  },
+  {
+    "in": "https://E.COM./X?Q=%7e#f",
+    "out": "https://e.com/X?Q=~"
+  },
+  {
+    "in": "//e.com/x",
+    "out": "//e.com/x"
+  },
+  {
+    "in": "https://e.com:/x",
+    "out": "https://e.com/x"
+  },
+  {
+    "in": "https://[::1]/x",
+    "out": "https://[::1]/x"
+  },
+  {
+    "in": "https://e.com/%E2%82%AC",
+    "out": "https://e.com/%E2%82%AC"
+  },
+  {
+    "in": "https://e.com/€",
+    "out": "https://e.com/€"
+  },
+  {
+    "in": "https://exämple.com/",
+    "out": "https://exämple.com/"
+  },
+  {
+    "in": "http://e.com:80",
+    "out": "http://e.com/"
+  },
+  {
+    "in": "https://e.com/?",
+    "out": "https://e.com/"
+  },
+  {
+    "in": "https://e.com/#",
+    "out": "https://e.com/"
+  }
+]

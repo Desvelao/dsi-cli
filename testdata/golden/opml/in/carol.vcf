@@ -1,0 +1,7 @@
+BEGIN:VCARD
+VERSION:4.0
+FN:Carol\nTwo \\   
+SOURCE:https://c.example/d.vcf
+X-FEED;CATEGORY= a , ,b ;TAGS=b,c:https://c.example/f.rss?a=1&b=2
+X-FEED:
+END:VCARD

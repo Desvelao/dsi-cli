@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "code": "structure",
+      "message": "Content must start with BEGIN:VCARD and end with END:VCARD"
+    },
+    {
+      "code": "malformed-line",
+      "message": "missing END:VCARD"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

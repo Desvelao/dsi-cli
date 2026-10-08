@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "endorse-sig-format",
+      "message": "X-ENDORSE #1: SIG must be 128 lowercase hexadecimal characters"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

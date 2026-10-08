@@ -1,4 +1,3 @@
-/build
 /dist
 # Key material and generated output (never commit)
 *.pem
@@ -6,5 +5,15 @@ out/
 *.vcf
 vcard_create.tmp
 vcard_create.tmp.part
-__pycache__/
-.pytest_cache/
+
+# Go build output
+/bin/
+
+# Test keys derived from fixed public seeds are not secrets; golden/crypto holds throwaway
+# fixtures (random EC key + RSA public key) used only for "not an Ed25519 key" error tests
+!testdata/golden/keys/*.pem
+!testdata/golden/**/*.pem
+!testdata/golden/**/*.vcf
+
+# Tasks
+tasks.csv

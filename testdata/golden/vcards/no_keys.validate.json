@@ -1,0 +1,10 @@
+{
+  "errors": [],
+  "valid": true,
+  "warnings": [
+    {
+      "code": "key-missing",
+      "message": "No KEY: endorsements and feed signatures cannot be verified"
+    }
+  ]
+}

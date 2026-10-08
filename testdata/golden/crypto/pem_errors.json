@@ -1,0 +1,6 @@
+{
+  "private_ec": "Private key is not an Ed25519 key",
+  "private_garbage": "Unable to load PEM file. See https://cryptography.io/en/latest/faq/#why-can-t-i-import-my-pem-file for more details. MalformedFraming",
+  "public_garbage": "Unable to load PEM file. See https://cryptography.io/en/latest/faq/#why-can-t-i-import-my-pem-file for more details. MalformedFraming",
+  "public_rsa": "Public key is not an Ed25519 key"
+}

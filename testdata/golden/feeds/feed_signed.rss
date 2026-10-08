@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>Alice's Feed</title><link>https://alice.example</link><description>A &lt;test&gt; feed &amp; more</description><language>en-US</language><lastBuildDate>Mon, 03 Feb 2025 04:05:06 GMT</lastBuildDate><generator>dsi</generator><docs>https://github.com/Desvelao/dsi-cli</docs><atom:link href="https://alice.example" rel="self"></atom:link><item><title>HTML Post</title><link>https://a.example/html</link><description><![CDATA[<h1>Heading</h1>
+<p>Some <em>emphasis</em>, <strong>strong</strong>, <code>code</code> and a <a href="https://x.example">link</a>.</p>
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>item 1</li>
+<li>item 2</li>
+</ul>
+<dl>
+<dt>Term</dt>
+<dd>Definition</dd>
+</dl>
+<pre><code>fenced
+</code></pre>]]></description><author>Alice (alice@alice.example)</author><pubDate>Fri, 03 Jan 2025 10:00:00 GMT</pubDate><guid isPermaLink="false">html</guid><signature alg="ed25519" key-id="MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=">f700fc6b7ccc4e01ba0a5f38f029a47c2a899823f50f21d848d785e0f3fb2eb442049b5012791f6b7683588bd9d06e60884588d223ec122d39da9a7f2329e400</signature><media:content url="https://a.example/pic.png" type="image/png" medium="image"></media:content></item><item><title>Quoted: Title</title><link>https://alice.example/feed/nested-deep-post</link><description>Body with overridden and https://a.example and {{ missing }}.</description><author>Alice (alice@alice.example)</author><pubDate>Thu, 02 Jan 2025 10:30:00 GMT</pubDate><guid isPermaLink="false">nested-deep-post</guid><signature alg="ed25519" key-id="MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=">65116cb005190a1f697fb119d0d553853669fc7ee29a3703fcf72fb09aa4aa4e5b592caa31ed6db94aaf47c2b5a5abd0d18e19b5dfcbbf90f06a39115ca5c90e</signature></item><item><title>nofront</title><link>https://alice.example/feed/nofront</link><description>Just text, no front matter.</description><author>Alice (alice@alice.example)</author><pubDate>Wed, 01 Jan 2025 00:00:01 GMT</pubDate><guid isPermaLink="false">nofront</guid><signature alg="ed25519" key-id="MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=">102b3a1ad596317297512141c0f1da4507e2b927543c57a3a31194bf98078e4b2a26a5d091d3ea3348d00fed16ca9b3ba346e628bd94e9fcef88cc613193470d</signature></item><item><title>Hello World</title><link>https://alice.example/feed/hello</link><description>First post body.</description><author>Alice (alice@alice.example)</author><pubDate>Wed, 01 Jan 2025 00:00:00 GMT</pubDate><guid isPermaLink="false">hello</guid><signature alg="ed25519" key-id="MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=">0b9ca10188b4c548e911f36a6d2d507eb322abaddc9a1ba80f352fd368af5898c99d507fff8e9481dc80f52aeb401afac5935819e5537d6a6c826795834eb201</signature></item><item><title>Explicit</title><link>https://alice.example/feed/my-id</link><description><![CDATA[<p>A &amp; B &lt; C</p>]]></description><author>Alice (alice@alice.example)</author><pubDate>Tue, 31 Dec 2024 23:59:59 GMT</pubDate><guid isPermaLink="false">my-id</guid><signature alg="ed25519" key-id="MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=">2cbe953ff8dc5f05d7744b2a9939f18ee846de6ef6ed432d9127057554ac564b8d7e7663a0052ab5752e9e414071355f0525b6d0bbc2b56e7f936fac96297d0b</signature></item></channel></rss>

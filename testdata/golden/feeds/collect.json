@@ -1,0 +1,83 @@
+[
+  {
+    "content": "<h1>Heading</h1>\n<p>Some <em>emphasis</em>, <strong>strong</strong>, <code>code</code> and a <a href=\"https://x.example\">link</a>.</p>\n<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td>\n<td>2</td>\n</tr>\n</tbody>\n</table>\n<ul>\n<li>item 1</li>\n<li>item 2</li>\n</ul>\n<dl>\n<dt>Term</dt>\n<dd>Definition</dd>\n</dl>\n<pre><code>fenced\n</code></pre>",
+    "content_type": "html",
+    "date": "2025-01-03T10:00:00",
+    "id": "html",
+    "image": "https://a.example/pic.png",
+    "link": "https://a.example/html",
+    "metadata": {
+      "date": "2025-01-03T10:00:00Z",
+      "file_ext": ".md",
+      "file_name": "html.md",
+      "image": "https://a.example/pic.png",
+      "link": "https://a.example/html",
+      "title": "HTML Post",
+      "use_html_content": "true"
+    },
+    "title": "HTML Post"
+  },
+  {
+    "content": "Body with {{ custom }} and {{ site }} and {{ missing }}.",
+    "content_type": "text",
+    "date": "2025-01-02T10:30:00",
+    "id": "nested-deep-post",
+    "image": null,
+    "link": null,
+    "metadata": {
+      "custom": "value",
+      "date": "2025-01-02T12:30:00+02:00",
+      "file_ext": ".md",
+      "file_name": "deep post.md",
+      "title": "Quoted: Title"
+    },
+    "title": "Quoted: Title"
+  },
+  {
+    "content": "Just text, no front matter.",
+    "content_type": "text",
+    "date": "2025-01-01T00:00:01",
+    "id": "nofront",
+    "image": null,
+    "link": null,
+    "metadata": {
+      "date": "2025-01-01T00:00:01Z",
+      "file_ext": ".md",
+      "file_name": "nofront.md",
+      "title": "nofront"
+    },
+    "title": "nofront"
+  },
+  {
+    "content": "First post body.",
+    "content_type": "text",
+    "date": "2025-01-01T00:00:00",
+    "id": "hello",
+    "image": null,
+    "link": null,
+    "metadata": {
+      "date": "2025-01-01",
+      "file_ext": ".md",
+      "file_name": "hello.md",
+      "title": "Hello World"
+    },
+    "title": "Hello World"
+  },
+  {
+    "content": "<p>A &amp; B &lt; C</p>",
+    "content_type": "html",
+    "date": "2024-12-31T23:59:59",
+    "id": "my-id",
+    "image": null,
+    "link": null,
+    "metadata": {
+      "date": "2024-12-31 23:59:59",
+      "file_ext": ".md",
+      "file_name": "explicit_id.md",
+      "id": "my-id",
+      "title": "Explicit",
+      "use_html_content": "yes"
+    },
+    "title": "Explicit"
+  }
+]

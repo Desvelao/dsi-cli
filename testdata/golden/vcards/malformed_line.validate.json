@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "malformed-line",
+      "message": "At line 6: Failed to parse line: this line has no colon"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

@@ -1,0 +1,27 @@
+{
+  "errors": [
+    {
+      "code": "structure",
+      "message": "Content must start with BEGIN:VCARD and end with END:VCARD"
+    },
+    {
+      "code": "version-missing",
+      "message": "VERSION property is missing"
+    },
+    {
+      "code": "fn-missing",
+      "message": "FN property is missing or empty"
+    },
+    {
+      "code": "source-missing",
+      "message": "SOURCE property is required"
+    }
+  ],
+  "valid": false,
+  "warnings": [
+    {
+      "code": "key-missing",
+      "message": "No KEY: endorsements and feed signatures cannot be verified"
+    }
+  ]
+}

@@ -1,57 +1,128 @@
 name: Release
 
+# Builds static dsi binaries for every platform and publishes them, with a
+# checksums.txt, as a GitHub release. Tags containing -alpha, -beta or -rc are
+# published as pre-releases.
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to release (e.g. v0.1.0)"
+        description: "Existing tag to build (e.g. v0.1.0)"
         required: true
         type: string
+      publish:
+        description: "Publish a GitHub release (false = only build the binaries as workflow artifacts)"
+        required: false
+        type: boolean
+        default: true
   push:
     tags:
-      - "*"
+      - "v*"
 
 permissions:
   contents: write
 
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Format and vet
+        run: |
+          test -z "$(gofmt -l .)"
+          go vet ./...
+      - name: Test
+        run: go test ./... -count=1
+
   build:
-    uses: ./.github/workflows/reusable-build-dist.yml
-    with:
-      ref: ${{ inputs.tag || github.ref_name }}
-      artifact-name: release-dist-${{ inputs.tag || github.ref_name }}
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          set -euo pipefail
+          ext=""
+          if [ "$GOOS" = "windows" ]; then ext=".exe"; fi
+          mkdir -p dist
+          go build -trimpath -ldflags "-s -w -X main.version=${TAG}" -o "dist/dsi_${GOOS}_${GOARCH}${ext}" ./cmd/dsi
+          ls -l dist
+      - name: Smoke test (native binary)
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        run: |
+          set -euo pipefail
+          out="$(./dist/dsi_linux_amd64 --version)"
+          echo "$out"
+          test "$out" = "dsi version ${TAG}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsi_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: dist/dsi_*
+          if-no-files-found: error
+          retention-days: 7
 
   release:
     needs: build
+    if: ${{ github.event_name == 'push' || inputs.publish }}
     runs-on: ubuntu-latest
-    env:
-      TAG_NAME: ${{ inputs.tag || github.ref_name }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.TAG_NAME }}
+          ref: ${{ env.TAG }}
           fetch-depth: 0
 
-      - name: Download dist artifact
+      - name: Download binaries
         uses: actions/download-artifact@v4
         with:
-          name: release-dist-${{ env.TAG_NAME }}
+          pattern: dsi_*
           path: dist
+          merge-multiple: true
+
+      - name: Checksums
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum dsi_* > checksums.txt
+          cat checksums.txt
 
       - name: Generate changelog list
         run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 "${TAG_NAME}^" 2>/dev/null || true)
+          PREV_TAG=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)
           if [ -n "$PREV_TAG" ]; then
-            RANGE="${PREV_TAG}..${TAG_NAME}"
+            RANGE="${PREV_TAG}..${TAG}"
           else
-            RANGE="${TAG_NAME}"
+            RANGE="${TAG}"
           fi
 
-          FEAT_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' 'tolower($1) ~ /^feat(\(.+\))?:/ { sub(/^feat(\(.+\))?:[[:space:]]*/, "", $1); printf "- %s ([@%s](https://github.com/%s), %s)\n", $1, $2, $2, $4 }')
-          FIX_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' 'tolower($1) ~ /^fix(\(.+\))?:/ { sub(/^fix(\(.+\))?:[[:space:]]*/, "", $1); printf "- %s ([@%s](https://github.com/%s), %s)\n", $1, $2, $2, $4 }')
-          CHANGE_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' 'tolower($1) !~ /^feat(\(.+\))?:/ && tolower($1) !~ /^fix(\(.+\))?:/ { printf "- %s ([@%s](https://github.com/%s), %s)\n", $1, $2, $2, $4 }')
+          # Link authors only when the email is a GitHub noreply address
+          # (ID+login@ or login@users.noreply.github.com); otherwise print the plain name.
+          AWK_LIB='function who(name, email,  l) { if (match(email, /^([0-9]+\+)?[A-Za-z0-9-]+@users\.noreply\.github\.com$/)) { l = email; sub(/@.*/, "", l); sub(/^[0-9]+\+/, "", l); return "[@" l "](https://github.com/" l ")" } return name } '
+          FEAT_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' "$AWK_LIB"'tolower($1) ~ /^feat(\(.+\))?:/ { sub(/^feat(\(.+\))?:[[:space:]]*/, "", $1); printf "- %s (%s, %s)\n", $1, who($2, $3), $4 }')
+          FIX_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' "$AWK_LIB"'tolower($1) ~ /^fix(\(.+\))?:/ { sub(/^fix(\(.+\))?:[[:space:]]*/, "", $1); printf "- %s (%s, %s)\n", $1, who($2, $3), $4 }')
+          CHANGE_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' "$AWK_LIB"'tolower($1) !~ /^feat(\(.+\))?:/ && tolower($1) !~ /^fix(\(.+\))?:/ { printf "- %s (%s, %s)\n", $1, who($2, $3), $4 }')
           {
             echo "## Changes"
             echo
@@ -68,17 +139,21 @@ jobs:
             if [ -n "$CHANGE_LIST" ]; then
               echo "### Other Changes"
               echo "$CHANGE_LIST"
-              echo "- None"
+              echo
             fi
+            echo "## Downloads"
+            echo
+            echo "Static binaries (no runtime needed): \`dsi_<os>_<arch>\` for linux, darwin and windows (amd64, arm64)."
+            echo "Verify with \`sha256sum -c checksums.txt --ignore-missing\`."
           } > RELEASE_NOTES.md
 
       - name: Create GitHub release and upload assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.TAG_NAME }}
+          tag_name: ${{ env.TAG }}
           generate_release_notes: true
-          prerelease: ${{ contains(env.TAG_NAME, '-alpha') || contains(env.TAG_NAME, '-beta') || contains(env.TAG_NAME, '-rc') }}
+          prerelease: ${{ contains(env.TAG, '-alpha') || contains(env.TAG, '-beta') || contains(env.TAG, '-rc') }}
           body_path: RELEASE_NOTES.md
           files: |
-            dist/*.whl
-            dist/*.tar.gz
+            dist/dsi_*
+            dist/checksums.txt

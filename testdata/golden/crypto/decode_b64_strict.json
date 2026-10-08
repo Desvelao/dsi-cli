@@ -1,0 +1,282 @@
+[
+  {
+    "hex": "",
+    "in": "",
+    "ok": true
+  },
+  {
+    "hex": "000000",
+    "in": "AAAA",
+    "ok": true
+  },
+  {
+    "hex": "0000",
+    "in": "AAA=",
+    "ok": true
+  },
+  {
+    "hex": "00",
+    "in": "AA==",
+    "ok": true
+  },
+  {
+    "error": "Invalid Base64 value: Excess padding not allowed",
+    "in": "AAAA=",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess padding not allowed",
+    "in": "AAAA==",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess padding not allowed",
+    "in": "AAAA===",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Invalid base64-encoded string: number of data characters (1) cannot be 1 more than a multiple of 4",
+    "in": "A",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Invalid base64-encoded string: number of data characters (5) cannot be 1 more than a multiple of 4",
+    "in": "AAAAA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Incorrect padding",
+    "in": "AAAAAA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Discontinuous padding not allowed",
+    "in": "AA=A",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Leading padding not allowed",
+    "in": "=AAA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Leading padding not allowed",
+    "in": "=",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Only base64 data is allowed",
+    "in": "AAAA\n",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Only base64 data is allowed",
+    "in": "AA AA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Only base64 data is allowed",
+    "in": "AA\nAA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Only base64 data is allowed",
+    "in": "@@@@",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Incorrect padding",
+    "in": "AAA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess padding not allowed",
+    "in": "AAAAAAAA=",
+    "ok": false
+  },
+  {
+    "hex": "00",
+    "in": "AB==",
+    "ok": true
+  },
+  {
+    "error": "Invalid Base64 value: Excess padding not allowed",
+    "in": "AAAB=",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess data after padding",
+    "in": "AA==AA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess data after padding",
+    "in": "AAA=AAAA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: 'ascii' codec can't encode character '\\xe9' in position 0: ordinal not in range(128)",
+    "in": "é",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Invalid base64-encoded string: number of data characters (1) cannot be 1 more than a multiple of 4",
+    "in": "A=",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Invalid base64-encoded string: number of data characters (1) cannot be 1 more than a multiple of 4",
+    "in": "A==",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Invalid base64-encoded string: number of data characters (1) cannot be 1 more than a multiple of 4",
+    "in": "A===",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Invalid base64-encoded string: number of data characters (5) cannot be 1 more than a multiple of 4",
+    "in": "AAAAA=",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Invalid base64-encoded string: number of data characters (5) cannot be 1 more than a multiple of 4",
+    "in": "AAAAA==",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Incorrect padding",
+    "in": "AAAAAA=",
+    "ok": false
+  },
+  {
+    "hex": "00000000",
+    "in": "AAAAAA==",
+    "ok": true
+  },
+  {
+    "error": "Invalid Base64 value: Excess data after padding",
+    "in": "AAAAAA===",
+    "ok": false
+  },
+  {
+    "hex": "0000000000",
+    "in": "AAAAAAA=",
+    "ok": true
+  },
+  {
+    "error": "Invalid Base64 value: Excess data after padding",
+    "in": "AAA==",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess data after padding",
+    "in": "AA===",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Incorrect padding",
+    "in": "AA=",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess data after padding",
+    "in": "AAA=A",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess data after padding",
+    "in": "AA==A",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess padding not allowed",
+    "in": "AAAA=A",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Discontinuous padding not allowed",
+    "in": "A=AA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Discontinuous padding not allowed",
+    "in": "AAAAA=A",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Only base64 data is allowed",
+    "in": "AAAA\r",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Only base64 data is allowed",
+    "in": "\u0000AAA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Only base64 data is allowed",
+    "in": "AAA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Discontinuous padding not allowed",
+    "in": "AAAAAA=A",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Only base64 data is allowed",
+    "in": "AA=\n",
+    "ok": false
+  },
+  {
+    "hex": "000000000000",
+    "in": "AAAAAAAA",
+    "ok": true
+  },
+  {
+    "error": "Invalid Base64 value: Invalid base64-encoded string: number of data characters (9) cannot be 1 more than a multiple of 4",
+    "in": "AAAAAAAAA",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Incorrect padding",
+    "in": "AAAAAAAAAA=",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Incorrect padding",
+    "in": "AAAAAAAAAAA",
+    "ok": false
+  },
+  {
+    "hex": "00000000000000",
+    "in": "AAAAAAAAAA==",
+    "ok": true
+  },
+  {
+    "error": "Invalid Base64 value: 'ascii' codec can't encode character '\\xe9' in position 2: ordinal not in range(128)",
+    "in": "AAéA",
+    "ok": false
+  },
+  {
+    "hex": "302a300506032b657003210038088e4c2ae82f5c45c6808a61a6490d3c612ce1da235714466fc748fbc4cbbb",
+    "in": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+    "ok": true
+  },
+  {
+    "error": "Invalid Base64 value: Incorrect padding",
+    "in": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s",
+    "ok": false
+  },
+  {
+    "error": "Invalid Base64 value: Excess data after padding",
+    "in": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=A",
+    "ok": false
+  },
+  {
+    "hex": "68656c6c6f",
+    "in": "aGVsbG8=",
+    "ok": true
+  }
+]

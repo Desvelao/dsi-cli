@@ -1,0 +1,5 @@
+BEGIN:VCARD
+VERSION:4.0
+FN:Alice Example
+SOURCE:https://alice.example/dsi.vcf
+END:VCARD

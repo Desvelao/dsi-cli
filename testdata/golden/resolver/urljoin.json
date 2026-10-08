@@ -1,0 +1,92 @@
+[
+  {
+    "base": "https://example.com/a/b",
+    "location": "/x",
+    "out": "https://example.com/x"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "c",
+    "out": "https://example.com/a/c"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "../c",
+    "out": "https://example.com/c"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "./c",
+    "out": "https://example.com/a/c"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "//other.example/x",
+    "out": "https://other.example/x"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "https://x.example/y",
+    "out": "https://x.example/y"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "?q=1",
+    "out": "https://example.com/a/b?q=1"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "#frag",
+    "out": "https://example.com/a/b#frag"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "",
+    "out": "https://example.com/a/b"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "http://x.example",
+    "out": "http://x.example"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "../../../c",
+    "out": "https://example.com/c"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "c/d?e#f",
+    "out": "https://example.com/a/c/d?e#f"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "/x/../y",
+    "out": "https://example.com/y"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "ftp://x/y",
+    "out": "ftp://x/y"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "javascript:alert(1)",
+    "out": "javascript:alert(1)"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "//x",
+    "out": "https://x"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "x:y",
+    "out": "x:y"
+  },
+  {
+    "base": "https://example.com/a/b",
+    "location": "/\\evil.example",
+    "out": "https://example.com/\\evil.example"
+  }
+]

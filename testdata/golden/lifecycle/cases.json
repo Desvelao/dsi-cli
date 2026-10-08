@@ -1,0 +1,66 @@
+{
+  "add_existing": {
+    "error": "The key is already listed as KEY",
+    "ok": false
+  },
+  "add_invalid_key": {
+    "error": "Invalid Base64 value: Only base64 data is allowed",
+    "ok": false
+  },
+  "add_not_preferred": {
+    "ok": true,
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nKEY;TYPE=public;ALG=ed25519;ENCODING=b:MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=\r\nEND:VCARD\r\n"
+  },
+  "add_preferred": {
+    "ok": true,
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=\r\nEND:VCARD\r\n"
+  },
+  "add_to_empty": {
+    "ok": true,
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=\r\nEND:VCARD\r\n"
+  },
+  "add_to_malformed": {
+    "error": "The vCard has malformed lines: At line 6: Failed to parse line: no colon here",
+    "ok": false
+  },
+  "revoke_bad_reason": {
+    "error": "Unknown reason 'bored' (expected one of compromised, deprecated, lost, retired, rotated, superseded)",
+    "ok": false
+  },
+  "revoke_preferred": {
+    "ok": true,
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nREVKEY;TYPE=public;ALG=ed25519;REASON=lost;DATE=20250304T050607Z;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nEND:VCARD\r\n"
+  },
+  "revoke_second": {
+    "ok": true,
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nKEY;TYPE=public;ALG=ed25519;ENCODING=b:MCowBQYDK2VwAyEAPuZ2QmBwf82HjQ+DfemTwqHYrA/Wqg+qE4+HZyKANwM=\r\nREVKEY;TYPE=public;ALG=ed25519;REASON=compromised;DATE=20250304T050607Z;ENCODING=b:MCowBQYDK2VwAyEAPuZ2QmBwf82HjQ+DfemTwqHYrA/Wqg+qE4+HZyKANwM=\r\nEND:VCARD\r\n"
+  },
+  "revoke_unknown_key": {
+    "error": "The key is not listed as KEY in the vCard",
+    "ok": false
+  },
+  "rotate_ambiguous": {
+    "error": "Cannot tell which key to rotate: the vCard must have exactly one KEY with PREF=1 (or pass the old key explicitly). If every key is revoked, use `dsi key add` to add a new one",
+    "ok": false
+  },
+  "rotate_bad_reason": {
+    "error": "A rotation reason must be 'rotated' or 'superseded'",
+    "ok": false
+  },
+  "rotate_default_old": {
+    "ok": true,
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=\r\nREVKEY;TYPE=public;ALG=ed25519;REASON=rotated;DATE=20250304T050607Z;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nEND:VCARD\r\n"
+  },
+  "rotate_existing_new": {
+    "error": "The new key is already listed as KEY",
+    "ok": false
+  },
+  "rotate_revoked_new": {
+    "error": "The new key is revoked in the vCard and cannot be added again",
+    "ok": false
+  },
+  "rotate_superseded": {
+    "ok": true,
+    "out": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nKEY;TYPE=public;ALG=ed25519;ENCODING=b:MCowBQYDK2VwAyEAPuZ2QmBwf82HjQ+DfemTwqHYrA/Wqg+qE4+HZyKANwM=\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=\r\nREVKEY;TYPE=public;ALG=ed25519;REASON=superseded;DATE=20250304T050607Z;ENCODING=b:MCowBQYDK2VwAyEAPuZ2QmBwf82HjQ+DfemTwqHYrA/Wqg+qE4+HZyKANwM=\r\nEND:VCARD\r\n"
+  }
+}

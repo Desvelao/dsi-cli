@@ -1,0 +1,30 @@
+[
+  {
+    "in": "plain",
+    "out": "plain"
+  },
+  {
+    "in": "a,b;c\\d",
+    "out": "a\\,b\\;c\\\\d"
+  },
+  {
+    "in": "line1\nline2",
+    "out": "line1\\nline2"
+  },
+  {
+    "in": "line1\r\nline2",
+    "out": "line1\\nline2"
+  },
+  {
+    "in": "emoji 😀 and ñandú",
+    "out": "emoji 😀 and ñandú"
+  },
+  {
+    "in": "",
+    "out": ""
+  },
+  {
+    "in": "trailing backslash\\",
+    "out": "trailing backslash\\\\"
+  }
+]

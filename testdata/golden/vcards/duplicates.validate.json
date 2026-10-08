@@ -1,0 +1,27 @@
+{
+  "errors": [
+    {
+      "code": "version-duplicate",
+      "message": "VERSION appears more than once"
+    }
+  ],
+  "valid": false,
+  "warnings": [
+    {
+      "code": "source-duplicate",
+      "message": "SOURCE appears more than once"
+    },
+    {
+      "code": "key-duplicate",
+      "message": "KEY appears more than once: MCowBQYDK2VwAyEA..."
+    },
+    {
+      "code": "feed-duplicate",
+      "message": "Feed URL appears more than once: https://a.example/f"
+    },
+    {
+      "code": "feed-duplicate",
+      "message": "Feed URL appears more than once: https://a.example/g"
+    }
+  ]
+}

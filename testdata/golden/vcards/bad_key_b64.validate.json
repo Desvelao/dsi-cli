@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "key-invalid",
+      "message": "KEY #2: Invalid Base64 value: Only base64 data is allowed"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

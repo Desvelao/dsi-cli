@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "code": "key-revoked",
+      "message": "The preferred KEY is also listed as revoked"
+    },
+    {
+      "code": "endorse-signature",
+      "message": "X-ENDORSE #1: the endorsement was signed after the key was revoked"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

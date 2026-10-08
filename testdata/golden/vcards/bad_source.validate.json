@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "source-invalid",
+      "message": "SOURCE is not an absolute URL: 'not a url'"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

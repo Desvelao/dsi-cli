@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "malformed-line",
+      "message": "At line 6: invalid PREF value 'x'"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

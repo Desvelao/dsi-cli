@@ -1,0 +1,20 @@
+[
+  {
+    "canonical": "endorse:MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=",
+    "endorsee": "bob",
+    "signature_hex": "0c036138c11d467ad6518502d45dd0eeea4745b17ebea8dac01849cdd3946d679a8c6bd039caff7077abfbc2aff9a1d96bff16b20134c1368fc93a2b17f07e00",
+    "signer": "alice"
+  },
+  {
+    "canonical": "endorse:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+    "endorsee": "alice",
+    "signature_hex": "7ad5d65538b586fec5d6b056f3a81cfafc74ab5b0a68620317922e2b3e2b0524ee20191ed9de7c1728705ddd44f4cd73e698f70c7a44e1cd56b772ddd3449d0e",
+    "signer": "bob"
+  },
+  {
+    "canonical": "endorse:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+    "endorsee": "dave",
+    "signature_hex": "710dfa910709ba5f29c68b49eef4af1cad956cb1c4a495f2a1efc38273121adf2e600919a4ce9fab0ad70b539683acb9bf3db38b890f7ac9968a597c15fdd306",
+    "signer": "carol"
+  }
+]

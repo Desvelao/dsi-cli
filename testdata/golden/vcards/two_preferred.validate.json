@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "key-pref",
+      "message": "More than one KEY is marked PREF=1"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}

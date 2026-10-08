@@ -1,0 +1,274 @@
+{
+  "adr": null,
+  "anniversary": null,
+  "bday": null,
+  "categories": null,
+  "dsi_version": {
+    "features": [
+      "tags",
+      "endorse"
+    ],
+    "revision": "00"
+  },
+  "email": null,
+  "endorsements": [
+    {
+      "confidence": "high",
+      "date": "20260210T120000Z",
+      "endorsee_key_b64": "MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=",
+      "signature_hex": "0c036138c11d467ad6518502d45dd0eeea4745b17ebea8dac01849cdd3946d679a8c6bd039caff7077abfbc2aff9a1d96bff16b20134c1368fc93a2b17f07e00"
+    }
+  ],
+  "errors": [],
+  "feeds": [
+    {
+      "category": "nature",
+      "language": "en-US",
+      "tags": "nature",
+      "url": "https://alice.example/feed.xml"
+    }
+  ],
+  "fn": "Alice Example",
+  "gender": null,
+  "impp": null,
+  "keys": [
+    {
+      "alg": "ed25519",
+      "key_b64": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "pref": 1
+    }
+  ],
+  "kind": null,
+  "lang": null,
+  "n": null,
+  "nickname": null,
+  "note": null,
+  "photo": null,
+  "raw": "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Alice Example\r\nSOURCE:https://alice.example/dsi.vcf\r\nKEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=\r\nREVKEY;TYPE=public;ALG=ed25519;REASON=rotated;DATE=20260221T110230Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=\r\nX-DSI-VERSION;FEATURES=tags,endorse:00\r\nX-FEED;LANGUAGE=en-US;TAGS=nature:https://alice.example/feed.xml\r\nX-SOCIAL;PLATFORM=github:alice\r\nX-ENDORSE;SIG=0c036138c11d467ad6518502d45dd0eeea4745b17ebea8dac01849cdd3946d679a8c6bd039caff7077abfbc2aff9a1d96bff16b20134c1368fc93a2b17f07e00;DATE=20260210T120000Z;CONFIDENCE=high;ENCODING=b:MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=\r\nEND:VCARD\r\n",
+  "raw_lines": [
+    {
+      "attr_name": null,
+      "attributes": {},
+      "group": null,
+      "line": "BEGIN:VCARD",
+      "name": "BEGIN",
+      "params": [],
+      "raw_value": "VCARD",
+      "value": null
+    },
+    {
+      "attr_name": "version",
+      "attributes": {},
+      "group": null,
+      "line": "VERSION:4.0",
+      "name": "VERSION",
+      "params": [],
+      "raw_value": "4.0",
+      "value": "4.0"
+    },
+    {
+      "attr_name": "fn",
+      "attributes": {},
+      "group": null,
+      "line": "FN:Alice Example",
+      "name": "FN",
+      "params": [],
+      "raw_value": "Alice Example",
+      "value": "Alice Example"
+    },
+    {
+      "attr_name": "source",
+      "attributes": {},
+      "group": null,
+      "line": "SOURCE:https://alice.example/dsi.vcf",
+      "name": "SOURCE",
+      "params": [],
+      "raw_value": "https://alice.example/dsi.vcf",
+      "value": "https://alice.example/dsi.vcf"
+    },
+    {
+      "attr_name": "key",
+      "attributes": {
+        "ALG": "ed25519",
+        "ENCODING": "b",
+        "PREF": "1",
+        "TYPE": "public"
+      },
+      "group": null,
+      "line": "KEY;TYPE=public;ALG=ed25519;PREF=1;ENCODING=b:MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "name": "KEY",
+      "params": [
+        [
+          "TYPE",
+          "public"
+        ],
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "PREF",
+          "1"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s=",
+      "value": "MCowBQYDK2VwAyEAOAiOTCroL1xFxoCKYaZJDTxhLOHaI1cURm/HSPvEy7s="
+    },
+    {
+      "attr_name": "revkey",
+      "attributes": {
+        "ALG": "ed25519",
+        "DATE": "20260221T110230Z",
+        "ENCODING": "b",
+        "REASON": "rotated",
+        "TYPE": "public"
+      },
+      "group": null,
+      "line": "REVKEY;TYPE=public;ALG=ed25519;REASON=rotated;DATE=20260221T110230Z;ENCODING=b:MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "name": "REVKEY",
+      "params": [
+        [
+          "TYPE",
+          "public"
+        ],
+        [
+          "ALG",
+          "ed25519"
+        ],
+        [
+          "REASON",
+          "rotated"
+        ],
+        [
+          "DATE",
+          "20260221T110230Z"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "value": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U="
+    },
+    {
+      "attr_name": "x-dsi-version",
+      "attributes": {
+        "FEATURES": "tags,endorse"
+      },
+      "group": null,
+      "line": "X-DSI-VERSION;FEATURES=tags,endorse:00",
+      "name": "X-DSI-VERSION",
+      "params": [
+        [
+          "FEATURES",
+          "tags,endorse"
+        ]
+      ],
+      "raw_value": "00",
+      "value": "00"
+    },
+    {
+      "attr_name": "x-feed",
+      "attributes": {
+        "LANGUAGE": "en-US",
+        "TAGS": "nature"
+      },
+      "group": null,
+      "line": "X-FEED;LANGUAGE=en-US;TAGS=nature:https://alice.example/feed.xml",
+      "name": "X-FEED",
+      "params": [
+        [
+          "LANGUAGE",
+          "en-US"
+        ],
+        [
+          "TAGS",
+          "nature"
+        ]
+      ],
+      "raw_value": "https://alice.example/feed.xml",
+      "value": "https://alice.example/feed.xml"
+    },
+    {
+      "attr_name": "x-social",
+      "attributes": {
+        "PLATFORM": "github"
+      },
+      "group": null,
+      "line": "X-SOCIAL;PLATFORM=github:alice",
+      "name": "X-SOCIAL",
+      "params": [
+        [
+          "PLATFORM",
+          "github"
+        ]
+      ],
+      "raw_value": "alice",
+      "value": "alice"
+    },
+    {
+      "attr_name": "x-endorse",
+      "attributes": {
+        "CONFIDENCE": "high",
+        "DATE": "20260210T120000Z",
+        "ENCODING": "b",
+        "SIG": "0c036138c11d467ad6518502d45dd0eeea4745b17ebea8dac01849cdd3946d679a8c6bd039caff7077abfbc2aff9a1d96bff16b20134c1368fc93a2b17f07e00"
+      },
+      "group": null,
+      "line": "X-ENDORSE;SIG=0c036138c11d467ad6518502d45dd0eeea4745b17ebea8dac01849cdd3946d679a8c6bd039caff7077abfbc2aff9a1d96bff16b20134c1368fc93a2b17f07e00;DATE=20260210T120000Z;CONFIDENCE=high;ENCODING=b:MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=",
+      "name": "X-ENDORSE",
+      "params": [
+        [
+          "SIG",
+          "0c036138c11d467ad6518502d45dd0eeea4745b17ebea8dac01849cdd3946d679a8c6bd039caff7077abfbc2aff9a1d96bff16b20134c1368fc93a2b17f07e00"
+        ],
+        [
+          "DATE",
+          "20260210T120000Z"
+        ],
+        [
+          "CONFIDENCE",
+          "high"
+        ],
+        [
+          "ENCODING",
+          "b"
+        ]
+      ],
+      "raw_value": "MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14=",
+      "value": "MCowBQYDK2VwAyEA3XVgQP3VFF4r+YMtJk3QgOSz5zAWvfZXS0zYfqppf14="
+    },
+    {
+      "attr_name": null,
+      "attributes": {},
+      "group": null,
+      "line": "END:VCARD",
+      "name": "END",
+      "params": [],
+      "raw_value": "VCARD",
+      "value": null
+    }
+  ],
+  "revocations": [
+    {
+      "date": "20260221T110230Z",
+      "key_b64": "MCowBQYDK2VwAyEAM/WjG8levvwNJ7hsTWzAtWvPQFP7s1ov4NfN1n8qq5U=",
+      "reason": "rotated"
+    }
+  ],
+  "social": [
+    {
+      "platform": "github",
+      "value": "alice"
+    }
+  ],
+  "source": "https://alice.example/dsi.vcf",
+  "tel": null,
+  "url": null,
+  "version": "4.0"
+}

@@ -1,0 +1,10 @@
+{
+  "errors": [],
+  "valid": true,
+  "warnings": [
+    {
+      "code": "key-pref-missing",
+      "message": "No KEY is marked PREF=1"
+    }
+  ]
+}

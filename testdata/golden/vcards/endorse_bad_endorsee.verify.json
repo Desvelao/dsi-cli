@@ -1,0 +1,8 @@
+[
+  {
+    "endorsee": "@@@",
+    "reason": "Invalid Base64 value: Only base64 data is allowed",
+    "signer": null,
+    "status": "invalid"
+  }
+]

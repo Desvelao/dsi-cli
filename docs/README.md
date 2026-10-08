@@ -1,26 +1,24 @@
-# dsipy documentation
+# dsi documentation
 
-- [Getting started](getting-started.md): create a vCard and keys, validate, endorse, publish a feed, host it.
+- [Getting started](getting-started.md): create a vCard and keys, validate, endorse, build a feed, host it.
 - [Command reference](commands.md): every command and option, with examples.
-- [Publishing feeds and templates](publishing.md): `feeds publish` providers (GitHub, S3), `--arg`, `--diff`/`--dry-run`, conflicts, exit codes, and `{{ }}` templates for `feeds build`.
+- [Feed templates and publishing](publishing.md): `{{ }}` templates for `feeds build`, and where publishing went.
+- [Plugins](plugins.md): extend `dsi` with `dsi-<name>` executables.
 - [Hands-on testing guide](testing-guide.md): runnable commands with expected results to try and verify every feature yourself, in a throw-away folder.
 
-## Install and run
+## Install
 
-Requires Python 3.12 or newer. From the repository root:
+Download the binary of your platform from the [Releases](https://github.com/Desvelao/dsi-cli/releases) page, verify it with `checksums.txt` and put it on your `PATH` (details in the [README](../README.md#install)). Then:
 
 ```sh
-pip install .          # installs the `dsipy` command
-pip install -e .       # editable install for development
-dsipy --help
+dsi --version
+dsi --help
 ```
-
-Without installing, `python -m dsipy` works from the `src` directory (`cd src && python -m dsipy --help`) once the dependencies are installed.
 
 ## Development
 
 ```sh
-pip install -e ".[dev]"
-python -m pytest -q
-black src tests
+make test    # in the Docker dev container
+make lint
+make build   # bin/dsi
 ```

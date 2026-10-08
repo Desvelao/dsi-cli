@@ -1,0 +1,1 @@
+{"valid": false, "errors": [{"code": "social-platform", "message": "X-SOCIAL #1: PLATFORM must be lowercase letters a-z, found 'github1'"}, {"code": "social-value", "message": "X-SOCIAL #2: value is empty"}], "warnings": [{"code": "social-duplicate", "message": "Duplicate X-SOCIAL: x:dup"}]}

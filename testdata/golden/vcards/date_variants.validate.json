@@ -1,0 +1,46 @@
+{
+  "errors": [
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #5: DATE must use YYYYMMDDThhmmssZ, found '20250230T000000Z'"
+    },
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #6: DATE must use YYYYMMDDThhmmssZ, found '20250101T000060Z'"
+    },
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #8: DATE must use YYYYMMDDThhmmssZ, found '20250101T240000Z'"
+    },
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #9: DATE must use YYYYMMDDThhmmssZ, found '00000101T000000Z'"
+    },
+    {
+      "code": "revkey-invalid",
+      "message": "REVKEY #11: Invalid Base64 value: Only base64 data is allowed"
+    },
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #11: DATE must use YYYYMMDDThhmmssZ, found '20250101T1'"
+    },
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #12: DATE must use YYYYMMDDThhmmssZ, found '20250101T000000'"
+    },
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #13: DATE must use YYYYMMDDThhmmssZ, found ' 20250101T000000Z'"
+    },
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #14: DATE must use YYYYMMDDThhmmssZ, found '20250101T000000Z '"
+    },
+    {
+      "code": "revkey-date",
+      "message": "REVKEY #16: DATE must use YYYYMMDDThhmmssZ, found '20250229T000000Z'"
+    }
+  ],
+  "valid": false,
+  "warnings": []
+}
