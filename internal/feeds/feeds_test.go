@@ -3,6 +3,7 @@ package feeds
 import (
 	"crypto/ed25519"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -10,12 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/Desvelao/dsi-cli/internal/testutil"
 )
 
-// copyPosts copies the golden posts to a temp dir (git does not keep mtimes,
-// and nofront.md takes its date from its modification time).
+// copyPosts copies the golden posts to a temp dir.
 func copyPosts(t *testing.T) string {
 	t.Helper()
 	dst := filepath.Join(t.TempDir(), "posts")
@@ -32,11 +32,7 @@ func copyPosts(t *testing.T) string {
 		if err != nil {
 			return err
 		}
-		out := filepath.Join(dst, rel)
-		if err := os.WriteFile(out, data, 0o644); err != nil {
-			return err
-		}
-		return os.Chtimes(out, time.Unix(1735689601, 0), time.Unix(1735689601, 0))
+		return os.WriteFile(filepath.Join(dst, rel), data, 0o644)
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -136,7 +132,7 @@ func buildGoldenFeed(t *testing.T, items []*State, sign bool) string {
 	t.Helper()
 	var in feedInputs
 	testutil.GoldenJSON(t, "feeds/feed_inputs.json", &in)
-	vars := pyutil.NewOrderedMap()
+	vars := strutil.NewOrderedMap()
 	for _, k := range []string{"site", "custom"} { // generator's dict order
 		vars.Set(k, in.Vars[k])
 	}
@@ -249,7 +245,11 @@ func TestVerifyFeedItemsGolden(t *testing.T) {
 }
 
 func TestVerifyRejectsDTDAndGarbage(t *testing.T) {
-	for _, doc := range []string{`<!DOCTYPE rss><rss/>`, `<!ENTITY x "y">`} {
+	for _, doc := range []string{
+		`<!DOCTYPE rss><rss/>`, `<!ENTITY x "y">`, `<!doctype rss><rss/>`, `<!DocType rss><rss/>`,
+		`<!entity x "y"><rss/>`, `<?xml version="1.0"?><!DOCTYPE rss [<!ENTITY a "b">]><rss>&a;</rss>`,
+		`<rss/><!DOCTYPE rss>`, `<!ELEMENT rss ANY><rss/>`,
+	} {
 		if _, err := VerifyFeedItems(doc, nil); err == nil || !strings.Contains(err.Error(), "not allowed") {
 			t.Errorf("%q: %v", doc, err)
 		}
@@ -264,6 +264,14 @@ func TestVerifyRejectsDTDAndGarbage(t *testing.T) {
 	}
 }
 
+func TestVerifyAcceptsDoctypeTextInCDATA(t *testing.T) {
+	doc := `<rss><channel><item><title><![CDATA[<!DOCTYPE x> <!ENTITY y "z">]]></title></item><item><title>&lt;!DOCTYPE x&gt;</title></item></channel></rss>`
+	res, err := VerifyFeedItems(doc, nil)
+	if err != nil || len(res) != 2 || res[0].Status != StatusUnsigned || res[0].Title != `<!DOCTYPE x> <!ENTITY y "z">` {
+		t.Fatalf("%+v %v", res, err)
+	}
+}
+
 func TestGenerateOPMLGolden(t *testing.T) {
 	dir := filepath.Join(testutil.GoldenDir(), "opml", "in")
 	var warnings []string
@@ -271,7 +279,7 @@ func TestGenerateOPMLGolden(t *testing.T) {
 	for i := range files {
 		files[i] = filepath.Join(dir, files[i])
 	}
-	got, err := GenerateOPMLFromVCards(files, &warnings)
+	got, err := GenerateOPMLFromVCards(files, "", &warnings)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -281,25 +289,25 @@ func TestGenerateOPMLGolden(t *testing.T) {
 	if len(warnings) != 1 || !strings.Contains(warnings[0], "No such file or directory") {
 		t.Errorf("warnings: %v", warnings)
 	}
-	if _, err := GenerateOPMLFromVCards([]string{files[2]}, nil); err == nil {
+	if _, err := GenerateOPMLFromVCards([]string{files[2]}, "", nil); err == nil {
 		t.Error("cards without feeds must fail")
 	}
 }
 
 // knownMarkdownDiffs are inputs where goldmark (CommonMark) legitimately differs
-// from Python-Markdown (original Markdown rules + "extra"); everything else must match.
+// from the reference Markdown renderer (original Markdown rules + "extra"); everything else must match.
 var knownMarkdownDiffs = map[string]string{
 	"*em* **strong** ***both*** `code` ~~strike~~":         "nesting order of ***x***",
 	"> quote\n> more\n\n> second":                          "blockquotes separated by a blank line are merged by Markdown.pl",
 	"- a\n- b\n    - nested\n- c":                          "newline before a nested list",
-	"<https://auto.example> and <me@x.example>":            "mailto links are entity-obfuscated by Python-Markdown",
+	"<https://auto.example> and <me@x.example>":            "mailto links are entity-obfuscated by the reference renderer",
 	"<div>raw <b>html</b></div>\n\ntext":                   "blank line after a raw HTML block",
-	"A & B < C > D &copy; &amp; &#169;":                    "named/numeric entities are kept by Python-Markdown",
+	"A & B < C > D &copy; &amp; &#169;":                    "named/numeric entities are kept by the reference renderer",
 	"Footnote ref[^1].\n\n[^1]: The note.":                 "footnote markup",
 	"*[HTML]: Hyper Text Markup Language\n\nThe HTML spec": "abbr extension not supported",
 	"## Heading {#custom-id .cls}\n":                       "attr_list extension not supported",
 	"<div markdown=\"1\">\n*inside*\n</div>":               "md_in_html extension not supported",
-	"Tab\there":                                            "tabs are expanded to spaces by Python-Markdown",
+	"Tab\there":                                            "tabs are expanded to spaces by the reference renderer",
 	"<!-- comment -->\n\ntext":                             "blank line after an HTML comment",
 	"1) paren list\n2) two":                                "')' list markers are CommonMark only",
 	"Hard  \nbreak\\\nbackslash":                           "backslash line breaks are CommonMark only",
@@ -319,18 +327,18 @@ func TestRenderMarkdownGolden(t *testing.T) {
 		}
 		if reason, known := knownMarkdownDiffs[c.In]; known {
 			if got == c.Out {
-				t.Errorf("%q now matches Python: remove it from knownMarkdownDiffs (%s)", c.In, reason)
+				t.Errorf("%q now matches the reference: remove it from knownMarkdownDiffs (%s)", c.In, reason)
 			}
 			continue
 		}
 		if got != c.Out {
-			t.Errorf("unexpected difference for %q\n  go:     %q\n  python: %q", c.In, got, c.Out)
+			t.Errorf("unexpected difference for %q\n  go:     %q\n  want:   %q", c.In, got, c.Out)
 			continue
 		}
 		matched++
 	}
 	if matched < 30 {
-		t.Errorf("only %d markdown cases match Python", matched)
+		t.Errorf("only %d markdown cases match the reference", matched)
 	}
 	t.Logf("%d/%d markdown cases identical, %d known differences", matched, len(cases), len(knownMarkdownDiffs))
 }
@@ -342,5 +350,124 @@ func TestFrontMatterAndUnquote(t *testing.T) {
 		if got := unquote(c.In); got != c.Out {
 			t.Errorf("unquote(%q) = %q, want %q", c.In, got, c.Out)
 		}
+	}
+}
+
+func TestParseFileMissingDate(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "undated.md")
+	if err := os.WriteFile(path, []byte("---\ntitle: T\n---\nBody\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, err := ParseFile(path, "")
+	var fe *FeedFileError
+	if !asFeedFileError(err, &fe) {
+		t.Fatalf("want FeedFileError, got %v", err)
+	}
+	if !strings.Contains(fe.Error(), path) || !strings.Contains(fe.Error(), "missing date") {
+		t.Errorf("error should name the file and the missing date: %v", fe)
+	}
+}
+
+func writePost(t *testing.T, path, front string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("---\ndate: 2025-01-01\n"+front+"---\nbody\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCollectDuplicateIDs(t *testing.T) {
+	check := func(t *testing.T, dir, id string) {
+		t.Helper()
+		_, err := Collect(dir)
+		var fe *FeedFileError
+		if !errors.As(err, &fe) {
+			t.Fatalf("want FeedFileError, got %v", err)
+		}
+		for _, want := range []string{"duplicate id '" + id + "'", "a", "b"} {
+			if !strings.Contains(err.Error(), want) {
+				t.Errorf("error %q lacks %q", err, want)
+			}
+		}
+	}
+	t.Run("explicit", func(t *testing.T) {
+		dir := t.TempDir()
+		writePost(t, filepath.Join(dir, "a.md"), "id: same\n")
+		writePost(t, filepath.Join(dir, "b.md"), "id: same\n")
+		check(t, dir, "same")
+	})
+	t.Run("slug collision", func(t *testing.T) {
+		dir := t.TempDir()
+		writePost(t, filepath.Join(dir, "a b.md"), "")
+		writePost(t, filepath.Join(dir, "a-b.md"), "")
+		_, err := Collect(dir)
+		var fe *FeedFileError
+		if !errors.As(err, &fe) || !strings.Contains(err.Error(), "a b.md") || !strings.Contains(err.Error(), "a-b.md") {
+			t.Fatalf("got %v", err)
+		}
+	})
+}
+
+func TestCollectUnreadableSubdir(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("permissions are not enforced for root")
+	}
+	dir := t.TempDir()
+	writePost(t, filepath.Join(dir, "ok.md"), "")
+	sub := filepath.Join(dir, "locked")
+	writePost(t, filepath.Join(sub, "hidden.md"), "")
+	if err := os.Chmod(sub, 0); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chmod(sub, 0o755) })
+	if _, err := Collect(dir); err == nil {
+		t.Fatal("expected an error for an unreadable subdirectory")
+	}
+}
+
+func writeOPMLCard(t *testing.T, dir, name, fn string, urls ...string) string {
+	t.Helper()
+	body := "BEGIN:VCARD\nVERSION:4.0\nFN:" + fn + "\n"
+	for _, u := range urls {
+		body += "X-FEED:" + u + "\n"
+	}
+	body += "END:VCARD\n"
+	path := filepath.Join(dir, name)
+	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+func TestOPMLTitleAndDedupe(t *testing.T) {
+	dir := t.TempDir()
+	a := writeOPMLCard(t, dir, "a.vcf", "Alice", "https://x.example/f.rss", "https://a.example/a.rss")
+	b := writeOPMLCard(t, dir, "b.vcf", "Bob", "https://x.example/f.rss", "https://b.example/b.rss")
+
+	got, err := GenerateOPMLFromVCards([]string{a, b}, "", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(got, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<opml version=\"2.0\"><head><title>DSI connections</title></head><body>") {
+		t.Errorf("header: %s", got)
+	}
+	if n := strings.Count(got, "https://x.example/f.rss"); n != 1 {
+		t.Errorf("duplicate URL emitted %d times: %s", n, got)
+	}
+	if !strings.Contains(got, `text="Alice"`) || strings.Contains(got, `text="Bob" type="rss" xmlUrl="https://x.example/f.rss"`) {
+		t.Errorf("first-seen must win: %s", got)
+	}
+	if strings.Index(got, "a.example") > strings.Index(got, "b.example") {
+		t.Errorf("order not preserved: %s", got)
+	}
+
+	got, err = GenerateOPMLFromVCards([]string{a}, `Tom & "Jerry" <1>`, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "<head><title>Tom &amp; &quot;Jerry&quot; &lt;1&gt;</title></head>") {
+		t.Errorf("title not escaped: %s", got)
 	}
 }

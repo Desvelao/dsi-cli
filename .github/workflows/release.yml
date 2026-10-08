@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to build (e.g. v0.1.0-alpha1)"
+        description: "Existing tag to build (e.g. v0.1.0)"
         required: true
         type: string
       publish:
@@ -117,9 +117,12 @@ jobs:
             RANGE="${TAG}"
           fi
 
-          FEAT_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' 'tolower($1) ~ /^feat(\(.+\))?:/ { sub(/^feat(\(.+\))?:[[:space:]]*/, "", $1); printf "- %s ([@%s](https://github.com/%s), %s)\n", $1, $2, $2, $4 }')
-          FIX_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' 'tolower($1) ~ /^fix(\(.+\))?:/ { sub(/^fix(\(.+\))?:[[:space:]]*/, "", $1); printf "- %s ([@%s](https://github.com/%s), %s)\n", $1, $2, $2, $4 }')
-          CHANGE_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' 'tolower($1) !~ /^feat(\(.+\))?:/ && tolower($1) !~ /^fix(\(.+\))?:/ { printf "- %s ([@%s](https://github.com/%s), %s)\n", $1, $2, $2, $4 }')
+          # Link authors only when the email is a GitHub noreply address
+          # (ID+login@ or login@users.noreply.github.com); otherwise print the plain name.
+          AWK_LIB='function who(name, email,  l) { if (match(email, /^([0-9]+\+)?[A-Za-z0-9-]+@users\.noreply\.github\.com$/)) { l = email; sub(/@.*/, "", l); sub(/^[0-9]+\+/, "", l); return "[@" l "](https://github.com/" l ")" } return name } '
+          FEAT_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' "$AWK_LIB"'tolower($1) ~ /^feat(\(.+\))?:/ { sub(/^feat(\(.+\))?:[[:space:]]*/, "", $1); printf "- %s (%s, %s)\n", $1, who($2, $3), $4 }')
+          FIX_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' "$AWK_LIB"'tolower($1) ~ /^fix(\(.+\))?:/ { sub(/^fix(\(.+\))?:[[:space:]]*/, "", $1); printf "- %s (%s, %s)\n", $1, who($2, $3), $4 }')
+          CHANGE_LIST=$(git log --no-merges --pretty=format:'%s|%an|%ae|%h' "$RANGE" | awk -F'|' "$AWK_LIB"'tolower($1) !~ /^feat(\(.+\))?:/ && tolower($1) !~ /^fix(\(.+\))?:/ { printf "- %s (%s, %s)\n", $1, who($2, $3), $4 }')
           {
             echo "## Changes"
             echo

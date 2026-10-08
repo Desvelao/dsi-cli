@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+	"os"
 	"strings"
 	"testing"
 
@@ -120,7 +121,7 @@ func TestDebugFalseValuesDisableTheStack(t *testing.T) {
 		_, out := runWrapped(t, boom, "DSI_DEBUG", v)
 		notContains(t, out, "goroutine")
 	}
-	_, out := runWrapped(t, boom, "DSIPY_DEBUG", "yes") // legacy name
+	_, out := runWrapped(t, boom, "DSI_DEBUG", "yes")
 	contains(t, out, "goroutine")
 }
 
@@ -154,7 +155,7 @@ func TestGroupsWithoutArgumentsShowHelpAndExit2(t *testing.T) {
 	h.expect(code, out, 0) // the bare command only shows the help
 }
 
-func TestFileErrorsUsePythonWording(t *testing.T) {
+func TestFileErrorsWording(t *testing.T) {
 	h := newHarness(t)
 	code, out := h.run("", "key", "create", "--priv", "nodir/p.pem", "--pub", "nodir/q.pem")
 	h.expect(code, out, 1)
@@ -162,4 +163,30 @@ func TestFileErrorsUsePythonWording(t *testing.T) {
 	code, out = h.run("", "vcard", "parse", "/nonexistent/x.vcf")
 	h.expect(code, out, 1)
 	contains(t, out, "The specified path is not a file: /nonexistent/x.vcf")
+}
+
+func TestDebugFlagDoesNotLeakIntoTheProcessEnvironment(t *testing.T) {
+	h := newHarness(t)
+	var inner bool
+	root := NewRootCmd("test", h.env)
+	root.AddCommand(&cobra.Command{Use: "probe", RunE: func(*cobra.Command, []string) error {
+		inner = h.env.debugEnabled()
+		return nil
+	}})
+	root.SetArgs([]string{"--debug", "probe"})
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if !inner {
+		t.Error("--debug did not enable debug for its own invocation")
+	}
+	if v := os.Getenv("DSI_DEBUG"); v != "" {
+		t.Errorf("DSI_DEBUG leaked into the process: %q", v)
+	}
+
+	// a later invocation on the same Env starts clean
+	code, _ := h.run("", "--help")
+	if code != 0 || h.env.debugEnabled() {
+		t.Errorf("debug state leaked into the next invocation (code %d)", code)
+	}
 }

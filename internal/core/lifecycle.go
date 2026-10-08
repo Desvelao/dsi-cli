@@ -8,7 +8,7 @@ import (
 
 	"github.com/Desvelao/dsi-cli/internal/crypto"
 	"github.com/Desvelao/dsi-cli/internal/model"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
@@ -132,7 +132,7 @@ func RevokeKey(text, keyB64, reason string, when time.Time) (string, error) {
 	var lines []model.RawLine
 	alg := "ed25519"
 	for _, l := range lifecycleLines(p) {
-		if *l.Name == "KEY" && pyutil.Strip(*l.RawValue) == keyB64 {
+		if *l.Name == "KEY" && strutil.Strip(*l.RawValue) == keyB64 {
 			for _, prm := range l.Params {
 				if prm.Name == "ALG" && prm.Value != "" {
 					alg = prm.Value
@@ -166,6 +166,9 @@ func RotateKey(text, newKeyB64, oldKeyB64, reason string, when time.Time) (strin
 	if hasKey(p, newKeyB64) {
 		return "", errors.New("The new key is already listed as KEY")
 	}
+	if hasRevocation(p, newKeyB64) {
+		return "", errors.New("The new key is revoked in the vCard and cannot be added again")
+	}
 	if oldKeyB64 == "" {
 		var preferred []model.PublicKey
 		for _, k := range p.Keys {
@@ -189,8 +192,17 @@ func RotateKey(text, newKeyB64, oldKeyB64, reason string, when time.Time) (strin
 
 	var lines []model.RawLine
 	lastKey := -1
+	alg := "ed25519"
 	for _, l := range lifecycleLines(p) {
 		if *l.Name == "KEY" {
+			if strutil.Strip(*l.RawValue) == oldKeyB64 {
+				for _, prm := range l.Params {
+					if prm.Name == "ALG" && prm.Value != "" {
+						alg = prm.Value
+						break
+					}
+				}
+			}
 			l = withoutPref(l)
 			lastKey = len(lines)
 		}
@@ -202,7 +214,7 @@ func RotateKey(text, newKeyB64, oldKeyB64, reason string, when time.Time) (strin
 	}
 	one := int64(1)
 	lines = insertLine(lines, insertAt, keyLine(newKeyB64, &one))
-	lines = append(lines, revkeyLine(oldKeyB64, reason, when, "ed25519"))
+	lines = append(lines, revkeyLine(oldKeyB64, reason, when, alg))
 	return render(lines)
 }
 

@@ -16,7 +16,7 @@ const (
 
 func crlf(lines ...string) string { return strings.Join(lines, "\r\n") + "\r\n" }
 
-// fieldsFromJSON converts the golden build_content args (Python kwargs).
+// fieldsFromJSON converts the golden build_content args (keyword args).
 func fieldsFromJSON(t *testing.T, args map[string]any) Fields {
 	t.Helper()
 	s := func(k string) string {
@@ -153,7 +153,7 @@ func TestFormatParamValue(t *testing.T) {
 	}
 }
 
-// --- ported from tests/test_parser.py and tests/test_vcard_serializer.py ---
+// --- parser and serializer round-trip tests ---
 
 func example() string {
 	sig := strings.Repeat("0c", 64)

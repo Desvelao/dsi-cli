@@ -40,7 +40,7 @@
     "ok": false
   },
   "rotate_ambiguous": {
-    "error": "Cannot tell which key to rotate: the vCard must have exactly one KEY with PREF=1 (or pass the old key explicitly). If every key is revoked, use `dsipy key add` to add a new one",
+    "error": "Cannot tell which key to rotate: the vCard must have exactly one KEY with PREF=1 (or pass the old key explicitly). If every key is revoked, use `dsi key add` to add a new one",
     "ok": false
   },
   "rotate_bad_reason": {
@@ -53,6 +53,10 @@
   },
   "rotate_existing_new": {
     "error": "The new key is already listed as KEY",
+    "ok": false
+  },
+  "rotate_revoked_new": {
+    "error": "The new key is revoked in the vCard and cannot be added again",
     "ok": false
   },
   "rotate_superseded": {

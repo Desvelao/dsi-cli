@@ -4,15 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/Desvelao/dsi-cli/internal/core"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
-
-var cardRe = regexp.MustCompile(`(?is)BEGIN:VCARD.*?END:VCARD`)
 
 // categories merges the feed category and tags (both comma-separated) into one
 // deduplicated comma-separated list.
@@ -21,7 +18,7 @@ func categories(category, tags string) string {
 	seen := map[string]bool{}
 	for _, value := range []string{category, tags} {
 		for _, item := range strings.Split(value, ",") {
-			item = pyutil.Strip(item)
+			item = strutil.Strip(item)
 			if item != "" && !seen[item] {
 				seen[item] = true
 				items = append(items, item)
@@ -47,35 +44,35 @@ func opmlOutline(text, category, url, language string) string {
 	return b.String()
 }
 
+// DefaultOPMLTitle is the <head><title> used when no title is given.
+const DefaultOPMLTitle = "DSI connections"
+
 // GenerateOPMLFromVCards reads vCard files and generates an OPML document with
 // one outline per X-FEED. The category attribute holds the feed category and
 // tags (comma-separated) and language the feed language, both only when
 // present. Cards that cannot be read or parsed are skipped and reported in
-// warnings.
-func GenerateOPMLFromVCards(files []string, warnings *[]string) (string, error) {
+// warnings. Outlines with the same feed URL are emitted once (first seen wins).
+// The document starts with an XML declaration and a <head><title>; title is
+// DefaultOPMLTitle when empty.
+func GenerateOPMLFromVCards(files []string, title string, warnings *[]string) (string, error) {
 	warn := func(format string, args ...any) {
 		if warnings != nil {
 			*warnings = append(*warnings, fmt.Sprintf(format, args...))
 		}
 	}
 	var outlines []string
+	seenURLs := map[string]bool{}
 	for _, file := range files {
 		data, err := os.ReadFile(file)
 		if err != nil {
-			warn("Skipping %s: %s", file, pyOSError(err, file))
+			warn("Skipping %s: %s", file, osErrorString(err, file))
 			continue
 		}
 		if msg, bad := core.Utf8DecodeError(data); bad {
 			warn("Skipping %s: %s", file, msg)
 			continue
 		}
-		text := string(data)
-		cards := cardRe.FindAllString(text, -1)
-		if len(cards) == 0 {
-			cards = []string{text}
-		}
-		for _, card := range cards {
-			profile := vcard.ParseVCard(card)
+		for _, profile := range vcard.ParseVCards(string(data)) {
 			if len(profile.Errors) > 0 {
 				warn("Skipping malformed vCard in %s: %s", file, profile.Errors[0])
 				continue
@@ -88,6 +85,10 @@ func GenerateOPMLFromVCards(files []string, warnings *[]string) (string, error) 
 				if feed.URL == "" {
 					continue
 				}
+				if seenURLs[feed.URL] {
+					continue
+				}
+				seenURLs[feed.URL] = true
 				outlines = append(outlines, opmlOutline(name, categories(feed.Category, feed.Tags), feed.URL, feed.Language))
 			}
 		}
@@ -95,11 +96,15 @@ func GenerateOPMLFromVCards(files []string, warnings *[]string) (string, error) 
 	if len(outlines) == 0 {
 		return "", errors.New("No valid vCards with feed URLs found in the provided files.")
 	}
-	return `<opml version="2.0"><body>` + strings.Join(outlines, "") + `</body></opml>`, nil
+	if title == "" {
+		title = DefaultOPMLTitle
+	}
+	return `<?xml version="1.0" encoding="UTF-8"?>` + "\n" +
+		`<opml version="2.0"><head><title>` + opmlEscaper.Replace(title) + `</title></head><body>` + strings.Join(outlines, "") + `</body></opml>`, nil
 }
 
-// pyOSError formats a file error like Python's OSError.
-func pyOSError(err error, path string) string {
+// osErrorString formats a file error in the traditional OS error style.
+func osErrorString(err error, path string) string {
 	switch {
 	case errors.Is(err, os.ErrNotExist):
 		return fmt.Sprintf("[Errno 2] No such file or directory: '%s'", path)

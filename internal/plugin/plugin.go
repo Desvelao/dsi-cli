@@ -59,11 +59,48 @@ func DefaultFinder() Finder {
 // leading dash or dot.
 func ValidName(name string) bool { return validName.MatchString(name) }
 
-func executableName(name string) string {
-	if runtime.GOOS == "windows" {
-		return Prefix + name + ".exe"
+// defaultPathExt is what Windows uses when PATHEXT is unset.
+const defaultPathExt = ".COM;.EXE;.BAT;.CMD"
+
+// pathExts returns the executable extensions for goos: none outside Windows,
+// otherwise the entries of pathext (the PATHEXT value; defaults when empty).
+func pathExts(goos, pathext string) []string {
+	if goos != "windows" {
+		return nil
 	}
-	return Prefix + name
+	if strings.TrimSpace(pathext) == "" {
+		pathext = defaultPathExt
+	}
+	var exts []string
+	for _, e := range strings.Split(pathext, ";") {
+		if e = strings.TrimSpace(e); e != "" {
+			exts = append(exts, e)
+		}
+	}
+	return exts
+}
+
+// executableNames returns the file names a plugin can have, in lookup order.
+func executableNames(goos, pathext, name string) []string {
+	exts := pathExts(goos, pathext)
+	if exts == nil {
+		return []string{Prefix + name}
+	}
+	names := make([]string, 0, len(exts))
+	for _, e := range exts {
+		names = append(names, Prefix+name+e)
+	}
+	return names
+}
+
+// trimExt removes a PATHEXT extension (case-insensitively) from file.
+func trimExt(goos, pathext, file string) string {
+	for _, e := range pathExts(goos, pathext) {
+		if len(file) > len(e) && strings.EqualFold(file[len(file)-len(e):], e) {
+			return file[:len(file)-len(e)]
+		}
+	}
+	return file
 }
 
 func isExecutable(path string) bool {
@@ -80,9 +117,11 @@ func (f Finder) Find(name string) (string, bool) {
 		return "", false
 	}
 	for _, dir := range f.Dirs {
-		path := filepath.Join(dir, executableName(name))
-		if isExecutable(path) {
-			return path, true
+		for _, file := range executableNames(runtime.GOOS, os.Getenv("PATHEXT"), name) {
+			path := filepath.Join(dir, file)
+			if isExecutable(path) {
+				return path, true
+			}
 		}
 	}
 	return "", false
@@ -99,10 +138,7 @@ func (f Finder) List() []Plugin {
 			continue
 		}
 		for _, e := range entries {
-			file := e.Name()
-			if runtime.GOOS == "windows" {
-				file = strings.TrimSuffix(file, ".exe")
-			}
+			file := trimExt(runtime.GOOS, os.Getenv("PATHEXT"), e.Name())
 			if !strings.HasPrefix(file, Prefix) {
 				continue
 			}

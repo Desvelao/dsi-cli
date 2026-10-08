@@ -3,11 +3,11 @@ package cli
 import (
 	"errors"
 	"os"
-	"strings"
+	"path/filepath"
 
 	"github.com/Desvelao/dsi-cli/internal/core"
 	"github.com/Desvelao/dsi-cli/internal/crypto"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/Desvelao/dsi-cli/internal/vcard"
 	"github.com/spf13/cobra"
 )
@@ -20,6 +20,72 @@ func isFile(path string) bool {
 func pathExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+// writeFileAtomic writes data to path through a temp file in the same
+// directory plus a rename, keeping the mode of an existing file (0644 for a
+// new one), so a crash or failure never leaves a truncated file.
+func writeFileAtomic(path string, data []byte) error {
+	if resolved, err := filepath.EvalSymlinks(path); err == nil {
+		path = resolved
+	}
+	mode := os.FileMode(0o644)
+	if info, err := os.Stat(path); err == nil {
+		mode = info.Mode().Perm()
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".tmp*")
+	if err != nil {
+		return err
+	}
+	tmpName := tmp.Name()
+	fail := func(err error) error {
+		tmp.Close()
+		os.Remove(tmpName)
+		return err
+	}
+	if _, err := tmp.Write(data); err != nil {
+		return fail(err)
+	}
+	if err := tmp.Chmod(mode); err != nil {
+		return fail(err)
+	}
+	if err := tmp.Close(); err != nil {
+		return fail(err)
+	}
+	if err := os.Rename(tmpName, path); err != nil {
+		os.Remove(tmpName)
+		return err
+	}
+	return nil
+}
+
+// writeKeysThenVCard writes the freshly generated key files (when priv is
+// non-empty) and then the vCard. The key files are created exclusively, so
+// any failure removes only files this call created.
+func writeKeysThenVCard(priv, pub string, privPEM, pubPEM []byte, target, vcardText string) error {
+	if priv != "" {
+		if err := crypto.WritePrivateKey(priv, privPEM, false); err != nil {
+			if !errors.Is(err, os.ErrExist) {
+				_ = os.Remove(priv)
+			}
+			return err
+		}
+		if err := os.WriteFile(pub, pubPEM, 0o644); err != nil {
+			_ = os.Remove(priv)
+			if !errors.Is(err, os.ErrExist) {
+				_ = os.Remove(pub)
+			}
+			return err
+		}
+	}
+	if err := writeFileAtomic(target, []byte(vcardText)); err != nil {
+		if priv != "" {
+			_ = os.Remove(priv)
+			_ = os.Remove(pub)
+		}
+		return err
+	}
+	return nil
 }
 
 // readText reads a file as UTF-8 text.
@@ -111,7 +177,7 @@ func newKeyCmd(env *Env) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				content = pyutil.Strip(text)
+				content = strutil.Strip(text)
 			}
 			if content == "" {
 				env.secho(red, "❌ No content provided.")
@@ -158,17 +224,11 @@ func newKeyCmd(env *Env) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				if err := crypto.WritePrivateKey(priv, privPEM, false); err != nil {
-					return err
-				}
-				if err := os.WriteFile(pub, pubPEM, 0o644); err != nil {
-					return err
-				}
 				target := vcardPath
 				if output != "" {
 					target = output
 				}
-				if err := os.WriteFile(target, []byte(updated), 0o644); err != nil {
+				if err := writeKeysThenVCard(priv, pub, privPEM, pubPEM, target, updated); err != nil {
 					return err
 				}
 				env.secho(green, "✅ Key rotated in '%s'", target)
@@ -215,29 +275,28 @@ func newKeyCmd(env *Env) *cobra.Command {
 						return err
 					}
 				} else {
-					newB64 = pyutil.Strip(publicKey)
+					newB64 = strutil.Strip(publicKey)
 				}
 				text, err := readText(vcardPath)
 				if err != nil {
 					return err
 				}
+				if noPref, _ := cmd.Flags().GetBool("no-pref"); noPref {
+					pref = false
+				}
 				updated, err := core.AddKey(text, newB64, pref)
 				if err != nil {
 					return err
-				}
-				if generated {
-					if err := crypto.WritePrivateKey(priv, privPEM, false); err != nil {
-						return err
-					}
-					if err := os.WriteFile(pub, pubPEM, 0o644); err != nil {
-						return err
-					}
 				}
 				target := vcardPath
 				if output != "" {
 					target = output
 				}
-				if err := os.WriteFile(target, []byte(updated), 0o644); err != nil {
+				keyPriv := ""
+				if generated {
+					keyPriv = priv
+				}
+				if err := writeKeysThenVCard(keyPriv, pub, privPEM, pubPEM, target, updated); err != nil {
 					return err
 				}
 				env.secho(green, "✅ Key added to '%s'", target)
@@ -253,12 +312,7 @@ func newKeyCmd(env *Env) *cobra.Command {
 		cmd.Flags().StringVar(&publicKey, "public-key", "", "Add this existing Base64 DER public key instead of generating a keypair")
 		cmd.Flags().BoolVar(&pref, "pref", true, "Make the new key the preferred one (PREF=1); the other keys lose PREF")
 		cmd.Flags().Bool("no-pref", false, "Do not make the new key the preferred one")
-		cmd.PreRunE = func(cmd *cobra.Command, args []string) error {
-			if v, _ := cmd.Flags().GetBool("no-pref"); v {
-				pref = false
-			}
-			return nil
-		}
+		cmd.MarkFlagsMutuallyExclusive("pref", "no-pref")
 		cmd.Flags().StringVarP(&output, "output", "o", "", "Write the result here instead of updating the vCard")
 		group.AddCommand(cmd)
 	}
@@ -307,7 +361,7 @@ func newKeyCmd(env *Env) *cobra.Command {
 				if output != "" {
 					target = output
 				}
-				if err := os.WriteFile(target, []byte(updated), 0o644); err != nil {
+				if err := writeFileAtomic(target, []byte(updated)); err != nil {
 					return err
 				}
 				env.secho(green, "✅ Key revoked (%s) in '%s'", reason, target)
@@ -337,6 +391,5 @@ func newKeyCmd(env *Env) *cobra.Command {
 		cmd.Flags().StringVarP(&output, "output", "o", "", "Write the result here instead of updating the vCard")
 		group.AddCommand(cmd)
 	}
-	_ = strings.TrimSpace
 	return group
 }

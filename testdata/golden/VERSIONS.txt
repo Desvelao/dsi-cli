@@ -1,8 +1,0 @@
-python 3.12.15
-rfeed==1.1.1
-opyml==0.1.2
-markdown==3.11
-vobject==0.9.9
-cryptography==50.0.2
-pillow==12.3.0
-qrcode==8.2

@@ -1,6 +1,6 @@
 // Package model defines the parsed representation of a DSI vCard.
 //
-// Field order and JSON names mirror the Python dataclasses (asdict), because
+// Field order and JSON names are part of the output format, because
 // `vcard parse` prints this structure as JSON.
 package model
 
@@ -57,10 +57,10 @@ type DsiVersion struct {
 // Param is one parsed parameter: NAME (upper-cased) and its values joined by ",".
 type Param struct{ Name, Value string }
 
-// MarshalJSON encodes a Param as the [name, value] pair Python produces.
+// MarshalJSON encodes a Param as the [name, value] pair.
 func (p Param) MarshalJSON() ([]byte, error) { return json.Marshal([2]string{p.Name, p.Value}) }
 
-// Attributes is an insertion-ordered {NAME: value} map (like a Python dict).
+// Attributes is an insertion-ordered {NAME: value} map (like an ordered dict).
 type Attributes struct {
 	keys []string
 	vals map[string]string
@@ -107,7 +107,7 @@ func (a Attributes) MarshalJSON() ([]byte, error) {
 }
 
 // RawLine is one logical content line with parsing metadata. Lines that failed
-// to parse have only Line set (and no Group key in JSON, as in Python).
+// to parse have only Line set (and no Group key in JSON).
 type RawLine struct {
 	Line      string
 	AttrName  *string
@@ -244,7 +244,7 @@ func (p *Profile) Field(name string) **string {
 type MainAttribute struct {
 	Name        string // lower-case option name
 	Default     string
-	HasDefault  bool // false: no default (Python None)
+	HasDefault  bool // false: no default (unset)
 	Description string
 }
 

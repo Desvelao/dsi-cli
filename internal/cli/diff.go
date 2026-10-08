@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/pmezard/go-difflib/difflib"
 )
 
 // showDiff prints a unified diff (or a "No differences." note).
 func (e *Env) showDiff(oldText, newText, fromFile, toFile string) {
 	lines := func(s string) []string {
-		parts := pyutil.SplitLines(s)
+		parts := strutil.SplitLines(s)
 		for i := range parts {
 			parts[i] += "\n"
 		}

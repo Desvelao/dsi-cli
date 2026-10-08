@@ -21,9 +21,10 @@ import (
 // response-size cap on the decoded body, connect/read timeouts, content-type
 // filtering and refusal of non-public addresses (SSRF).
 //
-// The host is resolved once and checked; the connection is then pinned to that
-// validated IP (TLS SNI and certificate checks still use the original hostname
-// and the Host header is preserved), so DNS rebinding cannot swap the address.
+// The host is resolved once and checked; the connection is then restricted to
+// that validated set of IPs, tried in order until one connects (TLS SNI and
+// certificate checks still use the original hostname and the Host header is
+// preserved). Nothing is re-resolved, so DNS rebinding cannot swap an address.
 // Proxy environment variables are ignored: a local DNS check says nothing about
 // where a proxy connects.
 
@@ -159,7 +160,7 @@ func validateURL(url string, allowHTTP bool) (host string, port int, err error) 
 	if err != nil {
 		return "", 0, err
 	}
-	if port == 0 { // Python: `parts.port or default`
+	if port == 0 { // no port: use the default
 		port = 443
 		if parts.Scheme == "http" {
 			port = 80
@@ -196,7 +197,10 @@ func (f *Fetcher) FetchText(url string, opts FetchOptions) (*FetchedResponse, er
 		if err != nil {
 			return nil, err
 		}
-		pinned := net.JoinHostPort(addresses[0], strconv.Itoa(port))
+		pinned := make([]string, len(addresses))
+		for i, a := range addresses {
+			pinned[i] = net.JoinHostPort(a, strconv.Itoa(port))
+		}
 
 		resp, closeFn, err := f.get(ctx, current, host, pinned)
 		if err != nil {
@@ -216,8 +220,9 @@ func (f *Fetcher) FetchText(url string, opts FetchOptions) (*FetchedResponse, er
 }
 
 // get performs one request without following redirects, connecting to the
-// pinned address while keeping the original host for Host/SNI/TLS checks.
-func (f *Fetcher) get(ctx context.Context, url, host, pinned string) (*http.Response, func(), error) {
+// validated addresses (in order, first success wins) while keeping the
+// original host for Host/SNI/TLS checks.
+func (f *Fetcher) get(ctx context.Context, url, host string, pinned []string) (*http.Response, func(), error) {
 	tlsConfig := &tls.Config{}
 	if f.TLSConfig != nil {
 		tlsConfig = f.TLSConfig.Clone()
@@ -226,11 +231,18 @@ func (f *Fetcher) get(ctx context.Context, url, host, pinned string) (*http.Resp
 	transport := &http.Transport{
 		Proxy: nil, // ignore proxy environment variables
 		DialContext: func(ctx context.Context, network, _ string) (net.Conn, error) {
-			conn, err := f.dial(ctx, network, pinned)
-			if err != nil {
-				return nil, err
+			var lastErr error
+			for _, addr := range pinned {
+				if err := ctx.Err(); err != nil {
+					return nil, err
+				}
+				conn, err := f.dial(ctx, network, addr)
+				if err == nil {
+					return deadlineConn{conn, ReadTimeout}, nil
+				}
+				lastErr = err
 			}
-			return deadlineConn{conn, ReadTimeout}, nil
+			return nil, lastErr
 		},
 		TLSClientConfig:     tlsConfig,
 		DisableKeepAlives:   true,
@@ -325,7 +337,7 @@ func FetchText(url string, opts FetchOptions) (*FetchedResponse, error) {
 	return DefaultFetcher.FetchText(url, opts)
 }
 
-// Utf8DecodeError reports why body is not valid UTF-8, using Python's
+// Utf8DecodeError reports why body is not valid UTF-8, using the standard
 // UnicodeDecodeError wording. It returns ("", false) for valid UTF-8.
 func Utf8DecodeError(body []byte) (string, bool) {
 	for i := 0; i < len(body); {

@@ -7,18 +7,18 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 )
 
 var errISO = errors.New("Invalid isoformat string")
 
-// ParseISODate parses an ISO 8601 date or datetime like Python 3.12's
-// datetime.fromisoformat (the C implementation, quirks included) and returns
+// ParseISODate parses an ISO 8601 date or datetime like
+// the 3.12 fromisoformat behaviour (quirks included) and returns
 // the instant as a naive time expressed in UTC: values with an offset are
 // converted, values without one are taken as UTC. Surrounding whitespace is
 // ignored.
 func ParseISODate(value string) (time.Time, error) {
-	s := pyutil.Strip(value)
+	s := strutil.Strip(value)
 	sepAt := findISOSeparator(s)
 	if sepAt < 0 {
 		return time.Time{}, errISO

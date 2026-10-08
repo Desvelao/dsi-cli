@@ -14,7 +14,7 @@ import (
 	"github.com/Desvelao/dsi-cli/internal/crypto"
 	"github.com/Desvelao/dsi-cli/internal/endorsements"
 	"github.com/Desvelao/dsi-cli/internal/model"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/Desvelao/dsi-cli/internal/vcard"
 	"github.com/spf13/cobra"
 )
@@ -72,7 +72,7 @@ func newParseCmd(env *Env) *cobra.Command {
 					if rerr != nil {
 						return rerr
 					}
-					if text = pyutil.Strip(text); text != "" {
+					if text = strutil.Strip(text); text != "" {
 						card = core.NewVCardFromText(text)
 					}
 				} else if card, err = env.loadCard(input, allowHTTP, true); err != nil {
@@ -84,7 +84,7 @@ func newParseCmd(env *Env) *cobra.Command {
 				return err
 			}()
 			if err != nil {
-				env.secho(red, "Failed to parse vCard: %s", pyutil.ErrText(err))
+				env.secho(red, "Failed to parse vCard: %s", strutil.ErrText(err))
 				return exit(1)
 			}
 			if card == nil {
@@ -125,7 +125,7 @@ func newEndorseCmd(env *Env) *cobra.Command {
 				key, err = crypto.LoadPrivateKeyPEM(privData)
 			}
 			if err != nil {
-				env.secho(red, "Failed to load private key from '%s': %s", priv, pyutil.ErrText(err))
+				env.secho(red, "Failed to load private key from '%s': %s", priv, strutil.ErrText(err))
 				return exit(1)
 			}
 
@@ -176,7 +176,7 @@ func newEndorseCmd(env *Env) *cobra.Command {
 					if err := destination.AddLine(value); err != nil {
 						return err
 					}
-					if err := destination.ToFile(""); err != nil {
+					if err := writeFileAtomic(destination.Path, []byte(destination.String())); err != nil {
 						return err
 					}
 					env.secho(green, "✅ Endorsement added to %s: %s", destination.Path, value)
@@ -184,7 +184,7 @@ func newEndorseCmd(env *Env) *cobra.Command {
 				}()
 				if err != nil {
 					failed++
-					env.secho(red, "Failed to endorse vCard '%s': %s", path, pyutil.ErrText(err))
+					env.secho(red, "Failed to endorse vCard '%s': %s", path, strutil.ErrText(err))
 				}
 			}
 			if failed > 0 {
@@ -218,16 +218,16 @@ func newQRCmd(env *Env) *cobra.Command {
 					if err != nil {
 						return err
 					}
-					data = pyutil.Strip(text)
+					data = strutil.Strip(text)
 				} else {
-					data = pyutil.Strip(args[0])
+					data = strutil.Strip(args[0])
 				}
 			} else if !env.StdinTTY {
 				text, err := env.readAllStdin()
 				if err != nil {
 					return err
 				}
-				data = pyutil.Strip(text)
+				data = strutil.Strip(text)
 			}
 			if data == "" {
 				env.secho(red, "❌ No input data provided for the QR code.")
@@ -282,18 +282,18 @@ func newValidateCmd(env *Env) *cobra.Command {
 			if err != nil {
 				if asJSON {
 					res := &core.ValidationResult{}
-					res.Errors = append(res.Errors, core.Issue{Code: "load", Message: pyutil.ErrText(err)})
-					out, _ := pyutil.JSONDumps(res.ToDict())
+					res.Errors = append(res.Errors, core.Issue{Code: "load", Message: strutil.ErrText(err)})
+					out, _ := strutil.JSONDumps(res.ToDict())
 					env.echo("%s", out)
 				} else {
-					env.secho(red, "❌ Cannot load '%s': %s", source, pyutil.ErrText(err))
+					env.secho(red, "❌ Cannot load '%s': %s", source, strutil.ErrText(err))
 				}
 				return exit(1)
 			}
 			result := core.ValidateProfile(card.Profile)
 			failed := !result.Valid() || (strict && len(result.Warnings) > 0)
 			if asJSON {
-				out, err := pyutil.JSONDumps(result.ToDict())
+				out, err := strutil.JSONDumps(result.ToDict())
 				if err != nil {
 					return err
 				}
@@ -422,7 +422,7 @@ func newNormalizeCmd(env *Env) *cobra.Command {
 				return exit(1)
 			}
 			if write {
-				return os.WriteFile(source, []byte(text), 0o644)
+				return writeFileAtomic(source, []byte(text))
 			}
 			fmt.Fprint(env.Out, text)
 			return nil
@@ -547,7 +547,7 @@ func newFetchCmd(env *Env) *cobra.Command {
 							}
 							say(blue, "  Backup created: %s", backupPath)
 						}
-						if err := card.ToFile(destination); err != nil {
+						if err := writeFileAtomic(destination, []byte(card.String())); err != nil {
 							return err
 						}
 						if haveOld {
@@ -561,7 +561,7 @@ func newFetchCmd(env *Env) *cobra.Command {
 					return nil
 				}()
 				if err != nil {
-					say(red, "  Failed to fetch URL %s: %s", url, pyutil.ErrText(err))
+					say(red, "  Failed to fetch URL %s: %s", url, strutil.ErrText(err))
 					failed++
 				}
 			}
@@ -570,7 +570,7 @@ func newFetchCmd(env *Env) *cobra.Command {
 				say(bold, "Processing: %s", file)
 				card, err := core.NewVCardFromPath(file)
 				if err != nil {
-					say(red, "  Failed to read %s: %s", file, pyutil.ErrText(err))
+					say(red, "  Failed to read %s: %s", file, strutil.ErrText(err))
 					failed++
 					continue
 				}
@@ -584,7 +584,7 @@ func newFetchCmd(env *Env) *cobra.Command {
 				say(plain, "  Fetching: %s", source)
 				fetched, err := env.fetcher().NewVCardFromURL(source, allowHTTP, verifySource)
 				if err != nil {
-					say(red, "  Failed to fetch SOURCE: %s", pyutil.ErrText(err))
+					say(red, "  Failed to fetch SOURCE: %s", strutil.ErrText(err))
 					failed++
 					continue
 				}
@@ -627,7 +627,7 @@ func newFetchCmd(env *Env) *cobra.Command {
 					}
 					say(blue, "  Backup created: %s", backupPath)
 				}
-				if err := os.WriteFile(outPath, []byte(newText), 0o644); err != nil {
+				if err := writeFileAtomic(outPath, []byte(newText)); err != nil {
 					say(red, "  Failed to write %s: %s", outPath, err)
 					failed++
 					continue
@@ -676,8 +676,8 @@ var promptOrder = []string{"fn", "n", "nickname", "lang", "gender", "email", "ca
 const tempFile = "vcard_create.tmp"
 
 // loadResumeFile loads saved prompt answers; it tolerates missing, legacy or malformed files.
-func loadResumeFile(path string) *pyutil.OrderedMap {
-	out := pyutil.NewOrderedMap()
+func loadResumeFile(path string) *strutil.OrderedMap {
+	out := strutil.NewOrderedMap()
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return out
@@ -698,15 +698,15 @@ func loadResumeFile(path string) *pyutil.OrderedMap {
 		return out
 	}
 	// Legacy key=value format: skip lines that do not parse
-	for _, line := range pyutil.SplitLines(text) {
+	for _, line := range strutil.SplitLines(text) {
 		if k, v, ok := strings.Cut(line, "="); ok && strings.TrimSpace(k) != "" {
-			out.Set(pyutil.Strip(k), v)
+			out.Set(strutil.Strip(k), v)
 		}
 	}
 	return out
 }
 
-func saveResume(data *pyutil.OrderedMap) error {
+func saveResume(data *strutil.OrderedMap) error {
 	var b strings.Builder
 	b.WriteByte('{')
 	for i, k := range data.Keys() {
@@ -736,10 +736,10 @@ func newCreateCmd(env *Env) *cobra.Command {
 		Short: "Generate a vCard by asking the user for information.",
 		Args:  cobra.NoArgs,
 		RunE: env.run("create", func(cmd *cobra.Command, args []string) error {
-			attrs := pyutil.NewOrderedMap() // custom attributes
+			attrs := strutil.NewOrderedMap() // custom attributes
 			if interactive {
 				env.secho(cyan, "Let's create a new vCard!")
-				temp := pyutil.NewOrderedMap()
+				temp := strutil.NewOrderedMap()
 				if resume {
 					temp = loadResumeFile(tempFile)
 				}
@@ -869,7 +869,7 @@ type promptFn func(key, description string, def *string) (string, error)
 
 func emptyDefault() *string { s := ""; return &s }
 
-func promptFeeds(env *Env, prompt promptFn, attrs *pyutil.OrderedMap) error {
+func promptFeeds(env *Env, prompt promptFn, attrs *strutil.OrderedMap) error {
 	add, err := env.confirm("Do you want to add a X-FEED attribute for an RSS feed?", false)
 	if err != nil {
 		return err
@@ -897,7 +897,7 @@ func promptFeeds(env *Env, prompt promptFn, attrs *pyutil.OrderedMap) error {
 		if err != nil {
 			return err
 		}
-		custom = append(custom, langFeed{pyutil.Strip(language), pyutil.Strip(url)})
+		custom = append(custom, langFeed{strutil.Strip(language), strutil.Strip(url)})
 		if add, err = env.confirm("Do you want to add another X-FEED;LANGUAGE entry?", false); err != nil {
 			return err
 		}
@@ -908,7 +908,7 @@ func promptFeeds(env *Env, prompt promptFn, attrs *pyutil.OrderedMap) error {
 	return nil
 }
 
-func promptSocial(env *Env, prompt promptFn, attrs *pyutil.OrderedMap) error {
+func promptSocial(env *Env, prompt promptFn, attrs *strutil.OrderedMap) error {
 	add, err := env.confirm("Do you want to add custom attributes for social media links?", false)
 	if err != nil {
 		return err
@@ -931,7 +931,7 @@ func promptSocial(env *Env, prompt promptFn, attrs *pyutil.OrderedMap) error {
 	return nil
 }
 
-func promptCustom(env *Env, prompt promptFn, attrs *pyutil.OrderedMap) error {
+func promptCustom(env *Env, prompt promptFn, attrs *strutil.OrderedMap) error {
 	add, err := env.confirm("Do you want to add custom attributes for other information?", false)
 	if err != nil {
 		return err

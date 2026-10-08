@@ -342,7 +342,7 @@ expect 1 dsi vcard qr alice.vcf -o e3.png -i nope.png                 # ❌ The 
 
 ## 7. Fetch remote cards
 
-`vcard fetch` re-downloads a card from the URL in its own `SOURCE` (or from a URL you pass) so your local copy follows the published one. **Constraints that protect you from SSRF:** only `https://`; the host must resolve to a *public* address (so `localhost`, `127.0.0.1`, `192.168.x.x` and a local `python -m http.server` are all refused); and the downloaded card's `SOURCE` must match the URL unless you pass `--no-verify-source`.
+`vcard fetch` re-downloads a card from the URL in its own `SOURCE` (or from a URL you pass) so your local copy follows the published one. **Constraints that protect you from SSRF:** only `https://`; the host must resolve to a *public* address (so `localhost`, `127.0.0.1`, `192.168.x.x` and a local test server are all refused); and the downloaded card's `SOURCE` must match the URL unless you pass `--no-verify-source`.
 
 **Checks that need no internet** (the failures are the expected result; each prints a summary with `Failed: 1` and exits 1):
 
@@ -609,7 +609,7 @@ make lint      # go vet + gofmt check
 | Plugins | `internal/plugin/plugin_test.go`, `internal/cli/plugin_test.go` |
 | CLI help text and error handling | `internal/cli/app_test.go` |
 
-Most packages also compare against the frozen golden fixtures of the original Python tool (`testdata/golden`, see `testdata/README.md`).
+Most packages also compare against the frozen golden fixtures (`testdata/golden`, see `testdata/README.md`).
 
 ## 13. Behaviour notes
 

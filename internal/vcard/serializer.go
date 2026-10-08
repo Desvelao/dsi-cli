@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/Desvelao/dsi-cli/internal/model"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 )
 
 const (
@@ -154,6 +154,18 @@ func BuildContent(f Fields) (string, error) {
 		if k.KeyB64 == "" {
 			return "", fmt.Errorf("Key entry is missing required field 'key_b64'")
 		}
+		for _, c := range []struct{ name, value string }{
+			{"alg", k.Alg}, {"key_b64", k.KeyB64}, {"encoding", k.Encoding},
+		} {
+			if strings.ContainsAny(c.value, "\r\n") {
+				return "", fmt.Errorf("Line breaks are not allowed in key '%s'", c.name)
+			}
+		}
+		for _, c := range []struct{ name, value string }{{"alg", k.Alg}, {"encoding", k.Encoding}} {
+			if strings.ContainsAny(c.value, ";:\",") {
+				return "", fmt.Errorf("Invalid character in key '%s'", c.name)
+			}
+		}
 		encoding := k.Encoding
 		if encoding == "" {
 			encoding = DefaultKeyEncoding
@@ -185,8 +197,7 @@ func BuildVCardFromRawLines(p *model.Profile) string {
 	lines := []string{"BEGIN:VCARD", "VERSION:4.0"}
 	for _, raw := range p.RawLines {
 		line := raw.Line
-		if line != "" && !strings.HasPrefix(line, "BEGIN:") &&
-			!strings.HasPrefix(line, "END:") && !strings.HasPrefix(line, "VERSION:") {
+		if line != "" && !isFramingLine(raw) {
 			lines = append(lines, line)
 		}
 	}
@@ -204,7 +215,7 @@ func BuildVCardFromRawLines(p *model.Profile) string {
 // inside a quoted value and is rejected.
 func FormatParamValue(value string) (string, error) {
 	if strings.ContainsAny(value, "\"\r\n") {
-		return "", fmt.Errorf("Invalid character in parameter value: %s", pyutil.Repr(value))
+		return "", fmt.Errorf("Invalid character in parameter value: %s", strutil.Repr(value))
 	}
 	if strings.ContainsAny(value, `;:"`) {
 		return `"` + value + `"`, nil
@@ -250,10 +261,32 @@ func BuildEndorsementAttribute(canonicalValue, signatureHex, date, confidence, e
 
 // BuildSocialPlatformAttribute is the attribute name for a social platform.
 func BuildSocialPlatformAttribute(name string) string {
-	return "X-SOCIAL;PLATFORM=" + strings.ToLower(pyutil.Strip(name))
+	return "X-SOCIAL;PLATFORM=" + strings.ToLower(strutil.Strip(name))
 }
 
 // BuildCustomAttribute is the attribute name used by interactive vcard create.
 func BuildCustomAttribute(name string) string {
-	return strings.ToUpper(pyutil.Strip(name)) + "="
+	return strings.ToUpper(strutil.Strip(name)) + "="
+}
+
+// isFramingLine reports whether a raw line is a BEGIN/END/VERSION property,
+// compared case-insensitively and ignoring any group prefix, like the parser.
+func isFramingLine(raw model.RawLine) bool {
+	var name string
+	if raw.Name != nil {
+		name = *raw.Name
+	} else {
+		name = raw.Line
+		if i := strings.IndexAny(name, ":;"); i >= 0 {
+			name = name[:i]
+		}
+		if i := strings.LastIndex(name, "."); i >= 0 {
+			name = name[i+1:]
+		}
+	}
+	switch strings.ToUpper(strings.TrimSpace(name)) {
+	case "BEGIN", "END", "VERSION":
+		return true
+	}
+	return false
 }

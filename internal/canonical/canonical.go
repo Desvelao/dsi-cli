@@ -69,7 +69,7 @@ func NormalizeVCard(p *model.Profile) (string, error) {
 			e.tie = *raw.RawValue
 		}
 		params := append([]model.Param(nil), raw.Params...)
-		// Python sorts (name, value) tuples: by name, then value.
+		// Sort (name, value) tuples: by name, then value.
 		sort.SliceStable(params, func(i, j int) bool {
 			if params[i].Name != params[j].Name {
 				return params[i].Name < params[j].Name

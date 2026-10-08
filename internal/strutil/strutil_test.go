@@ -1,4 +1,4 @@
-package pyutil
+package strutil
 
 import "testing"
 
@@ -28,7 +28,7 @@ func TestParseInt(t *testing.T) {
 
 func TestStripAndRepr(t *testing.T) {
 	if Strip("\x1c a  ") != "a" {
-		t.Error("Strip must drop Python whitespace")
+		t.Error("Strip must drop Unicode whitespace")
 	}
 	for in, want := range map[string]string{
 		`en"US`: `'en"US'`, "it's": `"it's"`, "a\nb": `'a\nb'`, `both'"`: `'both\'"'`, "\x00": `'\x00'`, "é": `'é'`,

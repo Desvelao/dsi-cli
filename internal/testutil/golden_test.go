@@ -23,8 +23,8 @@ func keyFromSeed(t *testing.T, seedHex string) ed25519.PrivateKey {
 	return ed25519.NewKeyFromSeed(seed)
 }
 
-// Go's stdlib must reproduce the Python keys byte for byte (DER, PEM, base64).
-func TestKeysMatchPython(t *testing.T) {
+// Go's stdlib must reproduce the golden keys byte for byte (DER, PEM, base64).
+func TestKeysMatchGolden(t *testing.T) {
 	var idx keyIndex
 	GoldenJSON(t, "keys/index.json", &idx)
 	if len(idx) != 4 {
@@ -54,8 +54,8 @@ func TestKeysMatchPython(t *testing.T) {
 	}
 }
 
-// Ed25519 is deterministic: Go must produce the same signatures as Python.
-func TestSignaturesMatchPython(t *testing.T) {
+// Ed25519 is deterministic: Go must produce the same signatures as the golden ones.
+func TestSignaturesMatchGolden(t *testing.T) {
 	var idx keyIndex
 	GoldenJSON(t, "keys/index.json", &idx)
 

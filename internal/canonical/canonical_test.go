@@ -103,3 +103,28 @@ func TestCanonicalStrings(t *testing.T) {
 		t.Error("canonical strings")
 	}
 }
+
+func TestKeyRevkeyTieOrderingWithGroups(t *testing.T) {
+	// KEY lines tie on rank and are ordered by value, whatever their group.
+	out := normalize(t, "BEGIN:VCARD", "VERSION:4.0",
+		"b.KEY;ENCODING=b:zzz", "a.KEY;ENCODING=b:mmm", "KEY;ENCODING=b:aaa",
+		"g.REVKEY;ENCODING=b:yyy", "REVKEY;ENCODING=b:bbb", "END:VCARD")
+	want := crlf("BEGIN:VCARD", "VERSION:4.0",
+		"KEY;ENCODING=b:aaa", "a.KEY;ENCODING=b:mmm", "b.KEY;ENCODING=b:zzz",
+		"REVKEY;ENCODING=b:bbb", "g.REVKEY;ENCODING=b:yyy", "END:VCARD")
+	if out != want {
+		t.Errorf("got %q\nwant %q", out, want)
+	}
+	// KEYs always precede REVKEYs regardless of values.
+	out = normalize(t, "BEGIN:VCARD", "VERSION:4.0", "REVKEY:aaa", "g.KEY:zzz", "END:VCARD")
+	if want := crlf("BEGIN:VCARD", "VERSION:4.0", "g.KEY:zzz", "REVKEY:aaa", "END:VCARD"); out != want {
+		t.Errorf("got %q want %q", out, want)
+	}
+}
+
+func TestKeyTieEqualValuesKeepOriginalOrder(t *testing.T) {
+	out := normalize(t, "BEGIN:VCARD", "VERSION:4.0", "KEY;PREF=2:same", "KEY;PREF=1:same", "END:VCARD")
+	if want := crlf("BEGIN:VCARD", "VERSION:4.0", "KEY;PREF=2:same", "KEY;PREF=1:same", "END:VCARD"); out != want {
+		t.Errorf("got %q want %q", out, want)
+	}
+}

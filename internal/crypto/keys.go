@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 const deserializeMsg = "Could not deserialize key data. The data may be in an incorrect format, " +
@@ -41,7 +42,7 @@ func GenerateKeypair() (privPEM, pubPEM []byte, pubB64 string, err error) {
 
 // WritePrivateKey writes a private key PEM, created with mode 0600 from the
 // start. Without force it fails with os.ErrExist if the file exists.
-func WritePrivateKey(path string, pemBytes []byte, force bool) error {
+func WritePrivateKey(path string, pemBytes []byte, force bool) (err error) {
 	flags := os.O_WRONLY | os.O_CREATE
 	if force {
 		flags |= os.O_TRUNC
@@ -52,13 +53,102 @@ func WritePrivateKey(path string, pemBytes []byte, force bool) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if cerr := f.Close(); err == nil {
+			err = cerr
+		}
+	}()
 	// also tightens a pre-existing file when forced
 	if err := f.Chmod(0o600); err != nil {
 		return err
 	}
-	_, err = f.Write(pemBytes)
-	return err
+	if _, err := f.Write(pemBytes); err != nil {
+		return err
+	}
+	return f.Sync()
+}
+
+// stageFile writes data to a temp file next to path and returns a commit
+// function that renames it over path, and a cleanup function that removes the
+// temp file if it was not committed.
+func stageFile(path string, data []byte, mode os.FileMode) (commit func() error, cleanup func(), err error) {
+	f, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".tmp*")
+	if err != nil {
+		return nil, nil, err
+	}
+	tmp := f.Name()
+	cleanup = func() { _ = os.Remove(tmp) }
+	fail := func(e error) (func() error, func(), error) {
+		f.Close()
+		cleanup()
+		return nil, nil, e
+	}
+	if err := f.Chmod(mode); err != nil {
+		return fail(err)
+	}
+	if _, err := f.Write(data); err != nil {
+		return fail(err)
+	}
+	if err := f.Sync(); err != nil {
+		return fail(err)
+	}
+	if err := f.Close(); err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	return func() error { return os.Rename(tmp, path) }, cleanup, nil
+}
+
+// forceWritePair replaces both files without leaving a mismatched pair: new
+// contents are staged first (a failure there leaves the old pair untouched),
+// and if the second rename fails the first file is restored.
+func forceWritePair(priv, pub string, privPEM, pubPEM []byte) error {
+	commitPriv, cleanPriv, err := stageFile(priv, privPEM, 0o600)
+	if err != nil {
+		return err
+	}
+	defer cleanPriv()
+	commitPub, cleanPub, err := stageFile(pub, pubPEM, 0o644)
+	if err != nil {
+		return err
+	}
+	defer cleanPub()
+	oldPriv, readErr := os.ReadFile(priv)
+	hadPriv := readErr == nil
+	if err := commitPriv(); err != nil {
+		return err
+	}
+	if err := commitPub(); err != nil {
+		if hadPriv {
+			if restore, cl, e := stageFile(priv, oldPriv, 0o600); e == nil {
+				if e := restore(); e != nil {
+					cl()
+				}
+			}
+		} else {
+			_ = os.Remove(priv)
+		}
+		return err
+	}
+	return nil
+}
+
+func writePublicKey(path string, pemBytes []byte, force bool) error {
+	flags := os.O_WRONLY | os.O_CREATE
+	if force {
+		flags |= os.O_TRUNC
+	} else {
+		flags |= os.O_EXCL
+	}
+	f, err := os.OpenFile(path, flags, 0o644)
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(pemBytes); err != nil {
+		f.Close()
+		return err
+	}
+	return f.Close()
 }
 
 // ActionGenerateKeypair generates a keypair and saves it to the given PEM
@@ -75,10 +165,30 @@ func ActionGenerateKeypair(priv, pub string, force bool) (privPEM, pubPEM []byte
 	if err != nil {
 		return nil, nil, "", err
 	}
+	if force {
+		if err := forceWritePair(priv, pub, privPEM, pubPEM); err != nil {
+			return nil, nil, "", err
+		}
+		return privPEM, pubPEM, pubB64, nil
+	}
 	if err := WritePrivateKey(priv, privPEM, force); err != nil {
+		if !force {
+			if errors.Is(err, os.ErrExist) {
+				return nil, nil, "", &ExistsError{Path: priv}
+			}
+			// we created the file (O_EXCL succeeded) but failed writing it
+			_ = os.Remove(priv)
+		}
 		return nil, nil, "", err
 	}
-	if err := os.WriteFile(pub, pubPEM, 0o644); err != nil {
+	if err := writePublicKey(pub, pubPEM, force); err != nil {
+		if !force {
+			// without force the private file was created by this call
+			_ = os.Remove(priv)
+			if errors.Is(err, os.ErrExist) {
+				return nil, nil, "", &ExistsError{Path: pub}
+			}
+		}
 		return nil, nil, "", err
 	}
 	return privPEM, pubPEM, pubB64, nil
@@ -152,8 +262,8 @@ func parsePublicDER(der []byte) (ed25519.PublicKey, error) {
 	return pub, nil
 }
 
-// DecodeB64Strict decodes standard Base64 like Python's
-// base64.b64decode(validate=True), including its error messages.
+// DecodeB64Strict decodes standard Base64 strictly,
+// with the exact error messages of strict decoding.
 func DecodeB64Strict(s string) ([]byte, error) {
 	if err := checkASCII(s); err != nil {
 		return nil, fmt.Errorf("Invalid Base64 value: %s", err)
@@ -199,7 +309,7 @@ func escapeRune(r rune) string {
 	}
 }
 
-// strictBase64Check mirrors CPython's binascii.a2b_base64(strict_mode=True)
+// strictBase64Check mirrors strict Base64 decoding
 // validation (the error messages included).
 func strictBase64Check(s string) error {
 	if len(s) > 0 && s[0] == '=' {
@@ -257,7 +367,7 @@ func LoadPublicKeyB64DER(b64 string) (ed25519.PublicKey, error) {
 	return parsePublicDER(der)
 }
 
-// ExistsError means a key file already exists (Python's FileExistsError).
+// ExistsError means a key file already exists (FileExistsError).
 type ExistsError struct{ Path string }
 
 func (e *ExistsError) Error() string { return fmt.Sprintf("'%s' already exists", e.Path) }

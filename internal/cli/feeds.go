@@ -10,7 +10,8 @@ import (
 	"github.com/Desvelao/dsi-cli/internal/core"
 	"github.com/Desvelao/dsi-cli/internal/crypto"
 	"github.com/Desvelao/dsi-cli/internal/feeds"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/model"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/spf13/cobra"
 )
 
@@ -93,8 +94,8 @@ func (e *Env) loadSigning(privValue, pubValue string, privSet, pubSet bool) (*fe
 }
 
 // parseTemplateVars merges --var-file and --var template variables (--var wins).
-func (e *Env) parseTemplateVars(varFile string, varFileSet bool, vars []string) (*pyutil.OrderedMap, error) {
-	out := pyutil.NewOrderedMap()
+func (e *Env) parseTemplateVars(varFile string, varFileSet bool, vars []string) (*strutil.OrderedMap, error) {
+	out := strutil.NewOrderedMap()
 	if varFileSet {
 		if !pathExists(varFile) {
 			e.secho(red, "❌ Variable file not found: %s", varFile)
@@ -104,11 +105,11 @@ func (e *Env) parseTemplateVars(varFile string, varFileSet bool, vars []string) 
 		if err != nil {
 			return nil, err
 		}
-		for _, line := range pyutil.SplitLines(text) {
-			line = pyutil.Strip(line)
+		for _, line := range strutil.SplitLines(text) {
+			line = strutil.Strip(line)
 			if line != "" && strings.Contains(line, "=") && !strings.HasPrefix(line, "#") {
 				k, v, _ := strings.Cut(line, "=")
-				out.Set(pyutil.Strip(k), pyutil.Strip(v))
+				out.Set(strutil.Strip(k), strutil.Strip(v))
 			}
 		}
 	}
@@ -237,6 +238,7 @@ func newFeedsCmd(env *Env) *cobra.Command {
 		}
 		cmd.Flags().BoolVar(&sample, "sample", true, "Create a sample post (hello.md) when it does not exist")
 		cmd.Flags().BoolVar(&noSample, "no-sample", false, "Do not create a sample post")
+		cmd.MarkFlagsMutuallyExclusive("sample", "no-sample")
 		cmd.Flags().StringVar(&feedType, "type", "markdown", "Define the type of feed to create")
 		group.AddCommand(cmd)
 	}
@@ -261,6 +263,14 @@ func newFeedsCmd(env *Env) *cobra.Command {
 				if err := checkFeedType(feedType); err != nil {
 					return err
 				}
+				if !pathExists(directory) {
+					env.secho(red, "❌ Directory not found: %s", directory)
+					return exit(1)
+				}
+				if !isDir(directory) {
+					env.secho(red, "❌ '%s' exists and is not a directory.", directory)
+					return exit(1)
+				}
 				var err error
 				if title, err = env.optionValue("title", title, "Provide the title for the RSS feed", "My RSS Feed", interactive); err != nil {
 					return err
@@ -284,10 +294,6 @@ func newFeedsCmd(env *Env) *cobra.Command {
 				varsMap, err := env.parseTemplateVars(varFile, flags.Changed("var-file"), vars)
 				if err != nil {
 					return err
-				}
-				if !pathExists(directory) {
-					env.secho(red, "❌ Directory not found: %s", directory)
-					return exit(1)
 				}
 				states, err := feeds.Collect(directory)
 				if err != nil {
@@ -347,12 +353,19 @@ func newFeedsCmd(env *Env) *cobra.Command {
 					return usagef("Invalid value for 'FEED': File '%s' does not exist.", feed)
 				}
 				keys := map[string]ed25519.PublicKey{}
+				revoked := map[string]string{}
 				if vcardPath != "" {
 					card, err := core.NewVCardFromPath(vcardPath)
 					if err != nil {
 						return err
 					}
+					for _, r := range card.Profile.Revocations {
+						revoked[r.KeyB64] = model.Str(r.Reason)
+					}
 					for _, k := range card.Profile.Keys {
+						if _, isRevoked := revoked[k.KeyB64]; isRevoked {
+							continue
+						}
 						if pub, err := crypto.LoadPublicKeyB64DER(k.KeyB64); err == nil {
 							keys[k.KeyB64] = pub
 						}
@@ -381,7 +394,7 @@ func newFeedsCmd(env *Env) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				results, err := feeds.VerifyFeedItems(text, keys)
+				results, err := feeds.VerifyFeedItemsRevoked(text, keys, revoked)
 				if err != nil {
 					return err
 				}

@@ -146,3 +146,22 @@ func TestSourceMatches(t *testing.T) {
 		t.Error("different or missing source must not match")
 	}
 }
+
+func TestNormalizeURLKeepsUserinfo(t *testing.T) {
+	got, err := NormalizeURL("HTTPS://User:pw@Example.com:443/a.vcf#f")
+	if err != nil || got != "https://User:pw@example.com/a.vcf" {
+		t.Errorf("got %q, %v", got, err)
+	}
+	s := func(v string) *string { return &v }
+	for _, src := range []string{"https://user@example.com/a.vcf", "https://u:p@example.com/a.vcf", "https://@example.com/a.vcf"} {
+		if SourceMatches("https://example.com/a.vcf", s(src)) || SourceMatches(src, s("https://example.com/a.vcf")) {
+			t.Errorf("userinfo URL %q must not match the bare URL", src)
+		}
+	}
+	if !SourceMatches("https://user@Example.com/a.vcf", s("https://user@example.com:443/a.vcf")) {
+		t.Error("identical userinfo must still match")
+	}
+	if SourceMatches("https://user@example.com/a.vcf", s("https://other@example.com/a.vcf")) {
+		t.Error("different userinfo must not match")
+	}
+}

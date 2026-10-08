@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/Desvelao/dsi-cli/internal/crypto"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 )
 
 // Verification statuses of feed items.
@@ -54,6 +54,10 @@ func (n *node) child(local string) *node {
 	return nil
 }
 
+// errDTD is returned by parseXML when the document contains a markup
+// declaration directive (<!DOCTYPE ...>, <!ENTITY ...>, ...).
+var errDTD = errors.New("DTD and entity declarations are not allowed in feeds")
+
 func parseXML(text string) (*node, error) {
 	dec := xml.NewDecoder(strings.NewReader(text))
 	dec.Strict = true
@@ -68,6 +72,10 @@ func parseXML(text string) (*node, error) {
 			return nil, err
 		}
 		switch t := tok.(type) {
+		case xml.Directive:
+			// Go yields a Directive for every "<!X ...>" declaration other
+			// than comments and CDATA, whatever the letter case.
+			return nil, errDTD
 		case xml.StartElement:
 			n := &node{name: t.Name, attrs: t.Attr}
 			if len(stack) > 0 {
@@ -107,11 +115,18 @@ func iterItems(n *node, out *[]*node) {
 // keys (by key-id, their Base64 DER value). It fails if the document is not
 // well-formed or declares a DTD.
 func VerifyFeedItems(xmlText string, keys map[string]ed25519.PublicKey) ([]ItemResult, error) {
-	if strings.Contains(xmlText, "<!DOCTYPE") || strings.Contains(xmlText, "<!ENTITY") {
-		return nil, errors.New("DTD and entity declarations are not allowed in feeds")
-	}
+	return VerifyFeedItemsRevoked(xmlText, keys, nil)
+}
+
+// VerifyFeedItemsRevoked is VerifyFeedItems with a set of revoked key-ids
+// (key-id to REVKEY reason). Items signed with a revoked key are invalid,
+// whatever the signature, because an item carries no trustworthy date.
+func VerifyFeedItemsRevoked(xmlText string, keys map[string]ed25519.PublicKey, revoked map[string]string) ([]ItemResult, error) {
 	root, err := parseXML(xmlText)
 	if err != nil {
+		if errors.Is(err, errDTD) {
+			return nil, err
+		}
 		return nil, fmt.Errorf("Invalid XML: %v", err)
 	}
 	var items []*node
@@ -129,7 +144,7 @@ func VerifyFeedItems(xmlText string, keys map[string]ed25519.PublicKey) ([]ItemR
 			guid = &g
 		}
 		sig := item.child("signature")
-		if sig == nil || pyutil.Strip(sig.text) == "" {
+		if sig == nil || strutil.Strip(sig.text) == "" {
 			results = append(results, ItemResult{Title: title, Guid: guid, Status: StatusUnsigned})
 			continue
 		}
@@ -139,6 +154,14 @@ func VerifyFeedItems(xmlText string, keys map[string]ed25519.PublicKey) ([]ItemR
 		}
 		if alg := sig.attr("alg"); alg != "" && alg != "ed25519" {
 			results = append(results, ItemResult{title, guid, StatusInvalid, fmt.Sprintf("unsupported alg '%s'", alg)})
+			continue
+		}
+		if why, ok := revoked[keyID]; ok && keyID != "" {
+			reason := "signed with revoked key"
+			if why != "" {
+				reason += " (" + why + ")"
+			}
+			results = append(results, ItemResult{title, guid, StatusInvalid, reason})
 			continue
 		}
 		var key ed25519.PublicKey
@@ -160,7 +183,7 @@ func VerifyFeedItems(xmlText string, keys map[string]ed25519.PublicKey) ([]ItemR
 		if c := item.child("description"); c != nil {
 			description = c.text
 		}
-		if crypto.VerifyFeedSignature(key, pubDate, title, description, pyutil.Strip(sig.text)) {
+		if crypto.VerifyFeedSignature(key, pubDate, title, description, strutil.Strip(sig.text)) {
 			results = append(results, ItemResult{Title: title, Guid: guid, Status: StatusValid})
 		} else {
 			results = append(results, ItemResult{title, guid, StatusInvalid, "bad signature"})

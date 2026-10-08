@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"crypto/ed25519"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -190,5 +191,195 @@ func TestForceOverwritesAndTightensMode(t *testing.T) {
 	}
 	if st, _ := os.Stat(priv); st.Mode().Perm() != 0o600 {
 		t.Errorf("mode %v", st.Mode().Perm())
+	}
+}
+
+func TestPublicCleanupOnFailure(t *testing.T) {
+	dir := t.TempDir()
+	priv := filepath.Join(dir, "private.pem")
+	pub := filepath.Join(dir, "missing", "public.pem") // parent dir does not exist
+	if _, _, _, err := ActionGenerateKeypair(priv, pub, false); err == nil {
+		t.Fatal("expected error")
+	}
+	if _, err := os.Stat(priv); err == nil {
+		t.Error("orphaned private key left behind")
+	}
+}
+
+func TestPublicPreexistingLeavesNoPrivate(t *testing.T) {
+	dir := t.TempDir()
+	priv, pub := filepath.Join(dir, "private.pem"), filepath.Join(dir, "public.pem")
+	os.WriteFile(pub, []byte("keep"), 0o644)
+	_, _, _, err := ActionGenerateKeypair(priv, pub, false)
+	if !IsExist(err) {
+		t.Fatalf("expected exists error, got %v", err)
+	}
+	if _, err := os.Stat(priv); err == nil {
+		t.Error("private key created")
+	}
+	if got, _ := os.ReadFile(pub); string(got) != "keep" {
+		t.Error("public key modified")
+	}
+}
+
+func TestForceFailureKeepsPreexistingPrivate(t *testing.T) {
+	dir := t.TempDir()
+	priv := filepath.Join(dir, "private.pem")
+	os.WriteFile(priv, []byte("old"), 0o600)
+	pub := filepath.Join(dir, "missing", "public.pem")
+	if _, _, _, err := ActionGenerateKeypair(priv, pub, true); err == nil {
+		t.Fatal("expected error")
+	}
+	if _, err := os.Stat(priv); err != nil {
+		t.Error("pre-existing private key removed under force")
+	}
+}
+
+func TestForceFailureReadOnlyPubDirKeepsOldPair(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("permission checks do not apply to root")
+	}
+	dir := t.TempDir()
+	pubDir := filepath.Join(dir, "pub")
+	os.Mkdir(pubDir, 0o755)
+	priv, pub := filepath.Join(dir, "private.pem"), filepath.Join(pubDir, "public.pem")
+	os.WriteFile(priv, []byte("old-priv"), 0o600)
+	os.WriteFile(pub, []byte("old-pub"), 0o644)
+	os.Chmod(pubDir, 0o555)
+	t.Cleanup(func() { os.Chmod(pubDir, 0o755) })
+	if _, _, _, err := ActionGenerateKeypair(priv, pub, true); err == nil {
+		t.Fatal("expected error")
+	}
+	if got, _ := os.ReadFile(priv); string(got) != "old-priv" {
+		t.Errorf("private key changed: %q", got)
+	}
+	if got, _ := os.ReadFile(pub); string(got) != "old-pub" {
+		t.Errorf("public key changed: %q", got)
+	}
+	entries, _ := os.ReadDir(dir)
+	if len(entries) != 2 {
+		t.Errorf("temp files left behind: %v", entries)
+	}
+}
+
+func TestForceOverwriteWideModeResultsIn0600AndMatchingPair(t *testing.T) {
+	dir := t.TempDir()
+	priv, pub := filepath.Join(dir, "private.pem"), filepath.Join(dir, "public.pem")
+	os.WriteFile(priv, []byte("old"), 0o666)
+	os.Chmod(priv, 0o666)
+	os.WriteFile(pub, []byte("old"), 0o644)
+	privPEM, pubPEM, _, err := ActionGenerateKeypair(priv, pub, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st, _ := os.Stat(priv); st.Mode().Perm() != 0o600 {
+		t.Errorf("mode %v", st.Mode().Perm())
+	}
+	gp, _ := os.ReadFile(priv)
+	gq, _ := os.ReadFile(pub)
+	if string(gp) != string(privPEM) || string(gq) != string(pubPEM) {
+		t.Error("files do not match returned PEMs")
+	}
+}
+
+func readOnlyPubDir(t *testing.T) (dir, priv, pub string) {
+	t.Helper()
+	if os.Geteuid() == 0 {
+		t.Skip("permission checks do not apply to root")
+	}
+	dir = t.TempDir()
+	pubDir := filepath.Join(dir, "pub")
+	if err := os.Mkdir(pubDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	os.Chmod(pubDir, 0o555)
+	t.Cleanup(func() { os.Chmod(pubDir, 0o755) })
+	return dir, filepath.Join(dir, "private.pem"), filepath.Join(pubDir, "public.pem")
+}
+
+func TestNonForcePubWriteFailureRemovesPrivate(t *testing.T) {
+	dir, priv, pub := readOnlyPubDir(t)
+	if _, _, _, err := ActionGenerateKeypair(priv, pub, false); err == nil {
+		t.Fatal("expected error")
+	}
+	entries, _ := os.ReadDir(dir)
+	if len(entries) != 1 || entries[0].Name() != "pub" {
+		t.Errorf("unexpected leftovers: %v", entries)
+	}
+}
+
+func TestForceFailureReadOnlyPubDirNoPreviousPairLeavesNothing(t *testing.T) {
+	dir, priv, pub := readOnlyPubDir(t)
+	if _, _, _, err := ActionGenerateKeypair(priv, pub, true); err == nil {
+		t.Fatal("expected error")
+	}
+	entries, _ := os.ReadDir(dir)
+	if len(entries) != 1 || entries[0].Name() != "pub" {
+		t.Errorf("unexpected leftovers: %v", entries)
+	}
+}
+
+// A non-empty directory at the pub path makes the pub rename fail after the
+// private rename already happened, exercising the rollback branch.
+func pubRenameFailure(t *testing.T) (dir, priv, pub string) {
+	t.Helper()
+	dir = t.TempDir()
+	priv, pub = filepath.Join(dir, "private.pem"), filepath.Join(dir, "public.pem")
+	if err := os.Mkdir(pub, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(pub, "x"), []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return
+}
+
+func TestForcePubRenameFailureRestoresOldPrivate(t *testing.T) {
+	dir, priv, pub := pubRenameFailure(t)
+	os.WriteFile(priv, []byte("old-priv"), 0o600)
+	if _, _, _, err := ActionGenerateKeypair(priv, pub, true); err == nil {
+		t.Fatal("expected error")
+	}
+	if got, _ := os.ReadFile(priv); string(got) != "old-priv" {
+		t.Errorf("private key not restored: %q", got)
+	}
+	if st, _ := os.Stat(priv); st.Mode().Perm() != 0o600 {
+		t.Errorf("mode %v", st.Mode().Perm())
+	}
+	entries, _ := os.ReadDir(dir)
+	if len(entries) != 2 {
+		t.Errorf("temp files left behind: %v", entries)
+	}
+}
+
+func TestForcePubRenameFailureNoPreviousPrivateRemovesNew(t *testing.T) {
+	dir, priv, pub := pubRenameFailure(t)
+	if _, _, _, err := ActionGenerateKeypair(priv, pub, true); err == nil {
+		t.Fatal("expected error")
+	}
+	if _, err := os.Stat(priv); err == nil {
+		t.Error("new private key left behind")
+	}
+	entries, _ := os.ReadDir(dir)
+	if len(entries) != 1 {
+		t.Errorf("unexpected leftovers: %v", entries)
+	}
+}
+
+func TestWritePrivateKeyErrors(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "private.pem")
+	os.WriteFile(path, []byte("keep"), 0o600)
+	if err := WritePrivateKey(path, []byte("new"), false); !errors.Is(err, os.ErrExist) {
+		t.Errorf("expected ErrExist, got %v", err)
+	}
+	if got, _ := os.ReadFile(path); string(got) != "keep" {
+		t.Errorf("existing file modified: %q", got)
+	}
+	if err := WritePrivateKey(filepath.Join(dir, "nodir", "k.pem"), []byte("x"), false); err == nil {
+		t.Error("expected error for missing parent dir")
+	}
+	if err := WritePrivateKey(dir, []byte("x"), true); err == nil {
+		t.Error("expected error writing to a directory")
 	}
 }

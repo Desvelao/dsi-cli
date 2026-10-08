@@ -6,24 +6,25 @@ It is distributed as **a single static binary** (no runtime, no dependencies) an
 
 Based on https://nfraprado.net/post/vcard-rss-as-an-alternative-to-social-media.html
 
-New here? Read the short [getting started guide](docs/getting-started.md). More: [command reference](docs/commands.md), [feed templates](docs/publishing.md), [plugins](docs/plugins.md), [hands-on testing guide](docs/testing-guide.md), [migrating from the Python `dsipy`](docs/migrating-from-python.md).
+New here? Read the short [getting started guide](docs/getting-started.md). More: [command reference](docs/commands.md), [feed templates](docs/publishing.md), [plugins](docs/plugins.md), [hands-on testing guide](docs/testing-guide.md).
 
 # Install
 
 Download the binary for your platform from the [Releases](https://github.com/Desvelao/dsi-cli/releases) page (`dsi_linux_amd64`, `dsi_linux_arm64`, `dsi_darwin_amd64`, `dsi_darwin_arm64`, `dsi_windows_amd64.exe`, `dsi_windows_arm64.exe`), check it against `checksums.txt` and put it on your `PATH`:
 
 ```sh
-tag=v0.1.0-alpha1
-curl -fsSLO "https://github.com/Desvelao/dsi-cli/releases/download/$tag/dsi_linux_amd64"
-curl -fsSLO "https://github.com/Desvelao/dsi-cli/releases/download/$tag/checksums.txt"
+# latest stable release; for a pre-release or a pinned version use .../releases/download/<tag>/ instead
+base=https://github.com/Desvelao/dsi-cli/releases/latest/download
+curl -fsSLO "$base/dsi_linux_amd64"
+curl -fsSLO "$base/checksums.txt"
 sha256sum -c checksums.txt --ignore-missing
 install -m 0755 dsi_linux_amd64 ~/.local/bin/dsi
 dsi --version
 ```
 
-With a Go toolchain you can also build it from source: `go install github.com/Desvelao/dsi-cli/cmd/dsi@v0.1.0-alpha1`.
+With a Go toolchain you can also build it from source: `go install github.com/Desvelao/dsi-cli/cmd/dsi@latest` (use `@<tag>` for a pre-release).
 
-> The first releases (`v0.1.0-alpha*`) are pre-releases. The previous Python tool was called `dsipy`; the command is now `dsi` and there is no `dsipy` alias.
+> The first releases (`v0.1.0-alpha*`) are pre-releases.
 
 # Join to the network
 
@@ -35,7 +36,7 @@ With a Go toolchain you can also build it from source: `go install github.com/De
     - feeds (rss and resources referenced by the states)
 5. Share the link to your vCard to your connections
 
-See [dsi-publish-template-github-pages](https://github.com/Desvelao/dsi-publish-template-github-pages) for a way to publish the feeds with GitHub Pages. The reusable workflow `.github/workflows/gha-build-feeds.yml` of this repository builds (and optionally signs) the feed in CI.
+See [dsi-publish-template-github-pages](https://github.com/Desvelao/dsi-publish-template-github-pages) for a way to publish the feeds with GitHub Pages. The reusable workflow `.github/workflows/gha-build-feeds.yml` of this repository builds (and optionally signs) the feed in CI; see [Reusable workflow](docs/publishing.md#reusable-workflow) for its inputs, secrets and an example.
 
 # Commands
 
@@ -57,7 +58,7 @@ See [dsi-publish-template-github-pages](https://github.com/Desvelao/dsi-publish-
 | `dsi key pub-encode` / `pub-decode` | Convert a public key between PEM and Base64 DER |
 | `dsi feeds init` / `add` / `build` | Initialize the source directory, add posts, build (optionally signed) RSS feeds; `build` supports `{{ }}` templates (`--var`, `--var-file`) and `--limit` |
 | `dsi feeds verify <rss>` | Verify signed items (`--vcard` or `--pub`) |
-| `dsi connections feed <files\|dirs>` | Generate an OPML file (one outline per `X-FEED`) from vCards (`-o`) |
+| `dsi connections feed <files\|dirs>` | Generate an OPML file (one outline per `X-FEED`) from vCards (`-o`, `--title`; duplicate URLs emitted once) |
 | `dsi plugin list` | List the installed [plugins](docs/plugins.md); `dsi <name>` runs the plugin `dsi-<name>` |
 
 Full option lists: [docs/commands.md](docs/commands.md) or `dsi <group> <command> --help`. Add `--debug` (or `DSI_DEBUG=1`) before the group to print stack traces on errors.
@@ -78,7 +79,7 @@ Use it as a gate in CI: `dsi vcard validate dsi.vcf` exits with `1` if the vCard
 
 ## Remote fetching
 
-`vcard fetch` and the commands that accept a URL only fetch over HTTPS (`--allow-http` to relax it), follow at most 5 redirects, refuse hosts that resolve to non-public addresses (loopback, private ranges, link-local), limit the response to 1 MB with connect/read timeouts, accept only text-like content types and ignore proxy environment variables. The connection is pinned to the address that was validated (TLS still checks the original host name), so DNS rebinding cannot swap the address between the check and the connection. URLs with embedded credentials are rejected, and `vcard fetch` requires the fetched card's `SOURCE` to match the requested URL unless `--no-verify-source` is given.
+`vcard fetch` and the commands that accept a URL only fetch over HTTPS (`--allow-http` to relax it), follow at most 5 redirects, refuse hosts that resolve to non-public addresses (loopback, private ranges, link-local), limit the response to 1 MB (local vCard files are limited to 1 MB too) with connect/read timeouts, accept only text-like content types and ignore proxy environment variables. The connection is pinned to the address that was validated (TLS still checks the original host name), so DNS rebinding cannot swap the address between the check and the connection. URLs with embedded credentials are rejected, and `vcard fetch` requires the fetched card's `SOURCE` to match the requested URL unless `--no-verify-source` is given.
 
 # Project layout
 
@@ -94,7 +95,7 @@ internal/
   endorsements/       endorsement verification and revocation rules
   feeds/              RSS building, item signing/verification, markdown sources, OPML
   plugin/             plugin discovery
-  pyutil/             helpers reproducing the string semantics of the original Python tool
+  strutil/             string helpers (trimming, integer parsing, ordered maps, JSON dumping)
   testutil/           loader of the golden fixtures
 testdata/golden/      frozen fixtures that the Go tests compare against (see testdata/README.md)
 ```

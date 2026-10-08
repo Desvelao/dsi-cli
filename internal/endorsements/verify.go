@@ -28,7 +28,7 @@ type Result struct {
 	Reason       string
 }
 
-// dsiDateRe mirrors the regular expression Python's strptime builds for
+// dsiDateRe mirrors the strptime-style regular expression for
 // "%Y%m%dT%H%M%SZ" (case-insensitive, single-digit fields accepted).
 var dsiDateRe = regexp.MustCompile(`(?i)^(\d{4})(1[0-2]|0[1-9]|[1-9])(3[01]|[12]\d|0[1-9]|[1-9]| [1-9])T(2[0-3]|[0-1]\d|\d)([0-5]\d|\d)(6[0-1]|[0-5]\d|\d)Z$`)
 

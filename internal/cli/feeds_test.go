@@ -158,6 +158,20 @@ func TestBuildMissingDirectoryAndEmptyDirectory(t *testing.T) {
 	notContains(t, h.read("out.rss"), "<item>")
 }
 
+func TestBuildChecksDirectoryBeforePrompts(t *testing.T) {
+	h := newHarness(t)
+	h.write("afile", "x")
+	for name, msg := range map[string]string{"nope": "Directory not found: nope", "afile": "'afile' exists and is not a directory."} {
+		code, out := h.run("T\nhttps://a\nd\nA\ne\n", "feeds", "build", name, "-i", "-o", "out.rss")
+		h.expect(code, out, 1)
+		contains(t, out, msg)
+		notContains(t, out, "Provide the title")
+		if h.exists("out.rss") {
+			t.Error("nothing written")
+		}
+	}
+}
+
 func TestBuildRequiresOptionsUnlessInteractive(t *testing.T) {
 	h := newBuildHarness(t)
 	for _, missing := range []string{"title", "link", "description", "author", "email"} {
@@ -315,4 +329,48 @@ func TestFeedsVerifyArguments(t *testing.T) {
 	h2.expect(code, out, 0)
 	contains(t, out, "3 item(s), 0 invalid")
 	_ = feeds.StatusValid
+}
+
+func TestFeedsVerifyVCardRevokedKey(t *testing.T) {
+	h := newBuildHarness(t)
+	alice := keyNamed(t, "alice")
+	bob := keyNamed(t, "bob")
+	h.write("alice.pem", string(alice.privPEM(t)))
+	h.write("alice.pub", string(alice.pubPEM(t)))
+	h.write("bob.pem", string(bob.privPEM(t)))
+	h.write("bob.pub", string(bob.pubPEM(t)))
+	h.write("ok.vcf", card("A", "https://a.example/a.vcf", alice.b64))
+	rev := func(reason string) string {
+		return "REVKEY;TYPE=public;ALG=ed25519;REASON=" + reason + ";DATE=20260101T000000Z;ENCODING=b:" + alice.b64
+	}
+	h.write("rev.vcf", card("A", "https://a.example/a.vcf", bob.b64,
+		"KEY;TYPE=public;ALG=ed25519;ENCODING=b:"+alice.b64, rev("compromised")))
+
+	code, out := h.build("--sign-priv", "alice.pem", "--sign-pub", "alice.pub")
+	h.expect(code, out, 0)
+	code, out = h.run("", "feeds", "verify", "out.rss", "--vcard", "ok.vcf")
+	h.expect(code, out, 0)
+
+	// signed with a key later revoked as compromised
+	code, out = h.run("", "feeds", "verify", "out.rss", "--vcard", "rev.vcf")
+	h.expect(code, out, 1)
+	contains(t, out, "signed with revoked key", "compromised", "3 invalid")
+
+	// a revoked key does not stop a second valid key from validating
+	code, out = h.build("--sign-priv", "bob.pem", "--sign-pub", "bob.pub")
+	h.expect(code, out, 0)
+	code, out = h.run("", "feeds", "verify", "out.rss", "--vcard", "rev.vcf")
+	h.expect(code, out, 0)
+	contains(t, out, "3 item(s), 0 invalid")
+}
+
+func TestFeedsInitSampleFlagsMutuallyExclusive(t *testing.T) {
+	h := newHarness(t)
+	code, out := h.run("", "feeds", "init", "both", "--sample", "--no-sample")
+	if code == 0 || !strings.Contains(out, "none of the others can be") {
+		t.Errorf("expected mutual exclusion error, got code %d: %s", code, out)
+	}
+	if h.exists("both") {
+		t.Error("directory must not be created")
+	}
 }

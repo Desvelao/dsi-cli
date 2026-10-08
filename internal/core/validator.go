@@ -9,10 +9,10 @@ import (
 	"github.com/Desvelao/dsi-cli/internal/crypto"
 	"github.com/Desvelao/dsi-cli/internal/endorsements"
 	"github.com/Desvelao/dsi-cli/internal/model"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 )
 
-// Python's `$` also matches before a trailing newline, hence `\n?$`.
+// `$` also matches before a trailing newline, hence `\n?$`.
 var (
 	signatureRe = regexp.MustCompile(`^[0-9a-f]{128}\n?$`)
 	languageRe  = regexp.MustCompile(`^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*\n?$`)
@@ -90,7 +90,7 @@ func countAttr(p *model.Profile, name string) int {
 }
 
 // duplicates returns the values that occur more than once, in order of their
-// second occurrence (Python returns an unordered set).
+// second occurrence (the order is unspecified).
 func duplicates[T comparable](values []T) []T {
 	seen := map[T]bool{}
 	reported := map[T]bool{}
@@ -128,7 +128,7 @@ func ValidateProfile(p *model.Profile) *ValidationResult {
 	raw := p.Raw
 
 	// --- structure -------------------------------------------------------
-	stripped := pyutil.Strip(raw)
+	stripped := strutil.Strip(raw)
 	if !strings.HasPrefix(stripped, "BEGIN:VCARD") || !strings.HasSuffix(stripped, "END:VCARD") {
 		r.errorf("structure", "Content must start with BEGIN:VCARD and end with END:VCARD")
 	}

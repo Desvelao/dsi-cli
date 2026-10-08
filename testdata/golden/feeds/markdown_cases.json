@@ -64,8 +64,8 @@
     "out": "<p>A &amp; B &lt; C &gt; D &copy; &amp; &#169;</p>"
   },
   {
-    "in": "```python\nprint('hi')\n```",
-    "out": "<pre><code class=\"language-python\">print('hi')\n</code></pre>"
+    "in": "```go\nprint('hi')\n```",
+    "out": "<pre><code class=\"language-go\">print('hi')\n</code></pre>"
   },
   {
     "in": "    indented code\n    more",

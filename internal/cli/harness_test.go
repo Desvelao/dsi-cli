@@ -15,7 +15,7 @@ import (
 )
 
 // harness runs the CLI in a fresh temp directory, capturing stdout+stderr
-// together (like click's CliRunner).
+// together.
 type harness struct {
 	t   *testing.T
 	env *Env
@@ -28,7 +28,6 @@ func newHarness(t *testing.T) *harness {
 	dir := t.TempDir()
 	t.Chdir(dir)
 	t.Setenv("DSI_DEBUG", "")
-	t.Setenv("DSIPY_DEBUG", "")
 	out := &bytes.Buffer{}
 	h := &harness{t: t, out: out, dir: dir}
 	h.env = &Env{In: strings.NewReader(""), Out: out, Err: out,

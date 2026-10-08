@@ -7,16 +7,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/Desvelao/dsi-cli/internal/testutil"
 	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
 type goldenValidation struct {
-	Valid       bool    `json:"valid"`
-	Errors      []Issue `json:"errors"`
-	Warnings    []Issue `json:"warnings"`
-	PythonError string  `json:"python_error"`
+	Valid         bool    `json:"valid"`
+	Errors        []Issue `json:"errors"`
+	Warnings      []Issue `json:"warnings"`
+	ExpectedCrash string  `json:"crash_note"`
 }
 
 // cryptography appends version-specific ASN.1 details to deserialization errors.
@@ -31,7 +31,7 @@ func trimDetails(issues []Issue) []Issue {
 	return out
 }
 
-// Python reports duplicates from an unordered set: compare them as sets.
+// The reference reports duplicates from an unordered set: compare them as sets.
 func splitDuplicates(issues []Issue) (ordered, dups []Issue) {
 	for _, is := range issues {
 		if strings.HasSuffix(is.Code, "-duplicate") && is.Code != "version-duplicate" && is.Code != "source-duplicate" && is.Code != "dsi-version-duplicate" {
@@ -72,8 +72,8 @@ func TestValidateProfileGolden(t *testing.T) {
 			var want goldenValidation
 			testutil.GoldenJSON(t, "vcards/"+name+".validate.json", &want)
 			res := ValidateProfile(vcard.ParseVCard(testutil.GoldenString(t, "vcards/"+name+".vcf")))
-			if want.PythonError != "" {
-				// Python crashes on these inputs; Go reports an invalid URL instead.
+			if want.ExpectedCrash != "" {
+				// The reference crashes on these inputs; Go reports an invalid URL instead.
 				found := false
 				for _, e := range res.Errors {
 					found = found || strings.HasSuffix(e.Code, "-invalid")
@@ -129,18 +129,18 @@ func TestSplitURL(t *testing.T) {
 	}
 }
 
-func TestValidateJSONMatchesPythonDumps(t *testing.T) {
-	names := testutil.GoldenNames(t, "vcards", ".validate.pyjson")
+func TestValidateJSONMatchesGolden(t *testing.T) {
+	names := testutil.GoldenNames(t, "vcards", ".validate.out")
 	if len(names) < 40 {
 		t.Fatalf("few cases: %d", len(names))
 	}
 	for _, name := range names {
 		res := ValidateProfile(vcard.ParseVCard(testutil.GoldenString(t, "vcards/"+name+".vcf")))
-		got, err := pyutil.JSONDumps(res.ToDict())
+		got, err := strutil.JSONDumps(res.ToDict())
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := testutil.GoldenString(t, "vcards/"+name+".validate.pyjson")
+		want := testutil.GoldenString(t, "vcards/"+name+".validate.out")
 		// set-ordered duplicate warnings and cryptography's version-specific details differ
 		if strings.Contains(want, "-duplicate") || strings.Contains(want, "Details: ") {
 			continue

@@ -4,10 +4,10 @@ on:
   workflow_call:
     inputs:
       dsi_tag:
-        description: Release tag of Desvelao/dsi-cli to download the dsi binary from (an explicit tag is required for pre-releases)
+        description: Release tag of Desvelao/dsi-cli to download the dsi binary from. Empty = latest stable release (set an explicit tag for pre-releases or to pin a version)
         required: false
         type: string
-        default: "v0.1.0-alpha1"
+        default: ""
       source_dir:
         description: Source directory used by the dsi command
         required: false
@@ -69,11 +69,11 @@ on:
         description: Feed description
         required: false
       feeds_author:
-        description: Feed author
-        required: true
+        description: Feed author (optional; the input of the same name can be used instead)
+        required: false
       feeds_email:
-        description: Feed author email
-        required: true
+        description: Feed author email (optional; the input of the same name can be used instead)
+        required: false
       feed_link:
         description: Feed URL. If empty, it is generated from owner/repo + feeds_file.
         required: false
@@ -131,6 +131,7 @@ jobs:
           if [ -z "$tag" ]; then
             # latest stable release (pre-releases are not considered: set dsi_tag for those)
             tag=$(gh release view --repo "$DSI_REPO" --json tagName -q .tagName)
+            echo "Resolved latest stable release: $tag"
           fi
 
           gh release download "$tag" \

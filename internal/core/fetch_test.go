@@ -370,3 +370,69 @@ func TestSaveVCardFromURL(t *testing.T) {
 		t.Error("expected exists after overwrite")
 	}
 }
+
+func TestDialFallsBackToNextValidatedAddress(t *testing.T) {
+	srv := newTLS(t, textHandler("ok", nil))
+	n := &fakeNet{dns: map[string][]string{"example.com": {"2606:2800:220:1::1", publicIP}}}
+	f := n.fetcher(srv)
+	inner := f.DialContext
+	f.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		if strings.HasPrefix(addr, "[2606:2800:220:1::1]") {
+			n.mu.Lock()
+			n.dialed = append(n.dialed, addr)
+			n.mu.Unlock()
+			return nil, errors.New("connection refused")
+		}
+		return inner(ctx, network, addr)
+	}
+	_, port, _ := net.SplitHostPort(srv.Listener.Addr().String())
+	if _, err := f.FetchText("https://example.com:"+port+"/", DefaultFetchOptions()); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{net.JoinHostPort("2606:2800:220:1::1", port), net.JoinHostPort(publicIP, port)}
+	if len(n.dialed) != 2 || n.dialed[0] != want[0] || n.dialed[1] != want[1] {
+		t.Errorf("dialed %v, want %v", n.dialed, want)
+	}
+	if len(n.lookups) != 1 {
+		t.Errorf("lookups = %v", n.lookups)
+	}
+}
+
+func TestDialAllAddressesFail(t *testing.T) {
+	var dialed []string
+	f := &Fetcher{
+		LookupHost: func(context.Context, string) ([]string, error) {
+			return []string{publicIP, "2606:2800:220:1::1"}, nil
+		},
+		DialContext: func(_ context.Context, _, addr string) (net.Conn, error) {
+			dialed = append(dialed, addr)
+			return nil, errors.New("refused " + addr)
+		},
+	}
+	_, err := f.FetchText("https://example.com/", DefaultFetchOptions())
+	if !isFetchError(err) || !strings.Contains(err.Error(), "refused [2606:2800:220:1::1]:443") {
+		t.Fatalf("want FetchError with last error, got %v", err)
+	}
+	want := []string{publicIP + ":443", "[2606:2800:220:1::1]:443"}
+	if len(dialed) != 2 || dialed[0] != want[0] || dialed[1] != want[1] {
+		t.Errorf("dialed %v, want %v", dialed, want)
+	}
+}
+
+func TestSaveVCardFromURLOverwriteRefusesSymlink(t *testing.T) {
+	_, f, url := vcardServer(t, func(self string) string { return vcardText(self) }, nil)
+	dir := t.TempDir()
+	target := filepath.Join(t.TempDir(), "victim")
+	if err := os.WriteFile(target, []byte("keep"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, filepath.Join(dir, "dsi.vcf")); err != nil {
+		t.Skipf("symlinks unsupported: %v", err)
+	}
+	if _, _, err := f.SaveVCardFromURL(url, dir, true, false, true); err == nil {
+		t.Error("overwrite through a symlink must be refused")
+	}
+	if got, _ := os.ReadFile(target); string(got) != "keep" {
+		t.Errorf("symlink target modified: %q", got)
+	}
+}

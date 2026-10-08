@@ -47,7 +47,7 @@ func decodeQR(t *testing.T, img image.Image) string {
 	return res.GetText()
 }
 
-func TestQRMatchesPythonSizeAndDecodes(t *testing.T) {
+func TestQRSizeAndDecodes(t *testing.T) {
 	var cases []struct {
 		Data string
 		Rows []string
@@ -66,7 +66,7 @@ func TestQRMatchesPythonSizeAndDecodes(t *testing.T) {
 		if got := decodeQR(t, img); got != c.Data {
 			t.Errorf("decoded %q, want %q", got, c.Data)
 		}
-		// count identical module matrices (same mask/segmentation as Python's qrcode)
+		// count identical module matrices (same mask/segmentation as the reference)
 		same := true
 		for y, row := range c.Rows {
 			for x, ch := range row {
@@ -80,7 +80,7 @@ func TestQRMatchesPythonSizeAndDecodes(t *testing.T) {
 			exact++
 		}
 	}
-	t.Logf("%d/%d QR matrices identical to Python's, all decode", exact, len(cases))
+	t.Logf("%d/%d QR matrices identical to the reference, all decode", exact, len(cases))
 }
 
 func TestQRRequiresOutputAndData(t *testing.T) {

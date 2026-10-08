@@ -6,13 +6,13 @@ import (
 
 	"github.com/Desvelao/dsi-cli/internal/core"
 	"github.com/Desvelao/dsi-cli/internal/feeds"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/spf13/cobra"
 )
 
 func newConnectionsCmd(env *Env) *cobra.Command {
 	group := subcommand("connections", "Commands related to connections processing")
-	var output string
+	var output, title string
 	cmd := &cobra.Command{
 		Use:   "feed INPUTS...",
 		Short: "Generate an OPML file from vCard files (files, directories)",
@@ -22,12 +22,15 @@ func newConnectionsCmd(env *Env) *cobra.Command {
 			for _, w := range inputs.warnings {
 				env.secho(red, "%s", w)
 			}
+			for _, u := range inputs.urls {
+				env.secho(red, "Ignoring URL input (only local vCard files are supported): %s", u)
+			}
 			if len(inputs.files) == 0 {
 				env.secho(red, "❌ No vCard files found in the specified directory or files: %s", pyList(args))
 				return exit(1)
 			}
 			var opmlWarnings []string
-			opml, err := feeds.GenerateOPMLFromVCards(inputs.files, &opmlWarnings)
+			opml, err := feeds.GenerateOPMLFromVCards(inputs.files, title, &opmlWarnings)
 			for _, w := range opmlWarnings {
 				env.secho(red, "%s", w)
 			}
@@ -50,6 +53,7 @@ func newConnectionsCmd(env *Env) *cobra.Command {
 		}),
 	}
 	cmd.Flags().StringVarP(&output, "output", "o", "", "Output OPML file")
+	cmd.Flags().StringVar(&title, "title", "", "OPML title (default \""+feeds.DefaultOPMLTitle+"\")")
 	group.AddCommand(cmd)
 	return group
 }
@@ -68,14 +72,14 @@ func newVCardInputs(inputs []string) *vcardInputs {
 	return v
 }
 
-// pyList formats a list like Python's str(list[str]).
+// pyList formats a list as [a, b] with single-quoted items.
 func pyList(items []string) string {
 	out := "["
 	for i, s := range items {
 		if i > 0 {
 			out += ", "
 		}
-		out += pyutil.Repr(s)
+		out += strutil.Repr(s)
 	}
 	return out + "]"
 }

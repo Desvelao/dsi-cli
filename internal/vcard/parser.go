@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/Desvelao/dsi-cli/internal/model"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 )
 
 // The line grammar is a port of vobject's (0.9.x) regular expressions, which the
-// Python implementation relied on: content-line, parameter and value patterns.
+// original implementation relied on: content-line, parameter and value patterns.
 const (
 	reName  = `[a-zA-Z0-9_-]+`
 	rePV    = `"[^"]*"|[^";:,]*`
@@ -55,7 +55,7 @@ func logicalLines(text string) []logicalLine {
 		}
 		line := strings.TrimRight(phys, "\r\n")
 		lineNumber++
-		if pyutil.RStrip(line) == "" {
+		if strutil.RStrip(line) == "" {
 			if buf.Len() > 0 {
 				flush()
 			}
@@ -153,7 +153,7 @@ func ParseVCard(text string) *model.Profile {
 	stopped := false // first card is over: only look for further BEGIN lines
 
 	for _, ll := range logicalLines(text) {
-		line := pyutil.Strip(ll.text)
+		line := strutil.Strip(ll.text)
 		if line == "" {
 			continue
 		}
@@ -199,20 +199,20 @@ func ParseVCard(text string) *model.Profile {
 			set("key")
 			profile.Keys = append(profile.Keys, model.PublicKey{
 				Alg:    strings.ToLower(attrs.Value("ALG")),
-				KeyB64: pyutil.Strip(value),
+				KeyB64: strutil.Strip(value),
 				Pref:   parsePref(attrs, profile, ll.num),
 			})
 		case name == "REVKEY":
 			set("revkey")
 			profile.Revocations = append(profile.Revocations, model.RevokedKey{
-				KeyB64: pyutil.Strip(value),
+				KeyB64: strutil.Strip(value),
 				Reason: optAttr(attrs, "REASON"),
 				Date:   optAttr(attrs, "DATE"),
 			})
 		case name == "X-ENDORSE":
 			set("x-endorse")
 			profile.Endorsements = append(profile.Endorsements, model.Endorsement{
-				EndorseeKeyB64: pyutil.Strip(value),
+				EndorseeKeyB64: strutil.Strip(value),
 				SignatureHex:   attrs.Value("SIG"),
 				Date:           optAttr(attrs, "DATE"),
 				Confidence:     optAttr(attrs, "CONFIDENCE"),
@@ -227,14 +227,14 @@ func ParseVCard(text string) *model.Profile {
 			profile.Feeds = append(profile.Feeds, model.Feed{
 				Language: attrs.Value("LANGUAGE"),
 				Category: category,
-				URL:      pyutil.Strip(value),
+				URL:      strutil.Strip(value),
 				Tags:     tags,
 			})
 		case name == "X-SOCIAL":
 			set("x-social")
 			profile.Social = append(profile.Social, model.SocialIdentity{
 				Platform: strings.ToLower(attrs.Value("PLATFORM")),
-				Value:    pyutil.Strip(value),
+				Value:    strutil.Strip(value),
 			})
 		case name == "X-DSI-VERSION":
 			set("x-dsi-version")
@@ -244,10 +244,10 @@ func ParseVCard(text string) *model.Profile {
 					features = append(features, f)
 				}
 			}
-			profile.DsiVersion = &model.DsiVersion{Revision: pyutil.Strip(value), Features: features}
+			profile.DsiVersion = &model.DsiVersion{Revision: strutil.Strip(value), Features: features}
 		case name == "VERSION":
 			set("version")
-			profile.Version = model.Ptr(pyutil.Strip(value))
+			profile.Version = model.Ptr(strutil.Strip(value))
 		default:
 			lower := strings.ToLower(name)
 			if field := profile.Field(lower); field != nil {
@@ -290,6 +290,23 @@ func ParseVCard(text string) *model.Profile {
 	return profile
 }
 
+var cardRe = regexp.MustCompile(`(?is)BEGIN:VCARD.*?END:VCARD`)
+
+// ParseVCards parses every BEGIN:VCARD..END:VCARD block in text, in order.
+// Text without a complete block is parsed as a single card, so framing
+// problems are still reported in Profile.Errors.
+func ParseVCards(text string) []*model.Profile {
+	cards := cardRe.FindAllString(text, -1)
+	if len(cards) == 0 {
+		cards = []string{text}
+	}
+	profiles := make([]*model.Profile, 0, len(cards))
+	for _, card := range cards {
+		profiles = append(profiles, ParseVCard(card))
+	}
+	return profiles
+}
+
 func optAttr(attrs model.Attributes, name string) *string {
 	if v, ok := attrs.Get(name); ok {
 		return &v
@@ -302,7 +319,7 @@ func parsePref(attrs model.Attributes, profile *model.Profile, lineNumber int) *
 	if !ok {
 		return nil
 	}
-	n, valid := pyutil.ParseInt(raw)
+	n, valid := strutil.ParseInt(raw)
 	if !valid {
 		profile.Errors = append(profile.Errors, fmt.Sprintf("At line %d: invalid PREF value '%s'", lineNumber, raw))
 		return nil

@@ -1,11 +1,11 @@
-package pyutil
+package strutil
 
 import (
 	"bytes"
 	"encoding/json"
 )
 
-// JSONDumps encodes v like Python's json.dumps(v, ensure_ascii=False): the
+// JSONDumps encodes v like json.dumps(v, ensure_ascii=False): the
 // ", " and ": " separators, no HTML escaping and U+2028/U+2029 left as-is.
 func JSONDumps(v any) (string, error) {
 	var buf bytes.Buffer

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -211,5 +212,56 @@ func TestPluginDoesNotWaitForStdinEOF(t *testing.T) {
 		}
 	case <-time.After(10 * time.Second):
 		t.Fatal("dsi blocked on a non-file stdin")
+	}
+}
+
+// blockingReader blocks its first Read until released, then serves data once.
+type blockingReader struct {
+	release chan struct{}
+	reads   atomic.Int32
+}
+
+func (b *blockingReader) Read(p []byte) (int, error) {
+	n := b.reads.Add(1)
+	<-b.release
+	if n == 1 {
+		return copy(p, "late input\n"), nil
+	}
+	return 0, io.EOF
+}
+
+// After an early-exiting plugin, the stdin-copy goroutine must stop: it may
+// finish its blocked Read but never reads again.
+func TestPluginExitStopsStdinCopy(t *testing.T) {
+	h, dir := pluginHarness(t)
+	installPlugin(t, dir, "hello", `echo done`)
+	src := &blockingReader{release: make(chan struct{})}
+	h.env.In = src
+	h.env.reader = nil
+	done := make(chan int, 1)
+	go func() { done <- ExecuteEnv("test", []string{"hello"}, h.env) }()
+	select {
+	case code := <-done:
+		if code != 0 || !strings.Contains(h.out.String(), "done") {
+			t.Errorf("code %d output %q", code, h.out.String())
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("dsi blocked on a non-file stdin")
+	}
+	close(src.release)
+	time.Sleep(200 * time.Millisecond)
+	if n := src.reads.Load(); n != 1 {
+		t.Errorf("stdin was read %d times, want 1 (no reads after the plugin exited)", n)
+	}
+}
+
+func TestPluginStdinLargeInputIsForwardedIntact(t *testing.T) {
+	h, dir := pluginHarness(t)
+	installPlugin(t, dir, "hello", helloPlugin)
+	input := strings.Repeat("0123456789abcdef\n", 20000) // well beyond one read buffer and the pipe size
+	code, out := h.run(input, "hello", "--stdin")
+	h.expect(code, out, 0)
+	if got := strings.Count(out, "0123456789abcdef\n"); got != 20000 {
+		t.Errorf("plugin received %d lines, want 20000", got)
 	}
 }

@@ -77,7 +77,7 @@
   },
   {
     "in": "https://user:pw@E.com/x",
-    "out": "https://e.com/x"
+    "out": "https://user:pw@e.com/x"
   },
   {
     "in": "https://e.com?x=1",

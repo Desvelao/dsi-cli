@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/Desvelao/dsi-cli/internal/model"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
@@ -66,10 +66,11 @@ func (e *SourceMismatchError) Error() string { return e.Msg }
 
 // NormalizeURL normalizes a URL for SOURCE comparison (RFC §5.1): lowercase
 // scheme and host, default port and trailing host dot dropped, "/" for an empty
-// path, normalized percent-encoding and dot segments, no fragment. It fails if
+// path, normalized percent-encoding and dot segments, no fragment. Userinfo is
+// preserved verbatim. It fails if
 // the URL has an invalid port.
 func NormalizeURL(rawurl string) (string, error) {
-	parts, err := SplitURL(pyutil.Strip(rawurl))
+	parts, err := SplitURL(strutil.Strip(rawurl))
 	if err != nil {
 		return "", err
 	}
@@ -85,6 +86,11 @@ func NormalizeURL(rawurl string) (string, error) {
 	netloc := host
 	if present && port != 0 && port != defaultPorts[scheme] {
 		netloc = host + ":" + strconv.Itoa(port)
+	}
+	// Userinfo is kept verbatim so URLs differing only in credentials never
+	// compare equal.
+	if info, have, _ := parts.userinfo(); have {
+		netloc = info + "@" + netloc
 	}
 	p := removeDotSegments(normalizePercentEncoding(parts.Path))
 	if p == "" {
@@ -154,8 +160,8 @@ func dispositionFilename(header string) string {
 		if !ok {
 			continue
 		}
-		name = strings.ToLower(pyutil.Strip(name))
-		value = pyutil.Strip(value)
+		name = strings.ToLower(strutil.Strip(name))
+		value = strutil.Strip(value)
 		switch name {
 		case "filename":
 			if !havePlain {
@@ -168,9 +174,9 @@ func dispositionFilename(header string) string {
 		}
 	}
 	if haveExtended {
-		return pyutil.Strip(extended)
+		return strutil.Strip(extended)
 	}
-	return pyutil.Strip(plain)
+	return strutil.Strip(plain)
 }
 
 // splitHeaderParams splits on ';' outside double quotes.
@@ -244,7 +250,7 @@ func (f *Fetcher) FetchVCardFromURL(rawurl string, allowHTTP, verifySource bool)
 		return "", "", err
 	}
 	text := resp.Text
-	if !strings.HasPrefix(pyutil.Strip(text), "BEGIN:VCARD") {
+	if !strings.HasPrefix(strutil.Strip(text), "BEGIN:VCARD") {
 		return "", "", fetchErrorf("URL does not contain a valid vCard: %s", rawurl)
 	}
 	if verifySource {
@@ -284,6 +290,11 @@ func (f *Fetcher) SaveVCardFromURL(rawurl, outputDir string, overwrite, allowHTT
 	destination := filepath.Join(outputDir, filename)
 	flags := os.O_WRONLY | os.O_CREATE
 	if overwrite {
+		// Never write through a pre-existing symlink: it could redirect the
+		// write outside outputDir.
+		if info, err := os.Lstat(destination); err == nil && info.Mode()&os.ModeSymlink != 0 {
+			return "", "", fmt.Errorf("%s is a symlink; refusing to write through it", destination)
+		}
 		flags |= os.O_TRUNC
 	} else {
 		flags |= os.O_EXCL
@@ -291,7 +302,7 @@ func (f *Fetcher) SaveVCardFromURL(rawurl, outputDir string, overwrite, allowHTT
 	file, err := os.OpenFile(destination, flags, 0o644)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
-			return "", "", fmt.Errorf("%s already exists; pass overwrite=True to replace it: %w", destination, os.ErrExist)
+			return "", "", fmt.Errorf("%s already exists; refusing to overwrite it: %w", destination, os.ErrExist)
 		}
 		return "", "", err
 	}

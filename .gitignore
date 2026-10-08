@@ -9,9 +9,11 @@ vcard_create.tmp.part
 # Go build output
 /bin/
 
-# Test keys derived from fixed public seeds are not secrets
+# Test keys derived from fixed public seeds are not secrets; golden/crypto holds throwaway
+# fixtures (random EC key + RSA public key) used only for "not an Ed25519 key" error tests
 !testdata/golden/keys/*.pem
+!testdata/golden/**/*.pem
 !testdata/golden/**/*.vcf
 
-# Leftover local scratch from the Python era (untracked, may contain private keys)
-/src/
+# Tasks
+tasks.csv

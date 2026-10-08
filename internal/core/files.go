@@ -11,7 +11,7 @@ import (
 var allowedVCardExtensions = []string{".vcf", ".vcard"}
 
 // FileIsVCardName reports whether a file name ends with a vCard extension
-// (Python's str.endswith check).
+// (a plain suffix check).
 func FileIsVCardName(name string) bool {
 	lower := strings.ToLower(name)
 	for _, ext := range allowedVCardExtensions {
@@ -22,8 +22,8 @@ func FileIsVCardName(name string) bool {
 	return false
 }
 
-// FileIsVCardPath reports whether a path has a vCard extension (Python's
-// Path.suffix check: a name like ".vcf" has no suffix).
+// FileIsVCardPath reports whether a path has a vCard extension (a
+// path-suffix check: a name like ".vcf" has no suffix).
 func FileIsVCardPath(path string) bool {
 	name := filepath.Base(path)
 	i := strings.LastIndex(name, ".")
@@ -40,8 +40,11 @@ func FileIsVCardPath(path string) bool {
 }
 
 // LocalFilesFromInputs collects the matching files of the given paths
-// (directories are walked recursively in lexical order); problems with inputs
-// are appended to warnings.
+// (directories are walked recursively in lexical order; symlinks inside
+// walked directories are skipped, both to files and directories, so reads
+// cannot escape the input tree). Top-level inputs given explicitly are
+// resolved with os.Stat, so a symlink named directly is followed; problems
+// with inputs are appended to warnings.
 func LocalFilesFromInputs(inputs []string, filter func(string) bool, warnings *[]string) []string {
 	var files []string
 	warn := func(format string, args ...any) {
@@ -59,10 +62,19 @@ func LocalFilesFromInputs(inputs []string, filter func(string) bool, warnings *[
 		case info.Mode().IsRegular():
 			if filter(in) {
 				files = append(files, in)
+			} else {
+				warn("Skipping file without a vCard extension: %s", in)
 			}
 		case info.IsDir():
 			_ = filepath.WalkDir(in, func(p string, d fs.DirEntry, err error) error {
-				if err == nil && !d.IsDir() && filter(p) {
+				if err != nil {
+					warn("Cannot read %s: %v", p, err)
+					return nil
+				}
+				if d.Type()&fs.ModeSymlink != 0 {
+					return nil
+				}
+				if !d.IsDir() && filter(p) {
 					files = append(files, p)
 				}
 				return nil

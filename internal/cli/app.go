@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"io"
 	"os"
 	"runtime/debug"
@@ -33,6 +33,8 @@ type Env struct {
 	Plugins *plugin.Finder
 
 	reader *bufio.Reader
+	// debug is set by the --debug flag for the current invocation only.
+	debug bool
 }
 
 // ExitError makes the process exit with Code (the message was already printed).
@@ -49,17 +51,17 @@ func (e *UsageError) Error() string { return e.Msg }
 
 func usagef(format string, args ...any) error { return &UsageError{fmt.Sprintf(format, args...)} }
 
-// debugEnabled mirrors the Python implementation: any value other than
-// empty, "0" or "false" turns debug on. DSIPY_DEBUG is honored as a legacy alias.
-func debugEnabled() bool {
-	for _, name := range []string{"DSI_DEBUG", "DSIPY_DEBUG"} {
-		switch strings.ToLower(strings.TrimSpace(os.Getenv(name))) {
-		case "", "0", "false":
-		default:
-			return true
-		}
+// debugEnabled reports whether --debug was given or DSI_DEBUG is set: any value other than
+// empty, "0" or "false" turns debug on.
+func (e *Env) debugEnabled() bool {
+	if e.debug {
+		return true
 	}
-	return false
+	switch strings.ToLower(strings.TrimSpace(os.Getenv("DSI_DEBUG"))) {
+	case "", "0", "false":
+		return false
+	}
+	return true
 }
 
 func (e *Env) reader_() *bufio.Reader {
@@ -109,15 +111,15 @@ func (e *Env) paint(s style, text string) string {
 	return "\x1b[" + string(s) + "m" + text + "\x1b[0m"
 }
 
-// secho prints a styled line to stdout (typer.secho).
+// secho prints a styled line to stdout (with optional styling).
 func (e *Env) secho(s style, format string, args ...any) {
 	fmt.Fprintln(e.Out, e.paint(s, fmt.Sprintf(format, args...)))
 }
 
-// echo prints a line to stdout (typer.echo).
+// echo prints a line to stdout (with a trailing newline).
 func (e *Env) echo(format string, args ...any) { fmt.Fprintf(e.Out, format+"\n", args...) }
 
-// prompt asks for a value like typer.prompt: an empty answer returns the
+// prompt asks for a value: an empty answer returns the
 // default, or asks again when there is none. EOF aborts.
 func (e *Env) prompt(text string, def *string) (string, error) {
 	for {
@@ -140,7 +142,7 @@ func (e *Env) prompt(text string, def *string) (string, error) {
 	}
 }
 
-// confirm asks a yes/no question like typer.confirm.
+// confirm asks a yes/no question with an optional default.
 func (e *Env) confirm(text string, def bool) (bool, error) {
 	suffix := "[y/N]"
 	if def {
@@ -169,8 +171,8 @@ func (e *Env) abort() error {
 	return exit(1)
 }
 
-// run wraps a command: unexpected errors are reported like the Python
-// error handler ("❌ Command 'x' failed: ...") and exit with code 1.
+// run wraps a command: unexpected errors are reported as
+// "❌ Command 'x' failed: ..." and exit with code 1.
 func (e *Env) run(name string, fn func(cmd *cobra.Command, args []string) error) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		err := fn(cmd, args)
@@ -182,8 +184,8 @@ func (e *Env) run(name string, fn func(cmd *cobra.Command, args []string) error)
 		if errors.As(err, &ee) || errors.As(err, &ue) {
 			return err
 		}
-		e.secho(red, "❌ Command '%s' failed: %s", name, pyutil.ErrText(err))
-		if debugEnabled() {
+		e.secho(red, "❌ Command '%s' failed: %s", name, strutil.ErrText(err))
+		if e.debugEnabled() {
 			fmt.Fprintf(e.Err, "%v\n%s\n", err, debug.Stack())
 		}
 		return exit(1)
@@ -201,7 +203,7 @@ func NewRootCmd(version string, env *Env) *cobra.Command {
 		SilenceErrors: true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if debugFlag {
-				os.Setenv("DSI_DEBUG", "1")
+				env.debug = true
 			}
 		},
 		Args: cobra.NoArgs,
@@ -226,7 +228,7 @@ func subcommand(use, short string) *cobra.Command {
 		Use:   use,
 		Short: short,
 		Args:  cobra.NoArgs,
-		// like click's no_args_is_help: show the help and exit with the usage code
+		// show the help and exit with the usage code
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := cmd.Help(); err != nil {
 				return err
@@ -238,6 +240,7 @@ func subcommand(use, short string) *cobra.Command {
 
 // ExecuteEnv runs the CLI with an explicit environment and returns the exit code.
 func ExecuteEnv(version string, args []string, env *Env) int {
+	env.debug = false
 	root := NewRootCmd(version, env)
 	if code, ok := env.dispatchPlugin(root, version, args); ok {
 		return code
@@ -257,7 +260,7 @@ func ExecuteEnv(version string, args []string, env *Env) int {
 		cmd = root
 	}
 	msg := err.Error()
-	if strings.HasPrefix(msg, "unknown command ") { // click's wording
+	if strings.HasPrefix(msg, "unknown command ") {
 		if parts := strings.SplitN(msg, `"`, 3); len(parts) >= 2 {
 			msg = fmt.Sprintf("No such command '%s'.", parts[1])
 		}

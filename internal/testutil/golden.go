@@ -1,5 +1,5 @@
-// Package testutil loads the golden fixtures generated from the Python
-// reference implementation (see testdata/generate.py, `make golden`).
+// Package testutil loads the frozen golden fixtures from testdata/golden.
+// See testdata/README.md.
 package testutil
 
 import (

@@ -94,7 +94,7 @@ func TestFileRoundTripKeepsBytes(t *testing.T) {
 func TestToJSONAndHasEndorsement(t *testing.T) {
 	v := NewVCardFromText(testutil.GoldenString(t, "vcards/endorse_valid.vcf"))
 	js, err := v.ToJSON()
-	if err != nil || js != testutil.GoldenString(t, "vcards/endorse_valid.parse.pyjson") {
+	if err != nil || js != testutil.GoldenString(t, "vcards/endorse_valid.parse.out") {
 		t.Errorf("ToJSON mismatch: %v", err)
 	}
 	if !v.HasEndorsementFor(keyBob) || v.HasEndorsementFor(keyAlice) {
@@ -129,4 +129,61 @@ func TestFileHelpers(t *testing.T) {
 	if len(files) != 2 || len(warnings) != 1 || !strings.Contains(warnings[0], "does not exist") {
 		t.Errorf("files %v warnings %v", files, warnings)
 	}
+}
+
+func TestPreferredKeyEdgeCases(t *testing.T) {
+	if card().PreferredKey() != nil {
+		t.Error("card without keys must have no preferred key")
+	}
+	// Equal PREF: the first listed key wins.
+	got := card("KEY;ALG=ed25519;PREF=1:"+keyBob, "KEY;ALG=ed25519;PREF=1:"+keyAlice).PreferredKey()
+	if got == nil || got.KeyB64 != keyBob {
+		t.Errorf("tie: got %v", got)
+	}
+	// No PREF anywhere: the first listed key wins.
+	got = card("KEY;ALG=ed25519:"+keyBob, "KEY;ALG=ed25519:"+keyAlice).PreferredKey()
+	if got == nil || got.KeyB64 != keyBob {
+		t.Errorf("no pref: got %v", got)
+	}
+	// A revoked lowest-PREF key is skipped even when its REVKEY comes first.
+	got = card("REVKEY;ALG=ed25519:"+keyBob, "KEY;ALG=ed25519;PREF=1:"+keyBob, "KEY;ALG=ed25519;PREF=5:"+keyAlice).PreferredKey()
+	if got == nil || got.KeyB64 != keyAlice {
+		t.Errorf("revoked first: got %v", got)
+	}
+}
+
+func TestAddLineLineEndings(t *testing.T) {
+	t.Run("LF card stays LF", func(t *testing.T) {
+		v := NewVCardFromText("BEGIN:VCARD\nVERSION:4.0\nFN:A\nEND:VCARD\n")
+		if err := v.AddLine("X-A:b"); err != nil {
+			t.Fatal(err)
+		}
+		if want := "BEGIN:VCARD\nVERSION:4.0\nFN:A\nX-A:b\nEND:VCARD\n"; v.String() != want {
+			t.Errorf("got %q want %q", v.String(), want)
+		}
+	})
+	t.Run("rejects bare CR and LF", func(t *testing.T) {
+		for _, l := range []string{"X-A:b\n", "X-A:b\r", "\nX-A:b"} {
+			if err := card().AddLine(l); err == nil {
+				t.Errorf("%q must be rejected", l)
+			}
+		}
+	})
+	t.Run("trailing whitespace after END is tolerated", func(t *testing.T) {
+		v := NewVCardFromText("BEGIN:VCARD\r\nVERSION:4.0\r\nFN:A\r\nEND:VCARD\r\n\r\n")
+		if err := v.AddLine("X-A:b"); err != nil {
+			t.Fatal(err)
+		}
+		if want := "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:A\r\nX-A:b\r\nEND:VCARD\r\n\r\n"; v.String() != want {
+			t.Errorf("got %q want %q", v.String(), want)
+		}
+	})
+	t.Run("rejected input leaves the card unchanged", func(t *testing.T) {
+		v := card()
+		before := v.String()
+		_ = v.AddLine("X-A:b\r\nX-B:c")
+		if v.String() != before {
+			t.Error("card changed after a rejected line")
+		}
+	})
 }

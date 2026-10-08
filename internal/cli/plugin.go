@@ -3,10 +3,10 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"strings"
+	"sync/atomic"
 	"text/tabwriter"
 
 	"github.com/Desvelao/dsi-cli/internal/plugin"
@@ -48,7 +48,7 @@ func (e *Env) dispatchPlugin(root *cobra.Command, version string, args []string)
 	if !ok {
 		return 0, false
 	}
-	debug := debugEnabled()
+	debug := e.debugEnabled()
 	for _, a := range args[:idx] {
 		debug = debug || a == "--debug"
 	}
@@ -74,6 +74,7 @@ func isCoreCommand(root *cobra.Command, name string) bool {
 // DSI_BIN (this executable) and DSI_DEBUG.
 func (e *Env) runPlugin(path string, args []string, version string, debug bool) int {
 	cmd := exec.Command(path, args...)
+	var stopped atomic.Bool
 	if f, ok := e.In.(*os.File); ok && e.reader == nil {
 		// hand the real stdin to the child
 		cmd.Stdin = f
@@ -88,11 +89,27 @@ func (e *Env) runPlugin(path string, args []string, version string, debug bool) 
 		}
 		defer pr.Close()
 		defer pw.Close()
+		defer stopped.Store(true)
 		cmd.Stdin = pr
 		src := e.reader_()
+		// A Read blocked on a non-file stdin cannot be interrupted, so that
+		// goroutine ends when the read returns; stopped makes sure it never
+		// reads again (and never consumes input meant for dsi) once the plugin
+		// is gone.
 		go func() {
-			io.Copy(pw, src)
-			pw.Close()
+			defer pw.Close()
+			buf := make([]byte, 32*1024)
+			for !stopped.Load() {
+				n, err := src.Read(buf)
+				if n > 0 && !stopped.Load() {
+					if _, werr := pw.Write(buf[:n]); werr != nil {
+						return
+					}
+				}
+				if err != nil {
+					return
+				}
+			}
 		}()
 	}
 	cmd.Stdout = e.Out

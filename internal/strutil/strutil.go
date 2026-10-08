@@ -1,6 +1,6 @@
-// Package pyutil holds small helpers that reproduce Python string semantics the
-// DSI wire formats depend on (str.strip, int(), ...).
-package pyutil
+// Package strutil holds small string helpers whose semantics the
+// DSI wire formats depend on (trimming, integer parsing, ...).
+package strutil
 
 import (
 	"errors"
@@ -12,19 +12,19 @@ import (
 	"unicode"
 )
 
-// IsSpace reports whether r is whitespace according to Python's str.isspace.
+// IsSpace reports whether r is whitespace according to Unicode-aware whitespace rules.
 // It differs from unicode.IsSpace by also including U+001C..U+001F.
 func IsSpace(r rune) bool {
 	return unicode.IsSpace(r) || (r >= 0x1c && r <= 0x1f)
 }
 
-// Strip is Python's str.strip().
+// Strip trims whitespace on both sides.
 func Strip(s string) string { return strings.TrimFunc(s, IsSpace) }
 
-// RStrip is Python's str.rstrip().
+// RStrip trims trailing whitespace.
 func RStrip(s string) string { return strings.TrimRightFunc(s, IsSpace) }
 
-// ParseInt is a subset of Python's int(str): surrounding whitespace, an
+// ParseInt is a subset of integer syntax: surrounding whitespace, an
 // optional sign and ASCII digits with single underscores between digits.
 // Values that do not fit in int64 are reported as invalid.
 func ParseInt(s string) (int64, bool) {
@@ -67,7 +67,7 @@ func ParseInt(s string) (int64, bool) {
 	return n, true
 }
 
-// Repr is Python's repr() for a str: single quotes unless the text contains a
+// Repr quotes a string for display: single quotes unless the text contains a
 // single quote and no double quote; control and non-printable characters are
 // escaped.
 func Repr(s string) string {
@@ -104,7 +104,7 @@ func Repr(s string) string {
 	return b.String()
 }
 
-// OrderedMap is an insertion-ordered string map, like a Python dict[str, str].
+// OrderedMap is an insertion-ordered string map, like an ordered dict of strings.
 type OrderedMap struct {
 	keys []string
 	vals map[string]string
@@ -145,7 +145,7 @@ func (m *OrderedMap) Clone() *OrderedMap {
 	return c
 }
 
-// SplitLines is Python's str.splitlines(): it splits on \n, \r\n, \r, \v, \f,
+// SplitLines splits on \n, \r\n, \r, \v, \f,
 // \x1c-\x1e, \x85,   and   and drops the separators.
 func SplitLines(s string) []string {
 	var lines []string
@@ -178,7 +178,7 @@ func SplitLines(s string) []string {
 	return lines
 }
 
-// OSErrorString formats file-system errors like Python's OSError
+// OSErrorString formats file-system errors in the traditional OS error style
 // ("[Errno 2] No such file or directory: 'path'"). ok is false for other errors.
 func OSErrorString(err error) (string, bool) {
 	var errno syscall.Errno
@@ -200,7 +200,7 @@ func OSErrorString(err error) (string, bool) {
 	return "", false
 }
 
-// ErrText is the user-facing text of an error: file-system errors use Python's wording.
+// ErrText is the user-facing text of an error: file-system errors use the traditional wording.
 func ErrText(err error) string {
 	if s, ok := OSErrorString(err); ok {
 		return s

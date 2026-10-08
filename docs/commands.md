@@ -54,11 +54,13 @@ dsi vcard qr dsi.vcf -o qr.png -t "Alice" -b "alice.example" -f DejaVuSans.ttf
 | `feeds build <directory>` | `-o/--output` (default `feed.rss`), `-l/--limit`, `-t/--title`, `-k/--link`, `-d/--description`, `-g/--language` (default `en-US`), `-a/--author`, `-e/--email`, `--type`, `-i/--interactive`, `--sign-priv`, `--sign-pub`, `--var`, `--var-file` |
 | `feeds verify <rss>` | `-v/--vcard`, `--pub` (one of them is required) |
 
+With `--vcard`, keys listed as `REVKEY` are not trusted: items signed with a revoked key (any reason) are reported `invalid` with the reason `signed with revoked key`, and the command exits `1`. Items signed with the card's other, non-revoked keys still validate.
+
 `feeds build` requires title, link, description, author and email, either as options or via `--interactive`. See [templating and publishing](publishing.md).
 
 ## connections
 
-`dsi connections feed <inputs>... [-o/--output <file>]` generates an OPML file from vCard files or directories (`.vcf`, `.vcard`). It emits one `<outline type="rss">` per `X-FEED`, named after the card's `FN`, with `xmlUrl`, plus `language` and `category` (feed category and tags, comma separated) when present. Unreadable or malformed cards are skipped with a warning; if no feed is found the command exits `1`. Without `-o` the OPML is printed to stdout.
+`dsi connections feed <inputs>... [-o/--output <file>] [--title <text>]` generates an OPML file from vCard files or directories (`.vcf`, `.vcard`). It emits one `<outline type="rss">` per `X-FEED`, named after the card's `FN`, with `xmlUrl`, plus `language` and `category` (feed category and tags, comma separated) when present. Unreadable or malformed cards are skipped with a warning; if no feed is found the command exits `1`. The document starts with an XML declaration and a `<head><title>` (default `DSI connections`, set with `--title`, XML-escaped). The same feed URL appearing in several cards is emitted once (first seen wins, order preserved). Without `-o` the OPML is printed to stdout.
 
 ```sh
 dsi connections feed friends/ bob.vcf -o following.opml

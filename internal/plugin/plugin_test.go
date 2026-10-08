@@ -88,3 +88,32 @@ func TestDefaultFinderOrderAndEmptyPathEntries(t *testing.T) {
 		}
 	}
 }
+
+func TestPathExtHelpers(t *testing.T) {
+	if got := executableNames("linux", ".EXE;.BAT", "x"); len(got) != 1 || got[0] != "dsi-x" {
+		t.Errorf("linux names = %v", got)
+	}
+	got := executableNames("windows", ".COM;.exe; .Bat ;;", "x")
+	want := []string{"dsi-x.COM", "dsi-x.exe", "dsi-x.Bat"}
+	if len(got) != len(want) {
+		t.Fatalf("names = %v", got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("names = %v, want %v", got, want)
+		}
+	}
+	if got := executableNames("windows", "", "x"); len(got) != 4 || got[3] != "dsi-x.CMD" {
+		t.Errorf("default names = %v", got)
+	}
+	for in, out := range map[string]string{
+		"dsi-x.cmd": "dsi-x", "dsi-x.BAT": "dsi-x", "dsi-x.txt": "dsi-x.txt", "dsi-x": "dsi-x",
+	} {
+		if got := trimExt("windows", ".CMD;.BAT;.EXE", in); got != out {
+			t.Errorf("trimExt(%q) = %q, want %q", in, got, out)
+		}
+	}
+	if got := trimExt("linux", ".CMD", "dsi-x.cmd"); got != "dsi-x.cmd" {
+		t.Errorf("trimExt on linux = %q", got)
+	}
+}

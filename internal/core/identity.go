@@ -3,11 +3,12 @@ package core
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"github.com/Desvelao/dsi-cli/internal/model"
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"github.com/Desvelao/dsi-cli/internal/vcard"
 )
 
@@ -32,9 +33,18 @@ func NewVCardFromPath(path string) (*VCard, error) {
 	if err != nil || !info.Mode().IsRegular() {
 		return nil, fmt.Errorf("The specified path is not a file: %s", path)
 	}
-	data, err := os.ReadFile(path)
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
+	}
+	defer f.Close()
+	// Read one byte past the limit so a file that grew after the stat is caught.
+	data, err := io.ReadAll(io.LimitReader(f, DefaultMaxBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > DefaultMaxBytes {
+		return nil, fmt.Errorf("The vCard file %s exceeds the maximum size of %d bytes", path, DefaultMaxBytes)
 	}
 	if msg, bad := Utf8DecodeError(data); bad {
 		return nil, errors.New(msg)
@@ -73,7 +83,7 @@ func (v *VCard) AddLine(line string) error {
 		content = v.Build()
 	}
 	const end = "END:VCARD"
-	if !strings.HasSuffix(pyutil.Strip(content), end) {
+	if !strings.HasSuffix(strutil.Strip(content), end) {
 		return fmt.Errorf("Invalid vCard format: missing %s", end)
 	}
 	newline := "\n"
@@ -105,8 +115,8 @@ func (v *VCard) ToFile(path string) error {
 	return os.WriteFile(path, []byte(v.String()), 0o644)
 }
 
-// ToJSON returns the profile as JSON, formatted like Python's json.dumps.
-func (v *VCard) ToJSON() (string, error) { return pyutil.JSONDumps(v.Profile) }
+// ToJSON returns the profile as JSON, formatted with ", " and ": " separators.
+func (v *VCard) ToJSON() (string, error) { return strutil.JSONDumps(v.Profile) }
 
 // PreferredKey returns the preferred usable public key: the lowest PREF among
 // ed25519 keys that are not revoked, or nil if none remains.

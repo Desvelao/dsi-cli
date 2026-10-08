@@ -268,3 +268,48 @@ func TestConnectionsFeedFailures(t *testing.T) {
 	h.expect(code, out, 1)
 	contains(t, out, "No valid vCards with feed URLs")
 }
+
+func TestKeyAddPrefFlagsMutuallyExclusive(t *testing.T) {
+	h := newHarness(t)
+	alice, bob := keyNamed(t, "alice"), keyNamed(t, "bob")
+	h.write("a.vcf", card("Alice", "https://alice.example/dsi.vcf", alice.b64))
+	before := h.read("a.vcf")
+	code, out := h.run("", "key", "add", "a.vcf", "--public-key", bob.b64, "--pref", "--no-pref")
+	if code == 0 || !strings.Contains(out, "none of the others can be") {
+		t.Errorf("expected mutual exclusion error, got code %d: %s", code, out)
+	}
+	if h.read("a.vcf") != before {
+		t.Error("vCard must not change")
+	}
+}
+
+func TestKeyRotateAndAddVCardWriteFailureLeavesNoKeys(t *testing.T) {
+	for _, cmd := range []string{"rotate", "add"} {
+		h := newHarness(t)
+		original := card("Alice", "https://alice.example/dsi.vcf", keyNamed(t, "alice").b64)
+		h.write("a.vcf", original)
+		code, out := h.run("", "key", cmd, "a.vcf", "-o", "nodir/out.vcf", "--priv", "n.pem", "--pub", "n.pub")
+		h.expect(code, out, 1)
+		if h.exists("n.pem") || h.exists("n.pub") || h.read("a.vcf") != original {
+			t.Errorf("%s: failed vCard write left key files or changed the vCard", cmd)
+		}
+		// a rerun is not blocked by leftovers
+		code, out = h.run("", "key", cmd, "a.vcf", "--priv", "n.pem", "--pub", "n.pub")
+		h.expect(code, out, 0)
+	}
+}
+
+func TestWriteFileAtomicPreservesMode(t *testing.T) {
+	p := t.TempDir() + "/f.vcf"
+	if err := os.WriteFile(p, []byte("old"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeFileAtomic(p, []byte("new")); err != nil {
+		t.Fatal(err)
+	}
+	info, _ := os.Stat(p)
+	b, _ := os.ReadFile(p)
+	if string(b) != "new" || info.Mode().Perm() != 0o600 {
+		t.Errorf("got %q %v", b, info.Mode())
+	}
+}

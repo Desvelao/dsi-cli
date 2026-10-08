@@ -5,7 +5,6 @@
 - [Feed templates and publishing](publishing.md): `{{ }}` templates for `feeds build`, and where publishing went.
 - [Plugins](plugins.md): extend `dsi` with `dsi-<name>` executables.
 - [Hands-on testing guide](testing-guide.md): runnable commands with expected results to try and verify every feature yourself, in a throw-away folder.
-- [Migrating from the Python `dsipy`](migrating-from-python.md): what changed in the Go rewrite.
 
 ## Install
 

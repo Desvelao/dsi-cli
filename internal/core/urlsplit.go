@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Desvelao/dsi-cli/internal/pyutil"
+	"github.com/Desvelao/dsi-cli/internal/strutil"
 	"golang.org/x/text/unicode/norm"
 )
 
-// SplitResult mirrors the parts of Python's urllib.parse.urlsplit result.
+// SplitResult mirrors the parts of a urlsplit result.
 type SplitResult struct {
 	Scheme, Netloc, Path, Query, Fragment string
 }
@@ -21,7 +21,7 @@ const schemeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456
 
 var ipvFuture = regexp.MustCompile(`^v[a-fA-F0-9]+\..+$`)
 
-// SplitURL splits a URL like Python 3.12's urllib.parse.urlsplit, including the
+// SplitURL splits a URL like urllib's urlsplit, including the
 // errors it raises for malformed bracketed hosts and netlocs.
 func SplitURL(rawurl string) (SplitResult, error) { return splitURL(rawurl, "") }
 
@@ -117,8 +117,8 @@ func checkNetloc(netloc string) error {
 	return nil
 }
 
-// HasSpace reports whether the string contains any whitespace (Python isspace).
-func HasSpace(s string) bool { return strings.IndexFunc(s, pyutil.IsSpace) >= 0 }
+// HasSpace reports whether the string contains any whitespace (isspace).
+func HasSpace(s string) bool { return strings.IndexFunc(s, strutil.IsSpace) >= 0 }
 
 func (r SplitResult) userinfo() (info string, have bool, hostinfo string) {
 	if i := strings.LastIndex(r.Netloc, "@"); i >= 0 {
@@ -173,7 +173,7 @@ func (r SplitResult) Hostname() string {
 }
 
 // Port parses the port. It returns (0, false, nil) when there is none and an
-// error with Python's messages when it is not a number in 0-65535.
+// error with the standard messages when it is not a number in 0-65535.
 func (r SplitResult) Port() (port int, present bool, err error) {
 	_, p := r.hostinfo()
 	if p == "" {
@@ -181,7 +181,7 @@ func (r SplitResult) Port() (port int, present bool, err error) {
 	}
 	for i := 0; i < len(p); i++ {
 		if p[i] < '0' || p[i] > '9' {
-			return 0, false, fmt.Errorf("Port could not be cast to integer value as %s", pyutil.Repr(p))
+			return 0, false, fmt.Errorf("Port could not be cast to integer value as %s", strutil.Repr(p))
 		}
 	}
 	n, convErr := strconv.Atoi(p)

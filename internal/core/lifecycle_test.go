@@ -37,10 +37,14 @@ func TestLifecycleGolden(t *testing.T) {
 			return RotateKey(strings.Replace(two, "PREF=2", "PREF=1", 1), bob, "", "rotated", when)
 		},
 		"rotate_existing_new": func() (string, error) { return RotateKey(base, alice, "", "rotated", when) },
-		"add_preferred":       func() (string, error) { return AddKey(base, bob, true) },
-		"add_not_preferred":   func() (string, error) { return AddKey(base, bob, false) },
-		"add_to_empty":        func() (string, error) { return AddKey(nokey, bob, true) },
-		"add_existing":        func() (string, error) { return AddKey(base, alice, true) },
+		"rotate_revoked_new": func() (string, error) {
+			revoked := strings.Replace(base, "END:VCARD", "REVKEY;TYPE=public;ALG=ed25519;REASON=lost;DATE=20250304T050607Z;ENCODING=b:"+bob+"\r\nEND:VCARD", 1)
+			return RotateKey(revoked, bob, "", "rotated", when)
+		},
+		"add_preferred":     func() (string, error) { return AddKey(base, bob, true) },
+		"add_not_preferred": func() (string, error) { return AddKey(base, bob, false) },
+		"add_to_empty":      func() (string, error) { return AddKey(nokey, bob, true) },
+		"add_existing":      func() (string, error) { return AddKey(base, alice, true) },
 		"add_to_malformed": func() (string, error) {
 			return AddKey(strings.Replace(base, "END:VCARD", "no colon here\r\nEND:VCARD", 1), bob, true)
 		},
@@ -61,9 +65,8 @@ func TestLifecycleGolden(t *testing.T) {
 				}
 				return
 			}
-			wantMsg := strings.ReplaceAll(want.Error, "dsipy key add", "dsi key add")
-			if err == nil || err.Error() != wantMsg {
-				t.Errorf("error %v, want %q", err, wantMsg)
+			if err == nil || err.Error() != want.Error {
+				t.Errorf("error %v, want %q", err, want.Error)
 			}
 		})
 	}
